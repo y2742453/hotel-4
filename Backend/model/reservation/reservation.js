@@ -14,14 +14,14 @@ export async function hasConflict(idSalle, dateDebut, dateFin, idReservationExcl
         SELECT COUNT(*) as count 
         FROM reservations 
         WHERE id_salle = ? 
-        AND ((date_debut < ? AND date_fin > ?) 
-             OR (date_debut >= ? AND date_fin <= ?))
+        AND date_debut < ?
+        AND date_fin > ?
         ${idReservationExclue ? 'AND id_reservation != ?' : ''}
     `;
     
-    const params = idReservationExclue 
-        ? [idSalle, dateFin, dateDebut, dateDebut, dateFin, idReservationExclue]
-        : [idSalle, dateFin, dateDebut, dateDebut, dateFin];
+    const params = idReservationExclue
+        ? [idSalle, dateFin, dateDebut, idReservationExclue]
+        : [idSalle, dateFin, dateDebut];
     
     const result = await db.get(query, params);
     return result.count > 0;
@@ -49,6 +49,32 @@ export async function addReservation(reservation) {
     );
     
     return result.lastID;
+}
+
+export async function updateReservation(idReservation, updatedReservation) {
+    const conflict = await hasConflict(
+        updatedReservation.idSalle,
+        updatedReservation.dateDebut,
+        updatedReservation.dateFin,
+        idReservation // Id de la salle actuelle pour ne pas creer les conflits avec lui meme
+    );
+
+    if (conflict) {
+        throw new Error('RESERVATION_CONFLICT');
+    }
+
+    await db.run(
+        `UPDATE reservations
+         SET id_salle = ?, id_evenement = ?, date_debut = ?, date_fin = ?
+         WHERE id_reservation = ?`,
+        [
+            updatedReservation.idSalle,
+            updatedReservation.idEvenement,
+            updatedReservation.dateDebut,
+            updatedReservation.dateFin,
+            idReservation
+        ]
+    );
 }
 
 /**
