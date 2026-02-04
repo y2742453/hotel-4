@@ -6,7 +6,22 @@ import express, { json } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression';
+import session from 'express-session'
+import memorystore from 'memorystore'
+import passport from 'passport'
+import { Strategy } from 'passport-local'
+import { findUserByEmail,addUtilisateur } from './modele/user.js'
 
+
+// Configuration de la session
+const MemoryStore = memorystore(session)
+const sessionMiddleware = session({
+  cookie: { maxAge: 86400000 },
+  store: new MemoryStore({ checkPeriod: 86400000 }),
+  secret: process.env.SESSION_SECRET,
+  resave: false, 
+ saveUninitialized: false
+})
 // Création du serveur
 const app = express();
 
