@@ -1,9 +1,9 @@
 import db from '../db/db.js';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 export const findUserByEmail = async (email) => {
   const sql = `
     SELECT id, nom, prenom, email, mot_de_passe, role, actif
-    FROM utilisateur
+    FROM users
     WHERE email = ?
     LIMIT 1
   `;
@@ -22,7 +22,7 @@ export async function addUtilisateur(nom, prenom, email, motDePasse, role) {
 
   // 2 Requête SQL
   const sql = `
-    INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role, actif)
+    INSERT INTO users (nom, prenom, email, mot_de_passe, role, actif)
     VALUES (?, ?, ?, ?, ?, 1)
   `;
 

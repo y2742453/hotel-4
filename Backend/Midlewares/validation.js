@@ -34,7 +34,7 @@ export function emailEstValide(request, response, next) {
  * Middleware : valide un mot de passe
  */
 export function motDePasseEstValide(request, response, next) {
-  if (isMotDePasseValid(request.body.mot_de_passe)) {
+  if (isMotDePasseValid(request.body.motDePasse)) {
     return next();
   }
   response.status(400).json({
@@ -47,11 +47,11 @@ export function motDePasseEstValide(request, response, next) {
  */
 
 export function loginEstValide(request, response, next) {
-  const { email, mot_de_passe } = request.body;
+  const { email, motDePasse } = request.body;
 
   if (
     isEmailValid(email) &&
-    isMotDePasseValid(mot_de_passe)
+    isMotDePasseValid(motDePasse)
   ) {
     return next();
   }
