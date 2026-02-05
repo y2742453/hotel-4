@@ -9,13 +9,50 @@
 
 <h1>Test Authentification</h1>
 
-<section>
+   <section>
     <h2>Inscription</h2>
     <form id="form-inscription">
-        <input type="email" id="inscription-email" placeholder="Email" required>
-        <input type="password" id="inscription-password" placeholder="Mot de passe" required>
+
+        <input
+            type="text"
+            id="inscription-nom"
+            placeholder="Nom"
+            
+        >
+
+        <input
+            type="text"
+            id="inscription-prenom"
+            placeholder="Prénom"
+           
+        >
+
+        <input
+            type="email"
+            id="inscription-email"
+            placeholder="Email"
+           
+        >
+
+        <input
+            type="password"
+            id="inscription-password"
+            placeholder="Mot de passe (min. 8 caractères)"
+           
+        >
+
+        <!-- RÔLE OPTIONNEL -->
+        <select id="inscription-role">
+            <option value="">choisir un rôle</option>
+            <option value="Administrateur">Administrateur</option>
+            <option value="Organisateur">Organisateur</option>
+            <option value="Coordonnateur">Coordonnateur</option>
+            <option value="Comptabilite">Comptabilité</option>
+        </select>
+
         <button type="submit">S'inscrire</button>
     </form>
+
     <p id="inscription-message"></p>
 </section>
 

@@ -63,38 +63,38 @@ app.use(express.static('public'));
 // =======================
 
 // Inscription d'un utilisateur
-app.post(
-  '/api/inscription',
-  userNotAuth,
-  emailEstValide,
-  motDePasseEstValide,
-  async (request, response, next) => {
-    try {
-      const { nom, prenom, email, motDePasse, role } = request.body;
+const roleToId = {
+  Administrateur: 1,
+  Organisateur: 2,
+  Coordonnateur: 3,
+  Comptabilite: 4
+};
 
-      await addUtilisateur(
-        nom,
-        prenom,
-        email,
-        motDePasse,
-        role
-      );
+app.post('/api/inscription', userNotAuth, emailEstValide, motDePasseEstValide, async (req, res, next) => {
+  try {
+    const { nom, prenom, email, motDePasse, role } = req.body;
 
-      response.sendStatus(201);
+    // ✅ par défaut Organisateur
+    let id_role = 2;
 
-    } catch (error) {
-      // Conflit (email déjà utilisé)
-      if (error.code === 'ER_DUP_ENTRY') {
-        response.sendStatus(409);
-      } else {
-        console.error(error);
-        next(error);
-      }
+    // ✅ si un role est fourni, on le convertit
+    if (role && roleToId[role]) {
+      id_role = roleToId[role];
     }
-  }
-);
 
-// 🔑 Connexion
+    await addUtilisateur(nom, prenom, email, motDePasse, id_role);
+
+    res.sendStatus(201);
+  } catch (error) {
+    if (error && error.code === 'ER_DUP_ENTRY') return res.sendStatus(409);
+    console.error(error);
+    next(error);
+  }
+});
+
+
+
+//  Connexion
 app.post(
   '/api/connexion',
   userNotAuth,

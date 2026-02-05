@@ -1,45 +1,55 @@
 import { isEmailValid, isMotDePasseValid } from './validation.js';
 
 // INSCRIPTION
+
+// INSCRIPTION
 document.getElementById('form-inscription').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const email = document.getElementById('inscription-email').value;
-    const motDePasse = document.getElementById('inscription-password').value;
-    const message = document.getElementById('inscription-message');
+  const nom = document.getElementById('inscription-nom').value.trim();
+  const prenom = document.getElementById('inscription-prenom').value.trim();
 
-    if (!isEmailValid(email) || !isMotDePasseValid(motDePasse)) {
-        message.textContent = "Email ou mot de passe invalide (8 caractères min)";
-        return;
-    }
+  const role = document.getElementById('inscription-role').value; // peut être ""
 
-    const response = await fetch('/api/inscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, motDePasse })
-    });
+  const email = document.getElementById('inscription-email').value.trim();
+  const motDePasse = document.getElementById('inscription-password').value;
 
-    if (response.status === 201) {
-        message.textContent = "Inscription réussie ";
-    } else if (response.status === 409) {
-        message.textContent = "Utilisateur déjà existant ";
-    } else {
-        message.textContent = "Erreur lors de l'inscription";
-    }
+  const message = document.getElementById('inscription-message');
+
+  // validation simple
+  if (!nom || !prenom || !isEmailValid(email) || !isMotDePasseValid(motDePasse)) {
+    message.textContent = "Champs invalides (nom/prénom requis, email valide, mdp 8+)";
+    return;
+  }
+
+  const response = await fetch('/api/inscription', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nom, prenom, role, email, motDePasse })
+  });
+
+  if (response.status === 201) {
+    message.textContent = "Inscription réussie";
+  } else if (response.status === 409) {
+    message.textContent = "Utilisateur déjà existant";
+  } else {
+    message.textContent = "Erreur lors de l'inscription";
+  }
 });
+
 
 // CONNEXION
 document.getElementById('form-connexion').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const courriel = document.getElementById('connexion-email').value;
+    const email = document.getElementById('connexion-email').value;
     const motDePasse = document.getElementById('connexion-password').value;
     const message = document.getElementById('connexion-message');
 
     const response = await fetch('/api/connexion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courriel, motDePasse })
+        body: JSON.stringify({ email, motDePasse })
     });
 
     if (response.status === 200) {
