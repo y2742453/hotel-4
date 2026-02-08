@@ -2,11 +2,11 @@ import db from "../db/db.js";
 
 /**
  * Vérifie s'il y a un conflit de réservation
- * @param {number} idSalle
- * @param {} dateDebut
- * @param {*} dateFin
- * @param {*} idReservationExclue
- * @returns
+ * @param {number} idSalle - L'identifiant de la salle
+ * @param {string} dateDebut - La date de début de la réservation (format YYYY-MM-DD HH:MM).
+ * @param {string} dateFin - La date de fin de la réservation (format YYYY-MM-DD HH:MM).
+ * @param {number} idReservationExclue - Optionnel : ID d'une réservation à exclure (utile pour les mises à jour).
+ * @returns {Promise<boolean>} Retourne `true` s'il y a conflit de réservation, `false` sinon.
  */
 export async function hasConflict(
   idSalle,
@@ -35,6 +35,8 @@ export async function hasConflict(
 
 /**
  * Ajoute une réservation
+ * @param {Object} reservation  Les données de la réservation.
+ * @returns {Promise<number>} L'ID de la réservation créée.
  */
 export async function addReservation(reservation) {
   const conflict = await hasConflict(
@@ -63,6 +65,9 @@ export async function addReservation(reservation) {
 
 /**
  * Met à jour une réservation
+ * @param {number} idReservation L'ID de la réservation à mettre à jour.
+ * @param {Object} reservation Les nouvelles données de la réservation.
+ * @returns {Promise<boolean>} `true` si la mise à jour a réussi, `false` sinon.
  */
 export async function updateReservation(idReservation, reservation) {
   const conflict = await hasConflict(
@@ -94,6 +99,8 @@ export async function updateReservation(idReservation, reservation) {
 
 /**
  * Supprime une réservation
+ * @param {number} idReservation
+ * @returns {Promise<boolean>} `true` si la suppression a réussi, `false` sinon.
  */
 export async function deleteReservation(idReservation) {
   const [result] = await db.execute(
@@ -105,7 +112,9 @@ export async function deleteReservation(idReservation) {
 }
 
 /**
- * Récupère une réservation par ID
+ * Récupère une réservation par id
+ * @param {number} idReservation L'Id de la réservation.
+ * @returns {Promise<Object|null>} L'objet réservation si trouvé, sinon `null`.
  */
 export async function getReservationById(idReservation) {
   const [rows] = await db.execute(
@@ -118,6 +127,8 @@ export async function getReservationById(idReservation) {
 
 /**
  * Récupère toutes les réservations d'une salle
+ * @param {number} idSalle L'Id de la salle.
+ * @returns {Promise<Array<Object>>} Un tableau de réservations.
  */
 export async function getReservationsBySalle(idSalle) {
   const [rows] = await db.execute(

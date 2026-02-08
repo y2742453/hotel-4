@@ -25,7 +25,6 @@ app.use(json());
 app.use(express.static("public"));
 
 // Programmation des routes
-
 // Route pour créer une réservation
 app.post("/api/reservation", async (request, response) => {
   try {
