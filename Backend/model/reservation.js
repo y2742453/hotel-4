@@ -1,7 +1,12 @@
-import db from "../../db/db.js";
+import db from "../db/db.js";
 
 /**
  * Vérifie s'il y a un conflit de réservation
+ * @param {number} idSalle
+ * @param {} dateDebut
+ * @param {*} dateFin
+ * @param {*} idReservationExclue
+ * @returns
  */
 export async function hasConflict(
   idSalle,
