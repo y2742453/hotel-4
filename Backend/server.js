@@ -12,7 +12,7 @@ import {
   getReservationById,
   updateReservation,
   deleteReservation,
-} from "./model/reservation.js";
+} from "./model/reservation/reservation.js";
 
 // Création du serveur
 const app = express();
