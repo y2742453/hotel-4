@@ -26,3 +26,15 @@
 2. Mettre à jour une réservation
 3. Supprimer une réservation
 4. Récupérer les réservations par ID ou par salle
+
+### Gestions des conflits
+
+- La détéction des conflits de date utilise:
+  `date_debut < new_end AND date_fin > new_start`
+- Toutes les dates sont au format MySQL `DATETIME`
+
+### Gestions des erreurs
+
+- `409 Conflict` → Reservation en conflit (dates)
+- `404 Not Found` → Reservation n'exite pas
+- `500 Internal Server Error` → Erreur serveur
