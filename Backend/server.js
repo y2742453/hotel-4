@@ -58,9 +58,8 @@ app.use(passport.session());
 app.use(express.static('public'));
 
 
-// =======================
 // ROUTES AUTHENTIFICATION
-// =======================
+
 
 // Inscription d'un utilisateur
 const roleToId = {
@@ -74,10 +73,10 @@ app.post('/api/inscription', userNotAuth, emailEstValide, motDePasseEstValide, a
   try {
     const { nom, prenom, email, motDePasse, role } = req.body;
 
-    // ✅ par défaut Organisateur
+    // par défaut Organisateur
     let id_role = 2;
 
-    // ✅ si un role est fourni, on le convertit
+    //  si un role est fourni, on le convertit
     if (role && roleToId[role]) {
       id_role = roleToId[role];
     }
@@ -92,69 +91,57 @@ app.post('/api/inscription', userNotAuth, emailEstValide, motDePasseEstValide, a
   }
 });
 
+/**
+ * Route de connexion
+ */
 
+app.post('/api/connexion', userNotAuth, (request, response, next) => {
+  passport.authenticate('local', (error, user, info) => {
+    if (error) {
+      return next(error);
+    }
 
-//  Connexion
-app.post(
-  '/api/connexion',
-  userNotAuth,
-  emailEstValide,
-  motDePasseEstValide,
-  (request, response, next) => {
-    passport.authenticate('local', (error, user, info) => {
+    if (!user) {
+      return response.status(401).json(info);
+    }
+
+    request.logIn(user, (error) => {
       if (error) {
         return next(error);
       }
 
-      if (!user) {
-        return response.status(401).json(info);
-      }
-
-      request.logIn(user, (error) => {
-        if (error) {
-          return next(error);
+      response.status(200).json({
+        message: 'Connexion réussie',
+        user: {
+          id: user.id_user,
+          email: user.email,
+          id_role: user.id_role
         }
-
-        response.status(200).json({
-          message: 'Connexion réussie',
-          user: {
-            id: user.id,
-            nom: user.nom,
-            prenom: user.prenom,
-            role: user.role
-          }
-        });
       });
-    })(request, response, next);
-  }
-);
+    });
+  })(request, response, next);
+});
+
 
 // Déconnexion
-app.post(
-  '/api/deconnexion',
-  userAuth,
-  (request, response, next) => {
-    request.logOut((error) => {
-      if (error) {
-        next(error);
-      } else {
-        response.status(200).end();
-      }
+app.post('/api/deconnexion', userAuth, (req, res, next) => {
+  req.logout((err) => {
+    if (err) return next(err);
+      return res.sendStatus(200);
     });
-  }
-);
+});
 
-// =======================
+
+
 // ROUTE DE TEST PROTÉGÉE
-// =======================
+
 
 app.get('/api/me', userAuth, (request, response) => {
   response.json(request.user);
 });
 
-// =======================
+
 // DÉMARRAGE DU SERVEUR
-// =======================
 
 app.listen(process.env.PORT, () => {
   console.log('Serveur démarré :');

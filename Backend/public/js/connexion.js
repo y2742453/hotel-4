@@ -18,7 +18,7 @@ document.getElementById('form-inscription').addEventListener('submit', async (e)
 
   // validation simple
   if (!nom || !prenom || !isEmailValid(email) || !isMotDePasseValid(motDePasse)) {
-    message.textContent = "Champs invalides (nom/prénom requis, email valide, mdp 8+)";
+    message.textContent = "Champs invalides";
     return;
   }
 
@@ -53,9 +53,9 @@ document.getElementById('form-connexion').addEventListener('submit', async (e) =
     });
 
     if (response.status === 200) {
-        message.textContent = "Connexion réussie 🎉";
+        message.textContent = "Connexion réussie ";
     } else {
         const error = await response.json();
-        message.textContent = error?.error || "Connexion échouée ";
+        message.textContent ="Connexion échouée ";
     }
 });

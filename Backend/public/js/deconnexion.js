@@ -1,13 +1,12 @@
 document.getElementById('btn-deconnexion').addEventListener('click', async () => {
-    const message = document.getElementById('deconnexion-message');
+  const msg = document.getElementById('deconnexion-message');
 
-    const response = await fetch('/api/deconnexion', {
-        method: 'POST'
-    });
+  const response = await fetch('/api/deconnexion', {
+    method: 'POST',
+    credentials: 'include'
+  });
 
-    if (response.status === 200) {
-        message.textContent = "Déconnexion réussie ";
-    } else {
-        message.textContent = "Erreur lors de la déconnexion";
-    }
+  msg.textContent = (response.status === 200)
+    ? "Déconnexion réussie"
+    : "Erreur lors de la déconnexion";
 });

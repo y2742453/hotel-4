@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
-import { findUserByEmail } from './modele/user.js';
+import { findUserByEmail,findUserById } from './modele/user.js';
 
 /**
  * Configuration générale de la stratégie locale
@@ -14,6 +14,7 @@ const config = {
 
 /**
  * Stratégie d'authentification locale
+ * 
  */
 passport.use(
   new LocalStrategy(config, async (email, motDePasse, done) => {
@@ -50,16 +51,18 @@ passport.use(
   })
 );
 
-passport.serializeUser((utilisateur, done) => {
-  done(null, utilisateur.id);
+passport.serializeUser((user, done) => {
+  done(null, user.id_user);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (id_user, done) => {
   try {
-    const user = await findUserById(id); // à créer si besoin
+    const user = await findUserById(id_user);
+    if (!user) return done(null, false);
     done(null, user);
   } catch (err) {
     done(err);
   }
 });
+
 export default passport;
