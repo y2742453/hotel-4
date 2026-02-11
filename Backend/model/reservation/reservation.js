@@ -8,12 +8,7 @@ import db from "../../db/db.js";
  * @param {number} idReservationExclue - Optionnel : ID d'une réservation à exclure (utile pour les mises à jour).
  * @returns {Promise<boolean>} Retourne `true` s'il y a conflit de réservation, `false` sinon.
  */
-export async function hasConflict(
-  idSalle,
-  dateDebut,
-  dateFin,
-  idReservationExclue = null,
-) {
+export async function hasConflict(idSalle, dateDebut, dateFin) {
   let query = `
     SELECT COUNT(*) AS count
     FROM reservations
@@ -23,11 +18,6 @@ export async function hasConflict(
   `;
 
   const params = [idSalle, dateFin, dateDebut];
-
-  if (idReservationExclue) {
-    query += " AND id_reservation != ?";
-    params.push(idReservationExclue);
-  }
 
   const [rows] = await db.execute(query, params);
   return rows[0].count > 0;
@@ -61,40 +51,6 @@ export async function addReservation(reservation) {
   );
 
   return result.insertId;
-}
-
-/**
- * Met à jour une réservation
- * @param {number} idReservation L'ID de la réservation à mettre à jour.
- * @param {Object} reservation Les nouvelles données de la réservation.
- * @returns {Promise<boolean>} `true` si la mise à jour a réussi, `false` sinon.
- */
-export async function updateReservation(idReservation, reservation) {
-  const conflict = await hasConflict(
-    reservation.idSalle,
-    reservation.dateDebut,
-    reservation.dateFin,
-    idReservation,
-  );
-
-  if (conflict) {
-    throw new Error("RESERVATION_CONFLICT");
-  }
-
-  const [result] = await db.execute(
-    `UPDATE reservations
-     SET id_salle = ?, id_evenement = ?, date_debut = ?, date_fin = ?
-     WHERE id_reservation = ?`,
-    [
-      reservation.idSalle,
-      reservation.idEvenement,
-      reservation.dateDebut,
-      reservation.dateFin,
-      idReservation,
-    ],
-  );
-
-  return result.affectedRows > 0;
 }
 
 /**

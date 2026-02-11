@@ -10,9 +10,10 @@ import {
   addReservation,
   getReservationsBySalle,
   getReservationById,
-  updateReservation,
   deleteReservation,
 } from "./model/reservation/reservation.js";
+import { getAllSalles } from "./model/salle/salle.js";
+import { getAllEvenements } from "./model/evenement/evenement.js";
 
 // Création du serveur
 const app = express();
@@ -39,27 +40,6 @@ app.post("/api/reservation", async (request, response) => {
   }
 });
 
-// Route pour mettre a jour une reservation
-app.put("/api/reservation/:id", async (request, response) => {
-  try {
-    const updated = await updateReservation(request.params.id, request.body);
-
-    if (!updated) {
-      return response.status(404).json({ error: "Réservation introuvable" });
-    }
-
-    response
-      .status(200)
-      .json({ message: "Reservation mis à jour avec succés" });
-  } catch (error) {
-    if (error.message === "RESERVATION_CONFLICT") {
-      response.status(409).json({ error: "Conflit de réservation" });
-    } else {
-      response.status(500).json({ error: "Erreur serveur" });
-    }
-  }
-});
-
 // Route pour supprimer une reservation
 app.delete("/api/reservation/:id", async (request, response) => {
   try {
@@ -69,7 +49,27 @@ app.delete("/api/reservation/:id", async (request, response) => {
       return response.status(404).json({ error: "Réservation introuvable" });
     }
 
-    response.status(204).send();
+    response.status(200).json({ message: "Réservation supprimé avec succés" });
+  } catch (error) {
+    response.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Route pour obtenir la liste des salles
+app.get("/api/salles", async (request, response) => {
+  try {
+    const salles = await getAllSalles();
+    response.status(200).json(salles);
+  } catch (error) {
+    response.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Route pour obtenir la liste des evenements
+app.get("/api/evenements", async (request, response) => {
+  try {
+    const evenements = await getAllEvenements();
+    response.status(200).json(evenements);
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
   }
