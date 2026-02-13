@@ -59,3 +59,23 @@ export function userNotAuthRedirect(request, response, next) {
     // Utilisateur connecté → redirection vers l'accueil
     response.redirect('/');
 }
+
+/**
+ * Middleware pour restreindre l'accès à une route d'API
+ * à certains rôles d'utilisateurs.
+ */
+export function allowRoles(...rolesAutorises) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Non connecté" });
+    }
+
+    if (!rolesAutorises.includes(req.user.id_role)) {
+      return res.status(403).json({ message: "Accès interdit" });
+    }
+
+    next();
+  };
+}
+
+

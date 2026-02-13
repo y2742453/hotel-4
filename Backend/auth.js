@@ -50,7 +50,10 @@ passport.use(
     }
   })
 );
-
+/**
+ * Sérialisation de l'utilisateur dans la session
+ * On stocke uniquement son id_user pour minimiser les données en session
+ */
 passport.serializeUser((user, done) => {
   done(null, user.id_user);
 });

@@ -1,0 +1,5 @@
+.tableWrap{ background:#fff; border:1px solid var(--bord); border-radius:12px; overflow:hidden; }
+.table{ width:100%; border-collapse:collapse; }
+.table th, .table td{ padding:12px; border-bottom:1px solid var(--bord); text-align:left; }
+.table th{ background:#f8fafc; }
+.table tr:hover{ background:#f6f9ff; }

@@ -1,0 +1,22 @@
+.authPage{ display:flex; justify-content:center; padding:40px 12px; }
+.authCard{
+  background:#fff; border:1px solid var(--bord); border-radius:12px;
+  padding:22px; width:420px; box-shadow:0 8px 24px rgba(0,0,0,.06);
+}
+.form{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+input, select{
+  padding:10px; border:1px solid var(--bord); border-radius:8px;
+  outline:none;
+}
+input:focus, select:focus{ border-color: var(--bleu); }
+
+.btn{ padding:10px 12px; border-radius:8px; border:1px solid var(--bord); cursor:pointer; }
+.btnPrimary{ background:var(--bleu); color:#fff; border-color:var(--bleu); }
+.btnGhost{ background:#fff; }
+
+.msg{ padding:10px; border-radius:8px; margin-top:10px; }
+.msgError{ background:#ffe8e6; color:var(--erreur); border:1px solid #f5b5ae; }
+.msgSuccess{ background:var(--bleu-clair); color:var(--succes); border:1px solid #bcd6ff; }
+
+.formRow{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.formRow input, .formRow select{ flex:1; min-width:160px; }
