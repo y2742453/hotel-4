@@ -1,60 +1,214 @@
-/* ===== Layout ===== */
+/* ===== CONTAINER PRINCIPAL ===== */
 .calendar-container {
   max-width: 1200px;
-  margin: 10px auto;
-  padding: 14px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Ubuntu, Cantarell;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+.calendar-container h1 {
   text-align: center;
-  color: #1f2937;
-  margin-bottom: 30px;
-  font-weight: 600;
+  margin: 0 0 24px 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+/* ===== MESSAGES ===== */
+.message {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .message-error {
-  margin: 20px;
-  text-align: center;
-  color: crimson;
+  background-color: #fee;
+  color: #c00;
+  border: 1px solid #fcc;
 }
 
-/* ===== Salle selector ===== */
+.message-success {
+  background-color: #efe;
+  color: #0a0;
+  border: 1px solid #cfc;
+}
+
+.modal-error {
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #fee;
+  color: #c00;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ===== FILTRES ===== */
+.filters-section {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.filters-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.filters-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.btn-reset-filters {
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 24px;
+}
+
+.btn-reset-filters:hover {
+  background: #f0f0f0;
+}
+
+.filter-count {
+  margin-top: 10px;
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* ===== SÉLECTEUR DE SALLE ===== */
 .salle-selector {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
+  gap: 15px;
   margin-bottom: 20px;
-  padding: 12px 16px;
 }
 
 .salle-selector label {
   font-weight: 600;
-  color: #374151;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Ubuntu, Cantarell;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
+  color: #333;
 }
 
 .salle-selector select {
-  padding: 8px 14px;
-  font-size: 1rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Ubuntu, Cantarell;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
   background: white;
-  cursor: pointer;
+  font-size: 1rem;
+  min-width: 250px;
 }
 
-/* ===== Modal ===== */
+.salle-selector select:hover {
+  border-color: #3b82f6;
+}
+
+.salle-selector select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* ===== DÉTAILS DE LA SALLE ===== */
+.salle-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.details-card {
+  border-left: 4px solid #3b82f6;
+  padding-left: 15px;
+}
+
+.details-card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.details-card p {
+  margin: 8px 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.details-card strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.status.available {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status.unavailable {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== MODALS ===== */
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,183 +219,238 @@ h1 {
   background: white;
   padding: 28px;
   width: 90%;
-  max-width: 420px;
+  max-width: 450px;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.2s ease-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .modal h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #1f2937;
-  font-weight: 600;
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 1.4rem;
+  color: #333;
 }
 
-/* Modal form elements */
-.modal form > * {
-  margin-bottom: 12px; /* consistent spacing */
+/* Formulaires */
+.modal .form-group {
+  margin-bottom: 15px;
 }
 
-.modal label {
+.modal .form-group label {
   display: block;
-  margin-bottom: 5px;
   font-weight: 600;
-  color: #4b5563;
+  color: #555;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
 }
 
 .modal input,
 .modal select {
   width: 100%;
-  padding: 8px 10px;
-  font-size: 1rem;
+  padding: 10px;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
-  box-sizing: border-box;
-  background: white;
-  cursor: pointer;
+  font-size: 1rem;
 }
 
-/* ===== Modal buttons ===== */
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Boutons des modals */
 .modal-buttons {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .modal-buttons button {
-  padding: 10px 22px;
-  font-size: 0.95rem;
-  border-radius: 6px;
+  flex: 1;
+  padding: 10px 16px;
   border: none;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.1s;
-}
-
-.modal-buttons button[type="button"] {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.modal-buttons button[type="submit"] {
-  background: #22c55e;
-  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
 }
 
 .modal-buttons button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.modal-buttons button[type="submit"]:hover {
-  background: #16a34a;
+.modal-buttons button[type="button"]:not(.btn-delete):not(.btn-confirm) {
+  background: #e5e7eb;
+  color: #333;
 }
 
-/* ===== Event Modal ===== */
-.modal-event h2 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: #1f2937;
-  font-weight: 600;
-  font-size: 1.5rem;
-  text-align: center;
+.modal-buttons button[type="button"]:hover {
+  background: #d1d5db;
 }
 
-.modal-event p {
-  margin-bottom: 20px;
-  color: #4b5563;
-  font-size: .95rem;
-  text-align: center;
-  line-height: 1.4;
-}
-
-.modal-event .modal-buttons {
-  margin-top: 30px;
-  justify-content: space-between;
-}
-
-.modal-event .modal-buttons button.delete {
-  background: #ef4444; /* red */
+.modal-buttons button[type="submit"],
+.modal-buttons .btn-confirm {
+  background: #22c55e;
   color: white;
 }
 
-.modal-event .modal-buttons button.delete:hover {
-  background: #dc2626; /* darker red */
+.modal-buttons button[type="submit"]:hover,
+.modal-buttons .btn-confirm:hover {
+  background: #16a34a;
 }
 
-.modal-event .modal-buttons button {
-  padding: 8px 20px;
+.modal-buttons .btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.modal-buttons .btn-delete:hover {
+  background: #dc2626;
+}
+
+.modal-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal événement */
+.modal-event {
+  max-width: 550px;
+}
+
+.modal-event .event-dates {
+  color: #666;
   font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 15px;
 }
 
-/* ===== FullCalendar overrides ===== */
-.fc {
-  font-size: 0.9rem;
+.modal-event .event-description {
+  margin-top: 15px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-left: 3px solid #3b82f6;
+  border-radius: 6px;
+  color: #555;
+  font-size: 0.95rem;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
+.confirmation-dates {
+  background: #f0fdf4;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  border-left: 3px solid #22c55e;
+}
+
+/* ===== FULLCALENDAR ===== */
 .fc .fc-toolbar-title {
   font-size: 1.3rem;
   font-weight: 600;
+  color: #333;
 }
 
 .fc .fc-button {
   background: #f3f4f6;
   border: 1px solid #d1d5db;
-  color: #374151;
-  font-weight: 400;
-  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
 }
 
-.fc .fc-button-primary:not(:disabled).fc-button-active {
-  background: #2563eb;
-  border-color: #2563eb;
+.fc .fc-button:hover {
+  background: #333 !important;
 }
 
-.fc-event {
-  border-radius: 6px;
-  padding: 4px 6px; /* slightly more padding */
-  cursor: pointer;
-  font-size: 0.85rem;
-  background-color: #4caf50 !important;
-  border: none;
+.fc .fc-button-active {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Événements dans le calendrier */
+.fc .fc-event {
+  background: #3b82f6 !important;
+  border: none !important;
+  border-left: 4px solid #1d4ed8 !important;
+  border-radius: 6px !important;
   color: white;
-  transition: filter 0.15s;
+  padding: 4px 8px;
+  font-weight: 500;
 }
 
-.fc-event:hover {
-  filter: brightness(0.9);
+.fc .fc-event:hover {
+  background: #2563eb !important;
+  cursor: pointer;
+}
+
+.fc .fc-day-today {
+  background: #eff6ff !important;
 }
 
 .fc-timegrid-slot {
   height: 45px;
 }
 
-.fc-timegrid-axis {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-/* Highlight today */
-.fc .fc-day-today {
-  background-color: #e3f2fd !important; /* light blue */
-  color: #1976d2;
-  font-weight: bold;
-}
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .calendar-container {
+    padding: 16px;
+  }
+
+  .calendar-container h1 {
+    font-size: 1.4rem;
+  }
+
+  .filters-row {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    min-width: 100%;
+  }
+
+  .btn-reset-filters {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .salle-selector {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .salle-selector select {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .modal-buttons button {
+    width: 100%;
+  }
+
   .fc .fc-toolbar {
     flex-direction: column;
-    gap: 6px;
-  }
-
-  .fc .fc-toolbar-title {
-    font-size: 1.2rem;
-  }
-
-  .fc .fc-button {
-    padding: 4px 8px;
-    font-size: 0.85rem;
+    gap: 10px;
   }
 }

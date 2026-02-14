@@ -29,6 +29,15 @@ export async function hasConflict(idSalle, dateDebut, dateFin) {
  * @returns {Promise<number>} L'ID de la réservation créée.
  */
 export async function addReservation(reservation) {
+  const [salleRows] = await db.query(
+    "SELECT statut FROM salles WHERE id_salle = ?",
+    [reservation.idSalle],
+  );
+
+  if (salleRows[0].statut !== "Disponible") {
+    throw new Error("SALLE_INDISPONIBLE");
+  }
+
   const conflict = await hasConflict(
     reservation.idSalle,
     reservation.dateDebut,
@@ -88,7 +97,10 @@ export async function getReservationById(idReservation) {
  */
 export async function getReservationsBySalle(idSalle) {
   const [rows] = await db.execute(
-    `SELECT r.*, e.nom_evenement
+    `SELECT 
+        r.*, 
+        e.nom_evenement,
+        e.description
      FROM reservations r
      JOIN evenements e ON r.id_evenement = e.id_evenement
      WHERE r.id_salle = ?

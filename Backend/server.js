@@ -34,6 +34,8 @@ app.post("/api/reservation", async (request, response) => {
   } catch (error) {
     if (error.message === "RESERVATION_CONFLICT") {
       response.status(409).json({ error: "Conflit de réservation" });
+    } else if (error.message === "SALLE_INDISPONIBLE") {
+      response.status(400).json({ error: "Salle indisponible" });
     } else {
       response.status(500).json({ error: "Erreur serveur" });
     }
