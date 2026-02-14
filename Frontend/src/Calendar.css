@@ -25,9 +25,12 @@
 }
 
 .message-error {
+  padding: 20px;
   background-color: #fee;
   color: #c00;
   border: 1px solid #fcc;
+  border-radius: 6px;
+  text-align: center;
 }
 
 .message-success {
