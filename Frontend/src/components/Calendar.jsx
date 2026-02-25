@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -51,8 +51,8 @@ const Calendar = () => {
     return dateString.replace("T", " ") + ":00";
   };
 
-  // Extraire tous les équipements uniques (pour dropdown plus tard si besoin)
-  const tousLesEquipements = useMemo(() => {
+  // Extraire tous les équipements uniques
+  const tousLesEquipements = (() => {
     const equipementsSet = new Set();
 
     salles.forEach((salle) => {
@@ -65,38 +65,36 @@ const Calendar = () => {
     });
 
     return Array.from(equipementsSet).sort();
-  }, [salles]);
+  })();
 
-  // Filtrer les salles avec useMemo pour éviter les recalculs
-  const sallesFiltrees = useMemo(() => {
-    return salles.filter((salle) => {
-      // Seulement les salles disponibles
-      if (salle.statut !== "Disponible") {
+  // Filtrer les salles
+  const sallesFiltrees = salles.filter((salle) => {
+    // Seulement les salles disponibles
+    if (salle.statut !== "Disponible") {
+      return false;
+    }
+
+    // Filtre par capacité
+    if (filtreCapacite && salle.capacite < Number(filtreCapacite)) {
+      return false;
+    }
+
+    // Filtre par équipement
+    if (filtreEquipement) {
+      const equipements = (salle.equipements || "").toLowerCase();
+      const recherche = filtreEquipement.toLowerCase().trim();
+
+      const listeEquipements = equipements.split(",").map((e) => e.trim());
+
+      const trouve = listeEquipements.some((eq) => eq.includes(recherche));
+
+      if (!trouve) {
         return false;
       }
+    }
 
-      // Filtre par capacité
-      if (filtreCapacite && salle.capacite < Number(filtreCapacite)) {
-        return false;
-      }
-
-      // Filtre par équipement
-      if (filtreEquipement) {
-        const equipements = (salle.equipements || "").toLowerCase();
-        const recherche = filtreEquipement.toLowerCase().trim();
-
-        const listeEquipements = equipements.split(",").map((e) => e.trim());
-
-        const trouve = listeEquipements.some((eq) => eq.includes(recherche));
-
-        if (!trouve) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [salles, filtreCapacite, filtreEquipement]);
+    return true;
+  });
 
   // Gestion du resize
   useEffect(() => {
