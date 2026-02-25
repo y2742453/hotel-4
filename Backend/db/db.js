@@ -1,21 +1,21 @@
-// Backend/db/db.js
-import mysql from 'mysql2';
-import dotenv from 'dotenv';
+import 'dotenv/config'
+import mysql from 'mysql2/promise'
 
-dotenv.config();
-
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+  connectionLimit: 10
+})
 
-console.log('Pool MySQL initialisé');
+try {
+  const conn = await pool.getConnection()
+  console.log("Connecté à la base de données MySQL")
+  conn.release()
+} catch (err) {
+  console.error("Erreur de connexion MySQL :", err.message)
+}
 
-export default pool.promise();
+
