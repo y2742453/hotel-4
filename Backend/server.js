@@ -51,7 +51,7 @@ app.delete("/api/reservation/:id", async (request, response) => {
       return response.status(404).json({ error: "Réservation introuvable" });
     }
 
-    response.status(200).json({ message: "Réservation supprimé avec succés" });
+    response.status(204).json({ message: "Réservation supprimé avec succés" });
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
   }
