@@ -1,85 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Test Auth</title>
-    <link rel="stylesheet" href="css/user.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frontend - Gestion Salles</title>
+  <link rel="stylesheet" href="/app.css">
 </head>
 <body>
+  <header>
+    <h1>Gestion Salles - Frontend de Test</h1>
+    <nav>
+      <button id="tab-salles">Salles</button>
+      <button id="tab-services">Services</button>
+      <button id="tab-evenements">Événements</button>
+    </nav>
+  </header>
 
-<h1>Test Authentification</h1>
-
-   <section>
-    <h2>Inscription</h2>
-    <form id="form-inscription">
-
-        <input
-            type="text"
-            id="inscription-nom"
-            placeholder="Nom"
-            
-        >
-
-        <input
-            type="text"
-            id="inscription-prenom"
-            placeholder="Prénom"
-           
-        >
-
-        <input
-            type="email"
-            id="inscription-email"
-            placeholder="Email"
-           
-        >
-
-        <input
-            type="password"
-            id="inscription-password"
-            placeholder="Mot de passe (min. 8 caractères)"
-           
-        >
-
-        <!-- RÔLE OPTIONNEL -->
-        <select id="inscription-role">
-            <!-- <option value="">choisir un rôle</option> -->
-            <option value="Administrateur">Administrateur</option>
-            <option value="Organisateur" selected>Organisateur</option>
-            <option value="Coordonnateur">Coordonnateur</option>
-            <option value="Comptabilite">Comptabilité</option>
+  <main>
+    <section id="salles" class="tab">
+      <h2>Salles</h2>
+      <form id="form-salle">
+        <input type="hidden" id="salle-id">
+        <input id="salle-nom" placeholder="Nom salle" required>
+        <input id="salle-capacite" type="number" placeholder="Capacité">
+        <input id="salle-equipements" placeholder="Équipements (csv)">
+        <select id="salle-statut">
+          <option value="disponible">disponible</option>
+          <option value="indisponible">indisponible</option>
         </select>
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="salle-reset">Réinitialiser</button>
+      </form>
+      <div id="liste-salles"></div>
+    </section>
 
-        <button type="submit">S'inscrire</button>
-    </form>
+    <section id="services" class="tab" style="display:none">
+      <h2>Services</h2>
+      <form id="form-service">
+        <input type="hidden" id="service-id">
+        <input id="service-nom" placeholder="Nom service" required>
+        <input id="service-desc" placeholder="Description">
+        <input id="service-tarif" type="number" step="0.01" placeholder="Tarif">
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="service-reset">Réinitialiser</button>
+      </form>
+      <div id="liste-services"></div>
+    </section>
 
-    <p id="inscription-message"></p>
-</section>
+    <section id="evenements" class="tab" style="display:none">
+      <h2>Événements</h2>
+      <form id="form-evenement">
+        <input id="evt-nom" placeholder="Nom événement" required>
+        <input id="evt-type" placeholder="Type">
+        <textarea id="evt-desc" placeholder="Description"></textarea>
+        <label>Date début<input id="evt-debut" type="datetime-local" required></label>
+        <label>Date fin<input id="evt-fin" type="datetime-local" required></label>
+        <select id="evt-salle"></select>
+        <select id="evt-services" multiple></select>
+        <input id="evt-organisateur" type="number" placeholder="ID organisateur" required>
+        <button type="submit">Créer événement</button>
+      </form>
+      <div id="liste-evenements"></div>
+    </section>
+  </main>
 
-<hr>
+  <footer>
+    <small>Frontend pour tester l'API.</small>
+  </footer>
 
-<section>
-    <h2>Connexion</h2>
-    <form id="form-connexion">
-        <input type="email" id="connexion-email" placeholder="Email" required>
-        <input type="password" id="connexion-password" placeholder="Mot de passe" required>
-        <button type="submit">Se connecter</button>
-    </form>
-    <p id="connexion-message"></p>
-</section>
-
-<hr>
-
-<section>
-    <h2>Déconnexion</h2>
-    <button id="btn-deconnexion">Se déconnecter</button>
-    <p id="deconnexion-message"></p>
-</section>
-
-<script type="module" src="/js/validation.js"></script>
-<script type="module" src="/js/connexion.js"></script>
-<script type="module" src="/js/deconnexion.js"></script>
-<script type="module" src="/js/home.js"></script>
-
+  <script src="/app.js"></script>
 </body>
 </html>
