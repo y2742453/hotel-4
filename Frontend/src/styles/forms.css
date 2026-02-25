@@ -1,22 +1,74 @@
-.authPage{ display:flex; justify-content:center; padding:40px 12px; }
-.authCard{
-  background:#fff; border:1px solid var(--bord); border-radius:12px;
-  padding:22px; width:420px; box-shadow:0 8px 24px rgba(0,0,0,.06);
+/* src/styles/forms.css */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.form{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
-input, select{
-  padding:10px; border:1px solid var(--bord); border-radius:8px;
-  outline:none;
+
+label {
+  font-weight: 700;
+  color: #0f172a;
 }
-input:focus, select:focus{ border-color: var(--bleu); }
 
-.btn{ padding:10px 12px; border-radius:8px; border:1px solid var(--bord); cursor:pointer; }
-.btnPrimary{ background:var(--bleu); color:#fff; border-color:var(--bleu); }
-.btnGhost{ background:#fff; }
+input, select {
+  width: 100%;
+  border: 1px solid #d7e1ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
 
-.msg{ padding:10px; border-radius:8px; margin-top:10px; }
-.msgError{ background:#ffe8e6; color:var(--erreur); border:1px solid #f5b5ae; }
-.msgSuccess{ background:var(--bleu-clair); color:var(--succes); border:1px solid #bcd6ff; }
+input:focus, select:focus {
+  border-color: #1e4db7;
+  box-shadow: 0 0 0 3px rgba(30, 77, 183, 0.15);
+}
 
-.formRow{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-.formRow input, .formRow select{ flex:1; min-width:160px; }
+/* Page login */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border: 1px solid #e6edf6;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+}
+
+.authCard h1 {
+  font-size: 44px;
+  margin-bottom: 6px;
+}
+
+/* Form row (création user admin) */
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.formRow input, .formRow select {
+  flex: 1 1 200px;
+  min-width: 190px;
+}
+
+.formRow .btn {
+  flex: 0 0 120px;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .authCard h1 { font-size: 34px; }
+  .formRow .btn { flex: 1 1 100%; }
+}

@@ -2,8 +2,9 @@
 import db from '../db/db.js';
 import bcrypt from 'bcrypt';
 
-// ✅ Trouver un user par email (pour passport)
+//  Trouver un user par email (pour passport)
 export const findUserByEmail = async (email) => {
+  try {
   const sql = `
     SELECT id_user, nom, prenom, email, mot_de_passe, actif, id_role, date_creation
     FROM users
@@ -12,9 +13,12 @@ export const findUserByEmail = async (email) => {
   `;
   const [rows] = await db.execute(sql, [email]);
   return rows[0];
+}catch (error) {
+  console.error("Erreur lors de la recherche d'utilisateur par email:", error);
+  throw error;
 };
-
-// ✅ Trouver un user par ID (pour deserializeUser)
+};
+//  Trouver un user par ID (pour deserializeUser)
 export const findUserById = async (id_user) => {
   const sql = `
     SELECT id_user, nom, prenom, email, actif, id_role, date_creation
@@ -26,7 +30,7 @@ export const findUserById = async (id_user) => {
   return rows[0];
 };
 
-// ✅ Liste des utilisateurs avec le nom du rôle
+//  Liste des utilisateurs avec le nom du rôle
 export const getUsers = async () => {
   const sql = `
     SELECT 
@@ -47,7 +51,7 @@ export const getUsers = async () => {
   return rows;
 };
 
-// ✅ Ajouter utilisateur (id_role par défaut = 2)
+//  Ajouter utilisateur (id_role par défaut = 2)
 export async function addUtilisateur(nom, prenom, email, motDePasse, id_role = 2) {
   const motDePasseEncrypte = await bcrypt.hash(motDePasse, 10);
 
@@ -67,4 +71,29 @@ export async function addUtilisateur(nom, prenom, email, motDePasse, id_role = 2
   ]);
 
   return result.insertId;
+}
+
+//  Activer/désactiver utilisateur
+
+export async function updateUserActif(id_user, actif) {
+  const sql = `
+    UPDATE users
+    SET actif = ?
+    WHERE id_user = ?
+  `;
+  const [result] = await db.execute(sql, [actif, id_user]);
+  return result.affectedRows; // 1 si OK, 0 si user introuvable
+}
+
+export async function updateUser(id_user, { nom, prenom, email, id_role }) {
+  await db.execute(
+    `UPDATE users 
+     SET nom=?, prenom=?, email=?, id_role=?
+     WHERE id_user=?`,
+    [nom, prenom, email, id_role, id_user]
+  );
+}
+
+export async function deleteUser(id_user) {
+  await db.execute(`DELETE FROM users WHERE id_user=?`, [id_user]);
 }

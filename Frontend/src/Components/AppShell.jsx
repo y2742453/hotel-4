@@ -4,20 +4,27 @@ import { NavLink, Outlet } from 'react-router-dom';
 import useAuth from '../auth/UseAuth.jsx';
 import '../styles/shell.css';
 
-const roleLabel = (id_role) => {
-  // adapte à ta table roles
+// Icônes (FontAwesome via react-icons)
+import { FaChartBar, FaUsers, FaUserShield, FaCalendarAlt, FaFileInvoiceDollar } from 'react-icons/fa';
+
+function roleLabel(id_role) {
   if (id_role === 1) return 'Administrateur';
   if (id_role === 2) return 'Organisateur';
   if (id_role === 3) return 'Coordonnateur';
   if (id_role === 4) return 'Comptabilité';
   return 'Utilisateur';
-};
+}
+
+function linkClass({ isActive }) {
+  return isActive ? 'link active' : 'link';
+}
 
 export default function AppShell() {
   const { user, logout } = useAuth();
-
-  // Menu selon rôle
   const isAdmin = user?.id_role === 1;
+  const isOrganisateur = user?.id_role === 2;
+  const isCoordonnateur = user?.id_role === 3;
+  const isCompta = user?.id_role === 4;
 
   return (
     <div className="shell">
@@ -28,15 +35,67 @@ export default function AppShell() {
         </div>
 
         <nav className="menu">
-          {isAdmin ? (
+          {isAdmin && (
             <>
-              <NavLink to="/admin" className="link">Dashboard</NavLink>
-              <NavLink to="/admin/users" className="link">Utilisateurs</NavLink>
-              <NavLink to="/admin/roles" className="link">Rôles & permissions</NavLink>
+              <NavLink to="/admin" end className={linkClass}>
+                <span className="ico"><FaChartBar /></span>
+                Dashboard
+              </NavLink>
+
+              <NavLink to="/admin/users" className={linkClass}>
+                <span className="ico"><FaUsers /></span>
+                Utilisateurs et rôles
+              </NavLink>
+
+              {/* futurs écrans admin (même si pas encore dev) */}
+              <NavLink to="/admin/evenements" className={linkClass}>
+                <span className="ico"><FaCalendarAlt /></span>
+                Événements
+              </NavLink>
+
+              <NavLink to="/admin/facturation" className={linkClass}>
+                <span className="ico"><FaFileInvoiceDollar /></span>
+                Facturation
+              </NavLink>
             </>
-          ) : (
+          )}
+
+          {isOrganisateur && (
             <>
-              <NavLink to="/app" className="link">Mon espace</NavLink>
+              <NavLink to="/organisateur" className={linkClass}>
+                <span className="ico"><FaChartBar /></span>
+                Dashboard
+              </NavLink>
+              <NavLink to="/organisateur/evenements" className={linkClass}>
+                <span className="ico"><FaCalendarAlt /></span>
+                Mes événements
+              </NavLink>
+            </>
+          )}
+
+          {isCoordonnateur && (
+            <>
+              <NavLink to="/coordinateur" className={linkClass}>
+                <span className="ico"><FaChartBar /></span>
+                Dashboard
+              </NavLink>
+              <NavLink to="/coordinateur/planning" className={linkClass}>
+                <span className="ico"><FaCalendarAlt /></span>
+                Planning
+              </NavLink>
+            </>
+          )}
+
+          {isCompta && (
+            <>
+              <NavLink to="/comptabilite" className={linkClass}>
+                <span className="ico"><FaChartBar /></span>
+                Dashboard
+              </NavLink>
+              <NavLink to="/comptabilite/factures" className={linkClass}>
+                <span className="ico"><FaFileInvoiceDollar /></span>
+                Factures
+              </NavLink>
             </>
           )}
         </nav>
@@ -49,7 +108,7 @@ export default function AppShell() {
             <div className="userRole">{roleLabel(user?.id_role)}</div>
           </div>
 
-          <button className="btn btnGhost" onClick={logout}>
+          <button className="btn btnGhost" type="button" onClick={logout}>
             Déconnexion
           </button>
         </header>

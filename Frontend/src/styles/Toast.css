@@ -1,0 +1,80 @@
+/*comment centrer le toast en haut de la page centrer */
+
+.toastWrap {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+
+  pointer-events: none; /* important */
+}
+
+/* base */
+.toast {
+  min-width: 260px;
+  max-width: 320px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+  border-left: 5px solid #ccc;
+  cursor: pointer;
+  animation: toastIn 0.25s ease;
+}
+
+/* titre */
+.toastTitle {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* texte */
+.toastText {
+  font-size: 14px;
+  color: #475569;
+}
+
+/* ❌ erreur = rouge */
+.toastError {
+  border-left-color: #dc2626;
+}
+
+.toastError .toastTitle {
+  color: #dc2626;
+}
+
+/* ✅ succès = bleu */
+.toastSuccess {
+  border-left-color: #2563eb;
+}
+
+.toastSuccess .toastTitle {
+  color: #2563eb;
+}
+
+/* ℹ️ info = gris bleu */
+.toastInfo {
+  border-left-color: #64748b;
+}
+
+.toastInfo .toastTitle {
+  color: #334155;
+}
+
+/* animation */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

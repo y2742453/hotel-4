@@ -14,7 +14,7 @@ import passport from 'passport';
 import './auth.js';
 
 // Import modèles
-import { addUtilisateur,getUsers, } from './modele/user.js';
+import { addUtilisateur,getUsers,updateUser,updateUserActif,deleteUser } from './modele/user.js';
 
 // Import middlewares
 import {
@@ -142,16 +142,21 @@ app.post('/api/admin/users',
   motDePasseEstValide,
   async (request, response, next) => {
     try {
-      const { nom, prenom, email, motDePasse, id_role } = request.body;
+      const { nom, prenom, email, motDePasse, role } = request.body;
 
-      const roleFinal = id_role || 2; // par défaut Organisateur
+    // par défaut Organisateur
+    let id_role = 2;
 
-      await addUtilisateur(nom, prenom, email, motDePasse, roleFinal);
+    //  si un role est fourni, on le convertit
+    if (role && roleToId[role]) {
+      id_role = roleToId[role];
+    }
+      await addUtilisateur(nom, prenom, email, motDePasse, id_role);
 
-      res.sendStatus(201);
+      response.sendStatus(201);
 
     } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') return res.sendStatus(409);
+      if (error.code === 'ER_DUP_ENTRY') return response.sendStatus(409);
       next(error);
     }
 });
@@ -165,7 +170,55 @@ app.post('/api/deconnexion', userAuth, (request, response, next) => {
     });
 });
 
+/**
+ * Route pour activer/désactiver un utilisateur 
+ * 
+ * Reçoit dans le body : { actif: 0 ou 1 }  
+ */
+app.patch('/api/admin/users/:id_user/actif', userAuth, allowRoles(1), async (req, res, next) => {
+  try {
+    const id_user = Number(req.params.id_user);
+    const actif = Number(req.body.actif); // 0 ou 1
+    await updateUserActif(id_user, actif);
+    res.sendStatus(200);
+  } catch (e) { next(e); }
+});
 
+
+
+/**
+ * Route pour modifier les infos d'un utilisateur (nom, prenom, email, role)
+ * 
+ * Reçoit dans le body : { nom, prenom, email, id_role }
+ */
+app.patch('/api/admin/users/:id_user', userAuth, allowRoles(1), async (req, res, next) => {
+  try {
+    const id_user = Number(req.params.id_user);
+    const { nom, prenom, email, id_role } = req.body;
+
+    await updateUser(id_user, { nom, prenom, email, id_role });
+    res.sendStatus(200);
+  } catch (e) {
+    if (e && e.code === 'ER_DUP_ENTRY') return res.sendStatus(409);
+    next(e);
+  }
+});
+/**
+ * Route pour supprimer un utilisateur
+ */
+app.delete('/api/admin/users/:id_user', userAuth, allowRoles(1), async (req, res, next) => {
+  try {
+    const id_user = Number(req.params.id_user);
+
+    // éviter que l'admin supprime son propre compte
+    if (req.user?.id_user === id_user) {
+      return res.status(400).json({ message: "Impossible de supprimer votre propre compte." });
+    }
+
+    await deleteUser(id_user);
+    res.sendStatus(200);
+  } catch (e) { next(e); }
+});
 
 // ROUTE DE TEST PROTÉGÉE
 

@@ -1,0 +1,59 @@
+.dashGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.dashCard {
+  width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e7eef8;
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dashCard:hover { background: #f7fbff; }
+
+.dashCardDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dashIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #eaf1ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f4db8;
+  font-size: 18px;
+}
+
+.dashTitle { font-weight: 800; color: #0f172a; }
+.dashDesc { margin-top: 4px; color: #475569; font-size: 14px; }
+
+.dashBadge {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eaf1ff;
+  color: #1f4db8;
+}
+
+.dashCardDisabled .dashBadge {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+@media (max-width: 700px) {
+  .dashCard { width: 100%; }
+}
