@@ -1,0 +1,52 @@
+.shell { display: flex; min-height: 100vh; background: #f4f7fb; }
+
+.sidebar {
+  width: 280px;
+  background: #0f2f6b;
+  color: #fff;
+  padding: 18px;
+}
+
+.brandTitle { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.brandSub { margin-top: 6px; opacity: 0.9; }
+
+.menu { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  color: #eaf1ff;
+  text-decoration: none;
+  background: transparent;
+}
+
+.link:hover { background: rgba(255,255,255,0.10); }
+
+.link.active {
+  background: rgba(255,255,255,0.18); /* actif UNIQUEMENT */
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+.ico { width: 22px; display: flex; justify-content: center; }
+
+.main { flex: 1; display: flex; flex-direction: column; }
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e7eef8;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content { padding: 18px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .shell { flex-direction: column; }
+  .sidebar { width: 100%; }
+}

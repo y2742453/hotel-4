@@ -1,0 +1,130 @@
+/* src/styles/table.css */
+
+/* ----- TABLE WRAPPER (scroll seulement si nécessaire) ----- */
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+/* ----- TABLE ----- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #e9f0fb;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table thead th {
+  background: #f4f7ff;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.table tbody tr:hover {
+  background: #f7faff;
+}
+
+.rowDisabled {
+  opacity: 0.6;
+}
+
+/* ----- ACTIONS (boutons sur une ligne) ----- */
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap; /* 1 ligne */
+  white-space: wrap;
+}
+
+/* Base bouton (IMPORTANT: border 1px pour que border-color marche) */
+.btn {
+  min-width: 80px;
+  height: 28px;
+  padding: 0 10px;
+
+  border-radius: 10px;
+  border: 1px solid #d7dee8;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* ----- Variantes (plus spécifiques pour ne pas être écrasées) ----- */
+
+/* Neutre */
+.btn.btnGhost {
+  background-color: #ffffff;
+  border-color: #d7dee8;
+  color: #0f172a;
+}
+.btn.btnGhost:hover {
+  background-color: #eef3fb;
+  border-color: #c7d3ea;
+}
+
+/* Principal (Bleu) */
+.btn.btnPrimary {
+  background-color: #1f4db8;
+  border-color: #1f4db8;
+  color: #ffffff;
+}
+.btn.btnPrimary:hover {
+  background-color: #1a42a0;
+  border-color: #1a42a0;
+}
+
+/* Attention (Orange) */
+.btn.btnWarn {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+}
+.btn.btnWarn:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+}
+
+/* Danger (Rouge) */
+.btn.btnDanger {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+.btn.btnDanger:hover {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 900px) {
+  /* Sur petit écran, on autorise les boutons à passer à la ligne */
+  .actions {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .btn {
+    min-width: 100px;
+  }
+
+  /* La table peut scroller si elle déborde */
+  .tableWrap {
+    overflow-x: auto;
+  }
+}

@@ -1,12 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Test Auth</title>
+    <link rel="stylesheet" href="css/user.css">
 </head>
 <body>
-    <h1>Hello, World!</h1>
-    <p>le serveur est bien démarré sur le port {{../PORT}}</p>
+
+<h1>Test Authentification</h1>
+
+   <section>
+    <h2>Inscription</h2>
+    <form id="form-inscription">
+
+        <input
+            type="text"
+            id="inscription-nom"
+            placeholder="Nom"
+            
+        >
+
+        <input
+            type="text"
+            id="inscription-prenom"
+            placeholder="Prénom"
+           
+        >
+
+        <input
+            type="email"
+            id="inscription-email"
+            placeholder="Email"
+           
+        >
+
+        <input
+            type="password"
+            id="inscription-password"
+            placeholder="Mot de passe (min. 8 caractères)"
+           
+        >
+
+        <!-- RÔLE OPTIONNEL -->
+        <select id="inscription-role">
+            <!-- <option value="">choisir un rôle</option> -->
+            <option value="Administrateur">Administrateur</option>
+            <option value="Organisateur" selected>Organisateur</option>
+            <option value="Coordonnateur">Coordonnateur</option>
+            <option value="Comptabilite">Comptabilité</option>
+        </select>
+
+        <button type="submit">S'inscrire</button>
+    </form>
+
+    <p id="inscription-message"></p>
+</section>
+
+<hr>
+
+<section>
+    <h2>Connexion</h2>
+    <form id="form-connexion">
+        <input type="email" id="connexion-email" placeholder="Email" required>
+        <input type="password" id="connexion-password" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+    </form>
+    <p id="connexion-message"></p>
+</section>
+
+<hr>
+
+<section>
+    <h2>Déconnexion</h2>
+    <button id="btn-deconnexion">Se déconnecter</button>
+    <p id="deconnexion-message"></p>
+</section>
+
+<script type="module" src="/js/validation.js"></script>
+<script type="module" src="/js/connexion.js"></script>
+<script type="module" src="/js/deconnexion.js"></script>
+<script type="module" src="/js/home.js"></script>
+
 </body>
 </html>

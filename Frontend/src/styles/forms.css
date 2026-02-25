@@ -1,0 +1,74 @@
+/* src/styles/forms.css */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+input, select {
+  width: 100%;
+  border: 1px solid #d7e1ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input:focus, select:focus {
+  border-color: #1e4db7;
+  box-shadow: 0 0 0 3px rgba(30, 77, 183, 0.15);
+}
+
+/* Page login */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border: 1px solid #e6edf6;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+}
+
+.authCard h1 {
+  font-size: 44px;
+  margin-bottom: 6px;
+}
+
+/* Form row (création user admin) */
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.formRow input, .formRow select {
+  flex: 1 1 200px;
+  min-width: 190px;
+}
+
+.formRow .btn {
+  flex: 0 0 120px;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .authCard h1 { font-size: 34px; }
+  .formRow .btn { flex: 1 1 100%; }
+}
