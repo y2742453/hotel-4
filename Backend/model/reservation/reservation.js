@@ -1,4 +1,4 @@
-import db from "../../db/db.js";
+import { pool } from "../../db/db.js";
 
 /**
  * Vérifie s'il y a un conflit de réservation
@@ -19,7 +19,7 @@ export async function hasConflict(idSalle, dateDebut, dateFin) {
 
   const params = [idSalle, dateFin, dateDebut];
 
-  const [rows] = await db.execute(query, params);
+  const [rows] = await pool.execute(query, params);
   return rows[0].count > 0;
 }
 
@@ -29,7 +29,7 @@ export async function hasConflict(idSalle, dateDebut, dateFin) {
  * @returns {Promise<number>} L'ID de la réservation créée.
  */
 export async function addReservation(reservation) {
-  const [salleRows] = await db.query(
+  const [salleRows] = await pool.query(
     "SELECT statut FROM salles WHERE id_salle = ?",
     [reservation.idSalle],
   );
@@ -48,7 +48,7 @@ export async function addReservation(reservation) {
     throw new Error("RESERVATION_CONFLICT");
   }
 
-  const [result] = await db.execute(
+  const [result] = await pool.execute(
     `INSERT INTO reservations (id_salle, id_evenement, date_debut, date_fin)
      VALUES (?, ?, ?, ?)`,
     [
@@ -68,7 +68,7 @@ export async function addReservation(reservation) {
  * @returns {Promise<boolean>} `true` si la suppression a réussi, `false` sinon.
  */
 export async function deleteReservation(idReservation) {
-  const [result] = await db.execute(
+  const [result] = await pool.execute(
     `DELETE FROM reservations WHERE id_reservation = ?`,
     [idReservation],
   );
@@ -82,7 +82,7 @@ export async function deleteReservation(idReservation) {
  * @returns {Promise<Object|null>} L'objet réservation si trouvé, sinon `null`.
  */
 export async function getReservationById(idReservation) {
-  const [rows] = await db.execute(
+  const [rows] = await pool.execute(
     `SELECT * FROM reservations WHERE id_reservation = ?`,
     [idReservation],
   );
@@ -96,7 +96,7 @@ export async function getReservationById(idReservation) {
  * @returns {Promise<Array<Object>>} Un tableau de réservations.
  */
 export async function getReservationsBySalle(idSalle) {
-  const [rows] = await db.execute(
+  const [rows] = await pool.execute(
     `SELECT 
         r.*, 
         e.nom_evenement,

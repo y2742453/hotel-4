@@ -4,7 +4,7 @@ import {
   hasConflict,
   getReservationsBySalle,
 } from "../../model/reservation/reservation.js";
-import db from "../../db/db.js";
+import { pool } from "../../db/db.js";
 import { afterAll } from "@jest/globals";
 
 // Variables globales pour les tests
@@ -14,36 +14,36 @@ let testUser;
 
 beforeAll(async () => {
   // Netoyage des tables
-  await db.execute("SET FOREIGN_KEY_CHECKS = 0");
-  await db.execute("TRUNCATE TABLE reservations");
-  await db.execute("TRUNCATE TABLE evenements");
-  await db.execute("TRUNCATE TABLE salles");
-  await db.execute("TRUNCATE TABLE users");
-  await db.execute("SET FOREIGN_KEY_CHECKS = 1");
+  await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
+  await pool.execute("TRUNCATE TABLE reservations");
+  await pool.execute("TRUNCATE TABLE evenements");
+  await pool.execute("TRUNCATE TABLE salles");
+  await pool.execute("TRUNCATE TABLE users");
+  await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 
   // Créer un rôle si nécessaire
-  const [roleCheck] = await db.execute(
+  const [roleCheck] = await pool.execute(
     "SELECT id_role FROM roles WHERE nom_role = ?",
     ["Organisateur"],
   );
   const roleId = roleCheck.length > 0 ? roleCheck[0].id_role : 2;
 
   // Créer un utilisateur de test
-  const [userResult] = await db.execute(
+  const [userResult] = await pool.execute(
     "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
     ["Test", "User", "test@jest.com", "password123", roleId],
   );
   testUser = userResult.insertId;
 
   // Créer une salle de test
-  const [salleResult] = await db.execute(
+  const [salleResult] = await pool.execute(
     "INSERT INTO salles (nom_salle, capacite, equipements, statut) VALUES (?, ?, ?, ?)",
     ["Salle Jest", 50, "Projecteur, Wifi", "Disponible"],
   );
   testSalle = salleResult.insertId;
 
   // Créer un événement de test
-  const [eventResult] = await db.execute(
+  const [eventResult] = await pool.execute(
     "INSERT INTO evenements (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     [
       "Événement Jest",
@@ -61,11 +61,11 @@ beforeAll(async () => {
 
 // Après CHAQUE test: nettoyer
 afterEach(async () => {
-  await db.execute("DELETE FROM reservations");
+  await pool.execute("DELETE FROM reservations");
 });
 
 afterAll(async () => {
-  await db.end();
+  await pool.end();
 });
 
 test("Créer une réservation valide", async () => {
@@ -85,7 +85,7 @@ test("Créer une réservation valide", async () => {
   expect(idReservation).toBeGreaterThan(0);
 
   // Vérifier que la réservation existe en base
-  const [rows] = await db.execute(
+  const [rows] = await pool.execute(
     "SELECT * FROM reservations WHERE id_reservation = ?",
     [idReservation],
   );
