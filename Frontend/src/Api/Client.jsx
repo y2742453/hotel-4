@@ -5,23 +5,22 @@
 // - on envoie TOUJOURS les cookies de session (credentials: 'include')
 // - on garde un format simple pour gérer les statuts
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001";
 // Si vide, on appelle le même domaine (utile en production)
-
 
 export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    credentials: 'include', // IMPORTANT pour envoyer le cookie de session
+    credentials: "include", // IMPORTANT pour envoyer le cookie de session
   });
 
   // On tente de lire le JSON seulement si la réponse est du JSON
-  const contentType = res.headers.get('content-type') || '';
-  const data = contentType.includes('application/json')
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
     ? await res.json().catch(() => null)
     : null;
 

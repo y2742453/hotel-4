@@ -1,25 +1,25 @@
 // src/App.jsx
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider } from './auth/AuthProvider.jsx';
-import useAuth from './auth/UseAuth.jsx';
+import { AuthProvider } from "./auth/AuthProvider.jsx";
+import useAuth from "./auth/UseAuth.jsx";
 
-import { ToastProvider } from './Components/Toast.jsx';
+import { ToastProvider } from "./Components/Toast.jsx";
 
-import AppShell from './Components/AppShell.jsx';
-import ProtectedRoute from './Components/ProtectedRoute.jsx';
-import RoleGate from './Components/RoleGate.jsx';
+import AppShell from "./Components/AppShell.jsx";
+import ProtectedRoute from "./Components/ProtectedRoute.jsx";
+import RoleGate from "./Components/RoleGate.jsx";
 
-import Login from './pages/Login.jsx';
-import Forbidden from './pages/Forbidden.jsx';
-import Notfound from './pages/Notfound.jsx';
+import Login from "./pages/Login.jsx";
+import Forbidden from "./pages/Forbidden.jsx";
+import Notfound from "./pages/Notfound.jsx";
 
-import AdminHome from './pages/Admin/AdminHome.jsx';
-import UsersPage from './pages/Admin/Users.jsx';
-import RolesPermissionsPage from './pages/Admin/RolesPermission.jsx';
+import AdminHome from "./pages/Admin/AdminHome.jsx";
+import UsersPage from "./pages/Admin/Users.jsx";
+import RolesPermissionsPage from "./pages/Admin/RolesPermission.jsx";
 
-import './styles/global.css';
+import "./styles/global.css";
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
