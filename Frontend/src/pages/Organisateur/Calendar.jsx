@@ -4,7 +4,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import frLocale from "@fullcalendar/core/locales/fr";
-import "../Calendar.css";
+import "../../styles/Calendar.css";
 
 const Calendar = () => {
   const calendarRef = useRef(null);

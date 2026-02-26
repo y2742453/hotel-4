@@ -19,7 +19,10 @@ import AdminHome from "./pages/Admin/AdminHome.jsx";
 import UsersPage from "./pages/Admin/Users.jsx";
 import RolesPermissionsPage from "./pages/Admin/RolesPermission.jsx";
 
+import Calendar from "./pages/Organisateur/Calendar.jsx";
+
 import "./styles/global.css";
+import OrganisateurHome from "./pages/Organisateur/OrganisateurHome.jsx";
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -27,6 +30,7 @@ function HomeRedirect() {
   if (!user) return <Navigate to="/login" replace />;
 
   if (user.id_role === 1) return <Navigate to="/admin" replace />;
+  if (user.id_role === 2) return <Navigate to="/organisateur" replace />;
   return <Navigate to="/app" replace />;
 }
 
@@ -78,6 +82,25 @@ export default function App() {
                 element={
                   <RoleGate allowedRoles={[1]}>
                     <RolesPermissionsPage />
+                  </RoleGate>
+                }
+              />
+
+              {/* Organisateur */}
+              <Route
+                path="organisateur"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <OrganisateurHome />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="organisateur/reservations"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <Calendar />
                   </RoleGate>
                 }
               />
