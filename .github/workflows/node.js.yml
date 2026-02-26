@@ -30,14 +30,16 @@ jobs:
         with:
           node-version: "20"
       - run: npm install
+        working-directory: Backend
       - run: sudo apt-get install -y mysql-client
       - run: |
           until mysql -h 127.0.0.1 -u root -padmin -e "SHOW DATABASES;"; do 
               sleep 5 
           done
       - run: |
-          mysql -h 127.0.0.1 -u root -padmin < ./Backend/tests/dbTest.sql
+          mysql -h 127.0.0.1 -u root -padmin < Backend/tests/dbTest.sql
       - run: npm test
+        working-directory: Backend
         env:
           DB_HOST: 127.0.0.1
           DB_USER: root
