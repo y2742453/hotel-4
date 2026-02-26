@@ -143,3 +143,106 @@ VALUES (
         3,
         '2026-02-25 08:10:05'
     );
+
+INSERT INTO
+    `evenements` (
+        `id_evenement`,
+        `nom_evenement`,
+        `type_evenement`,
+        `description`,
+        `date_debut`,
+        `date_fin`,
+        `statut`,
+        `id_salle`,
+        `id_organisateur`
+    )
+VALUES (
+        1,
+        'Événement Test',
+        'Réunion',
+        'Pour tester les réservations : Cette section permet de simuler des réservations afin de vérifier le fonctionnement du système. On peut créer, modifier ou annuler des réservations fictives pour voir comment le calendrier et les notifications réagissent, sans affecter les données réelles.',
+        '2026-01-01 00:00:00',
+        '2026-12-31 23:59:59',
+        'Brouillon',
+        1,
+        1
+    ),
+    (
+        2,
+        'Réunion Projet Alpha',
+        'Réunion',
+        'Réunion de suivi du projet Alpha',
+        '2026-02-15 09:00:00',
+        '2026-02-15 10:30:00',
+        'Confirmé',
+        1,
+        1
+    ),
+    (
+        3,
+        'Conférence Marketing',
+        'Conférence',
+        'Présentation des nouvelles stratégies marketing',
+        '2026-02-16 11:00:00',
+        '2026-02-16 12:30:00',
+        'Brouillon',
+        2,
+        1
+    ),
+    (
+        4,
+        'Atelier Design',
+        'Atelier',
+        'Atelier pratique sur le design UX/UI',
+        '2026-02-17 14:00:00',
+        '2026-02-17 16:00:00',
+        'Confirmé',
+        1,
+        1
+    ),
+    (
+        5,
+        'Séminaire RH',
+        'Séminaire',
+        'Séminaire sur la gestion des talents',
+        '2026-02-18 09:30:00',
+        '2026-02-18 12:00:00',
+        'Confirmé',
+        3,
+        1
+    ),
+    (
+        6,
+        'Formation Sécurité',
+        'Formation',
+        'Formation obligatoire sur la sécurité informatique',
+        '2026-02-19 13:00:00',
+        '2026-02-19 15:00:00',
+        'Brouillon',
+        2,
+        1
+    );
+
+INSERT INTO
+    `salles`
+VALUES (
+        1,
+        'Salle Versailles',
+        100,
+        'Projecteur',
+        'Disponible'
+    ),
+    (
+        2,
+        'Salle Champs-Élysées',
+        50,
+        'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
+        'Disponible'
+    ),
+    (
+        3,
+        'Salle Montmartre',
+        30,
+        NULL,
+        'Disponible'
+    );
