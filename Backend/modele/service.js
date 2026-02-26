@@ -16,7 +16,7 @@ export async function getServices() {
     ORDER BY id_service DESC
   `)
   return rows
-}gi
+}
 
 /**
  * Récupère un service par identifiant.
