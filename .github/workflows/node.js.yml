@@ -1,0 +1,45 @@
+name: Tests backend
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [Reservation-salle]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: admin
+          MYSQL_DATABASE: HotelDB_Test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: sudo apt-get install -y mysql-client
+      - run: |
+          until mysql -h 127.0.0.1 -u root -padmin -e "SHOW DATABASES;"; do 
+              sleep 5 
+          done
+      - run: |
+          mysql -h 127.0.0.1 -u root -padmin < ./Backend/tests/dbTest.sql
+      - run: npm test
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: admin
+          DB_NAME: HotelDB_Test
