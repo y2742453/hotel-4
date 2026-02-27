@@ -1,22 +1,30 @@
 // src/Components/AppShell.jsx
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import useAuth from '../auth/UseAuth.jsx';
-import '../styles/shell.css';
+import React from "react";
+import { NavLink, Outlet } from "react-router-dom";
+import useAuth from "../auth/UseAuth.jsx";
+import "../styles/shell.css";
 
 // Icônes (FontAwesome via react-icons)
-import { FaChartBar, FaUsers, FaUserShield, FaCalendarAlt, FaFileInvoiceDollar } from 'react-icons/fa';
+import {
+  FaChartBar,
+  FaUsers,
+  FaCalendarAlt,
+  FaFileInvoiceDollar,
+  FaCalendar,
+  FaDoorOpen,
+  FaConciergeBell,
+} from "react-icons/fa";
 
 function roleLabel(id_role) {
-  if (id_role === 1) return 'Administrateur';
-  if (id_role === 2) return 'Organisateur';
-  if (id_role === 3) return 'Coordonnateur';
-  if (id_role === 4) return 'Comptabilité';
-  return 'Utilisateur';
+  if (id_role === 1) return "Administrateur";
+  if (id_role === 2) return "Organisateur";
+  if (id_role === 3) return "Coordonnateur";
+  if (id_role === 4) return "Comptabilité";
+  return "Utilisateur";
 }
 
 function linkClass({ isActive }) {
-  return isActive ? 'link active' : 'link';
+  return isActive ? "link active" : "link";
 }
 
 export default function AppShell() {
@@ -38,23 +46,51 @@ export default function AppShell() {
           {isAdmin && (
             <>
               <NavLink to="/admin" end className={linkClass}>
-                <span className="ico"><FaChartBar /></span>
+                <span className="ico">
+                  <FaChartBar />
+                </span>
                 Dashboard
               </NavLink>
 
               <NavLink to="/admin/users" className={linkClass}>
-                <span className="ico"><FaUsers /></span>
+                <span className="ico">
+                  <FaUsers />
+                </span>
                 Utilisateurs et rôles
               </NavLink>
 
-              {/* futurs écrans admin (même si pas encore dev) */}
+              <NavLink to="/admin/salles" className={linkClass}>
+                <span className="ico">
+                  <FaDoorOpen />
+                </span>
+                Salles
+              </NavLink>
+
+              <NavLink to="/admin/services" className={linkClass}>
+                <span className="ico">
+                  <FaConciergeBell />
+                </span>
+                Services
+              </NavLink>
+
               <NavLink to="/admin/evenements" className={linkClass}>
-                <span className="ico"><FaCalendarAlt /></span>
+                <span className="ico">
+                  <FaCalendarAlt />
+                </span>
                 Événements
               </NavLink>
 
+              <NavLink to="/admin/reservations" className={linkClass}>
+                <span className="ico">
+                  <FaCalendar />
+                </span>
+                Reservations
+              </NavLink>
+
               <NavLink to="/admin/facturation" className={linkClass}>
-                <span className="ico"><FaFileInvoiceDollar /></span>
+                <span className="ico">
+                  <FaFileInvoiceDollar />
+                </span>
                 Facturation
               </NavLink>
             </>
@@ -62,13 +98,23 @@ export default function AppShell() {
 
           {isOrganisateur && (
             <>
-              <NavLink to="/organisateur" className={linkClass}>
-                <span className="ico"><FaChartBar /></span>
+              <NavLink to="/organisateur" end className={linkClass}>
+                <span className="ico">
+                  <FaChartBar />
+                </span>
                 Dashboard
               </NavLink>
               <NavLink to="/organisateur/evenements" className={linkClass}>
-                <span className="ico"><FaCalendarAlt /></span>
-                Mes événements
+                <span className="ico">
+                  <FaCalendarAlt />
+                </span>
+                Événements
+              </NavLink>
+              <NavLink to="/organisateur/reservations" className={linkClass}>
+                <span className="ico">
+                  <FaCalendar />
+                </span>
+                Réservations
               </NavLink>
             </>
           )}
@@ -76,11 +122,15 @@ export default function AppShell() {
           {isCoordonnateur && (
             <>
               <NavLink to="/coordinateur" className={linkClass}>
-                <span className="ico"><FaChartBar /></span>
+                <span className="ico">
+                  <FaChartBar />
+                </span>
                 Dashboard
               </NavLink>
               <NavLink to="/coordinateur/planning" className={linkClass}>
-                <span className="ico"><FaCalendarAlt /></span>
+                <span className="ico">
+                  <FaCalendarAlt />
+                </span>
                 Planning
               </NavLink>
             </>
@@ -89,11 +139,15 @@ export default function AppShell() {
           {isCompta && (
             <>
               <NavLink to="/comptabilite" className={linkClass}>
-                <span className="ico"><FaChartBar /></span>
+                <span className="ico">
+                  <FaChartBar />
+                </span>
                 Dashboard
               </NavLink>
               <NavLink to="/comptabilite/factures" className={linkClass}>
-                <span className="ico"><FaFileInvoiceDollar /></span>
+                <span className="ico">
+                  <FaFileInvoiceDollar />
+                </span>
                 Factures
               </NavLink>
             </>
@@ -104,7 +158,9 @@ export default function AppShell() {
       <main className="main">
         <header className="topbar">
           <div className="userInfo">
-            <div className="userName">{user?.prenom} {user?.nom}</div>
+            <div className="userName">
+              {user?.prenom} {user?.nom}
+            </div>
             <div className="userRole">{roleLabel(user?.id_role)}</div>
           </div>
 

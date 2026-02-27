@@ -1,25 +1,28 @@
 // src/App.jsx
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider } from './auth/AuthProvider.jsx';
-import useAuth from './auth/UseAuth.jsx';
+import { AuthProvider } from "./auth/AuthProvider.jsx";
+import useAuth from "./auth/UseAuth.jsx";
 
-import { ToastProvider } from './Components/Toast.jsx';
+import { ToastProvider } from "./Components/Toast.jsx";
 
-import AppShell from './Components/AppShell.jsx';
-import ProtectedRoute from './Components/ProtectedRoute.jsx';
-import RoleGate from './Components/RoleGate.jsx';
+import AppShell from "./Components/AppShell.jsx";
+import ProtectedRoute from "./Components/ProtectedRoute.jsx";
+import RoleGate from "./Components/RoleGate.jsx";
 
-import Login from './pages/Login.jsx';
-import Forbidden from './pages/Forbidden.jsx';
-import Notfound from './pages/Notfound.jsx';
+import Login from "./pages/Login.jsx";
+import Forbidden from "./pages/Forbidden.jsx";
+import Notfound from "./pages/Notfound.jsx";
 
-import AdminHome from './pages/Admin/AdminHome.jsx';
-import UsersPage from './pages/Admin/Users.jsx';
-import RolesPermissionsPage from './pages/Admin/RolesPermission.jsx';
+import AdminHome from "./pages/Admin/AdminHome.jsx";
+import UsersPage from "./pages/Admin/Users.jsx";
+import RolesPermissionsPage from "./pages/Admin/RolesPermission.jsx";
 
-import './styles/global.css';
+import Calendar from "./pages/Organisateur/Calendar.jsx";
+
+import "./styles/global.css";
+import OrganisateurHome from "./pages/Organisateur/OrganisateurHome.jsx";
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -27,6 +30,7 @@ function HomeRedirect() {
   if (!user) return <Navigate to="/login" replace />;
 
   if (user.id_role === 1) return <Navigate to="/admin" replace />;
+  if (user.id_role === 2) return <Navigate to="/organisateur" replace />;
   return <Navigate to="/app" replace />;
 }
 
@@ -78,6 +82,34 @@ export default function App() {
                 element={
                   <RoleGate allowedRoles={[1]}>
                     <RolesPermissionsPage />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="admin/reservations"
+                element={
+                  <RoleGate allowedRoles={[1]}>
+                    <Calendar />
+                  </RoleGate>
+                }
+              />
+
+              {/* Organisateur */}
+              <Route
+                path="organisateur"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <OrganisateurHome />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="organisateur/reservations"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <Calendar />
                   </RoleGate>
                 }
               />

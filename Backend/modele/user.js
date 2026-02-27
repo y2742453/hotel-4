@@ -1,22 +1,25 @@
 // Backend/modele/user.js
-import db from '../db/db.js';
-import bcrypt from 'bcrypt';
+import { pool } from "../db/db.js";
+import bcrypt from "bcrypt";
 
 //  Trouver un user par email (pour passport)
 export const findUserByEmail = async (email) => {
   try {
-  const sql = `
+    const sql = `
     SELECT id_user, nom, prenom, email, mot_de_passe, actif, id_role, date_creation
     FROM users
     WHERE email = ?
     LIMIT 1
   `;
-  const [rows] = await db.execute(sql, [email]);
-  return rows[0];
-}catch (error) {
-  console.error("Erreur lors de la recherche d'utilisateur par email:", error);
-  throw error;
-};
+    const [rows] = await pool.execute(sql, [email]);
+    return rows[0];
+  } catch (error) {
+    console.error(
+      "Erreur lors de la recherche d'utilisateur par email:",
+      error,
+    );
+    throw error;
+  }
 };
 //  Trouver un user par ID (pour deserializeUser)
 export const findUserById = async (id_user) => {
@@ -26,7 +29,7 @@ export const findUserById = async (id_user) => {
     WHERE id_user = ?
     LIMIT 1
   `;
-  const [rows] = await db.execute(sql, [id_user]);
+  const [rows] = await pool.execute(sql, [id_user]);
   return rows[0];
 };
 
@@ -47,12 +50,18 @@ export const getUsers = async () => {
     ORDER BY u.date_creation DESC
   `;
 
-  const [rows] = await db.execute(sql);
+  const [rows] = await pool.execute(sql);
   return rows;
 };
 
 //  Ajouter utilisateur (id_role par défaut = 2)
-export async function addUtilisateur(nom, prenom, email, motDePasse, id_role = 2) {
+export async function addUtilisateur(
+  nom,
+  prenom,
+  email,
+  motDePasse,
+  id_role = 2,
+) {
   const motDePasseEncrypte = await bcrypt.hash(motDePasse, 10);
 
   // IMPORTANT : ta table a id_role, pas "role"
@@ -62,12 +71,12 @@ export async function addUtilisateur(nom, prenom, email, motDePasse, id_role = 2
     VALUES (?, ?, ?, ?, 1, ?)
   `;
 
-  const [result] = await db.execute(sql, [
+  const [result] = await pool.execute(sql, [
     nom,
     prenom,
     email,
     motDePasseEncrypte,
-    id_role
+    id_role,
   ]);
 
   return result.insertId;
@@ -81,19 +90,19 @@ export async function updateUserActif(id_user, actif) {
     SET actif = ?
     WHERE id_user = ?
   `;
-  const [result] = await db.execute(sql, [actif, id_user]);
+  const [result] = await pool.execute(sql, [actif, id_user]);
   return result.affectedRows; // 1 si OK, 0 si user introuvable
 }
 
 export async function updateUser(id_user, { nom, prenom, email, id_role }) {
-  await db.execute(
+  await pool.execute(
     `UPDATE users 
      SET nom=?, prenom=?, email=?, id_role=?
      WHERE id_user=?`,
-    [nom, prenom, email, id_role, id_user]
+    [nom, prenom, email, id_role, id_user],
   );
 }
 
 export async function deleteUser(id_user) {
-  await db.execute(`DELETE FROM users WHERE id_user=?`, [id_user]);
+  await pool.execute(`DELETE FROM users WHERE id_user=?`, [id_user]);
 }
