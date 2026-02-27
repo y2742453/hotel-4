@@ -24,19 +24,19 @@ passport.use(
 
       // 2 Utilisateur inexistant
       if (!utilisateur) {
-        return done(null, false, { error: "mauvais_utilisateur" });
+        return done(null, false, { error: "utilisateur introuvable" });
       }
 
       // 3 Compte désactivé
       if (!utilisateur.actif) {
-        return done(null, false, { error: "compte_desactive" });
+        return done(null, false, { error: "votre compte est désactivé" });
       }
 
       // 4️ Vérification du mot de passe
       const valide = await bcrypt.compare(motDePasse, utilisateur.mot_de_passe);
 
       if (!valide) {
-        return done(null, false, { error: "mauvais_mot_de_passe" });
+        return done(null, false, { error: "mauvais mot de passe ou email" });
       }
       // 5 Succès → on retourne l'utilisateur
       return done(null, utilisateur);
