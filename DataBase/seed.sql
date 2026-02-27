@@ -145,6 +145,37 @@ VALUES (
     );
 
 INSERT INTO
+    `salles`
+VALUES (
+        1,
+        'Salle Versailles',
+        100,
+        'Projecteur',
+        'disponible'
+    ),
+    (
+        2,
+        'Salle Champs-Élysées',
+        50,
+        'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
+        'disponible'
+    ),
+    (
+        3,
+        'Salle Montmartre',
+        30,
+        'Caméra, Climatiseur, Table de mixage, LED',
+        'disponible'
+    ),
+    (
+        4,
+        'Salle Test',
+        75,
+        'Photobooth, Caméra, Climatiseur',
+        'disponible'
+    );
+
+INSERT INTO
     `evenements` (
         `id_evenement`,
         `nom_evenement`,
