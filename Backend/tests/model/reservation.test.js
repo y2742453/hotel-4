@@ -3,7 +3,7 @@ import {
   addReservation,
   hasConflict,
   getReservationsBySalle,
-} from "../../model/reservation/reservation.js";
+} from "../../modele/reservation.js";
 import { pool } from "../../db/db.js";
 import { afterAll } from "@jest/globals";
 
