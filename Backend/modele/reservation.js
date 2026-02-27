@@ -1,4 +1,4 @@
-import { pool } from "../../db/db.js";
+import { pool } from "../db/db.js";
 
 /**
  * Vérifie s'il y a un conflit de réservation
@@ -34,7 +34,7 @@ export async function addReservation(reservation) {
     [reservation.idSalle],
   );
 
-  if (salleRows[0].statut !== "Disponible") {
+  if (salleRows[0].statut.toLowerCase() !== "disponible") {
     throw new Error("SALLE_INDISPONIBLE");
   }
 

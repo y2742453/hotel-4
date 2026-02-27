@@ -1,4 +1,4 @@
-import { pool } from '../db/db.js'
+import { pool } from "../db/db.js";
 
 /**
  * Récupère toutes les salles enregistrées dans la base de données.
@@ -9,8 +9,17 @@ export async function getSalles() {
     SELECT id_salle, nom_salle, capacite, equipements, statut
     FROM salles
     ORDER BY id_salle DESC
-  `)
-  return rows
+  `);
+  return rows;
+}
+
+/**
+ * Récupère toutes les salles enregistrées dans la base de données.
+ * @returns {Promise<Array>} Liste des salles.
+ */
+export async function getAllSalles() {
+  const [rows] = await pool.query("SELECT * FROM salles");
+  return rows;
 }
 
 /**
@@ -19,13 +28,16 @@ export async function getSalles() {
  * @returns {Promise<Object|null>} Salle trouvée ou null.
  */
 export async function getSalleById(id_salle) {
-  const [rows] = await pool.query(`
+  const [rows] = await pool.query(
+    `
     SELECT id_salle, nom_salle, capacite, equipements, statut
     FROM salles
     WHERE id_salle = ?
-  `, [id_salle])
+  `,
+    [id_salle],
+  );
 
-  return rows[0] || null
+  return rows[0] || null;
 }
 
 /**
@@ -40,14 +52,17 @@ export async function createSalle(
   nom_salle,
   capacite,
   equipements,
-  statut = 'Disponible'
+  statut = "Disponible",
 ) {
-  const [result] = await pool.query(`
+  const [result] = await pool.query(
+    `
     INSERT INTO salles (nom_salle, capacite, equipements, statut)
     VALUES (?, ?, ?, ?)
-  `, [nom_salle, capacite, equipements ?? null, statut])
+  `,
+    [nom_salle, capacite, equipements ?? null, statut],
+  );
 
-  return result.insertId
+  return result.insertId;
 }
 
 /**
@@ -64,15 +79,18 @@ export async function updateSalle(
   nom_salle,
   capacite,
   equipements,
-  statut
+  statut,
 ) {
-  const [result] = await pool.query(`
+  const [result] = await pool.query(
+    `
     UPDATE salles
     SET nom_salle = ?, capacite = ?, equipements = ?, statut = ?
     WHERE id_salle = ?
-  `, [nom_salle, capacite, equipements ?? null, statut, id_salle])
+  `,
+    [nom_salle, capacite, equipements ?? null, statut, id_salle],
+  );
 
-  return result.affectedRows > 0
+  return result.affectedRows > 0;
 }
 
 /**
@@ -81,10 +99,13 @@ export async function updateSalle(
  * @returns {Promise<boolean>} true si supprimée, false sinon.
  */
 export async function deleteSalle(id_salle) {
-  const [result] = await pool.query(`
+  const [result] = await pool.query(
+    `
     DELETE FROM salles
     WHERE id_salle = ?
-  `, [id_salle])
+  `,
+    [id_salle],
+  );
 
-  return result.affectedRows > 0
+  return result.affectedRows > 0;
 }

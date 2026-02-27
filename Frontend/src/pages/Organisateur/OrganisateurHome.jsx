@@ -9,6 +9,7 @@ import {
   FaTags,
   FaChartLine,
   FaCalendar,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 export default function OrganisateurHome() {
@@ -20,13 +21,13 @@ export default function OrganisateurHome() {
       desc: "Liste & gestion des clients",
       icon: <FaUsers />,
       to: "/organisateur/clients",
-      enabled: true,
+      enabled: false,
     },
     {
-      title: "Salles",
-      desc: "Capacités, équipements",
-      icon: <FaDoorOpen />,
-      to: "/organisateur/salles",
+      title: "Événements",
+      desc: "Créer un evenement",
+      icon: <FaCalendarAlt />,
+      to: "/organisateur/evenements",
       enabled: true,
     },
     {
@@ -35,20 +36,6 @@ export default function OrganisateurHome() {
       icon: <FaCalendar />,
       to: "/organisateur/reservations",
       enabled: true,
-    },
-    {
-      title: "Services",
-      desc: "Catalogue & options",
-      icon: <FaConciergeBell />,
-      to: "/organisateur/services",
-      enabled: false,
-    },
-    {
-      title: "Tarification",
-      desc: "Prix & promotions",
-      icon: <FaTags />,
-      to: "/organisateur/tarifs",
-      enabled: false,
     },
   ];
 

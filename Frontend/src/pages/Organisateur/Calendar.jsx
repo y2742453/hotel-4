@@ -70,7 +70,7 @@ const Calendar = () => {
   // Filtrer les salles
   const sallesFiltrees = salles.filter((salle) => {
     // Seulement les salles disponibles
-    if (salle.statut !== "Disponible") {
+    if (salle.statut.toLowerCase() !== "disponible") {
       return false;
     }
 
@@ -419,7 +419,7 @@ const Calendar = () => {
                 <p>
                   <strong>Statut:</strong>{" "}
                   <span
-                    className={`status ${salle.statut === "Disponible" ? "available" : "unavailable"}`}
+                    className={`status ${salle.statut.toLowerCase() === "disponible" ? "available" : "unavailable"}`}
                   >
                     {salle.statut}
                   </span>

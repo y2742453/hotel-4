@@ -223,14 +223,14 @@ Retourne la liste de toutes les salles avec leurs informations.
     "nom_salle": "Salle Versailles",
     "capacite": 100,
     "equipements": "Projecteur, Micro, Wifi",
-    "statut": "Disponible"
+    "statut": "disponible"
   },
   {
     "id_salle": 2,
     "nom_salle": "Salle Champs-Élysées",
     "capacite": 50,
     "equipements": "Écran, Wifi",
-    "statut": "Disponible"
+    "statut": "disponible"
   }
 ]
 ```

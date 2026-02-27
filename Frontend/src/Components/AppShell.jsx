@@ -8,10 +8,11 @@ import "../styles/shell.css";
 import {
   FaChartBar,
   FaUsers,
-  FaUserShield,
   FaCalendarAlt,
   FaFileInvoiceDollar,
   FaCalendar,
+  FaDoorOpen,
+  FaConciergeBell,
 } from "react-icons/fa";
 
 function roleLabel(id_role) {
@@ -58,7 +59,27 @@ export default function AppShell() {
                 Utilisateurs et rôles
               </NavLink>
 
-              {/* futurs écrans admin (même si pas encore dev) */}
+              <NavLink to="/admin/salles" className={linkClass}>
+                <span className="ico">
+                  <FaDoorOpen />
+                </span>
+                Salles
+              </NavLink>
+
+              <NavLink to="/admin/services" className={linkClass}>
+                <span className="ico">
+                  <FaConciergeBell />
+                </span>
+                Services
+              </NavLink>
+
+              <NavLink to="/admin/evenements" className={linkClass}>
+                <span className="ico">
+                  <FaCalendarAlt />
+                </span>
+                Événements
+              </NavLink>
+
               <NavLink to="/admin/reservations" className={linkClass}>
                 <span className="ico">
                   <FaCalendar />
@@ -77,7 +98,7 @@ export default function AppShell() {
 
           {isOrganisateur && (
             <>
-              <NavLink to="/organisateur" className={linkClass}>
+              <NavLink to="/organisateur" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
                 </span>
@@ -87,13 +108,13 @@ export default function AppShell() {
                 <span className="ico">
                   <FaCalendarAlt />
                 </span>
-                Mes événements
+                Événements
               </NavLink>
               <NavLink to="/organisateur/reservations" className={linkClass}>
                 <span className="ico">
                   <FaCalendar />
                 </span>
-                Réservation des salles
+                Réservations
               </NavLink>
             </>
           )}

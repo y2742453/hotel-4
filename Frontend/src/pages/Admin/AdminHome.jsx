@@ -13,6 +13,7 @@ import {
   FaChartLine,
   FaListAlt,
   FaCalendar,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 export default function AdminHome() {
@@ -26,13 +27,26 @@ export default function AdminHome() {
       to: "/admin/users",
       enabled: true,
     },
-    // futures fonctionnalités (placeholders)
     {
-      title: "Salles",
+      title: "Gestion des salles",
       desc: "Capacités, équipements",
       icon: <FaDoorOpen />,
       to: "/admin/salles",
-      enabled: false,
+      enabled: true,
+    },
+    {
+      title: "Gestion des services",
+      desc: "Catalogue & options",
+      icon: <FaConciergeBell />,
+      to: "/admin/services",
+      enabled: true,
+    },
+    {
+      title: "Événements",
+      desc: "Créer un evenement",
+      icon: <FaCalendarAlt />,
+      to: "/admin/evenements",
+      enabled: true,
     },
     {
       title: "Reservations",
@@ -40,13 +54,6 @@ export default function AdminHome() {
       icon: <FaCalendar />,
       to: "/admin/reservations",
       enabled: true,
-    },
-    {
-      title: "Services",
-      desc: "Catalogue & options",
-      icon: <FaConciergeBell />,
-      to: "/admin/services",
-      enabled: false,
     },
     {
       title: "Tarification",

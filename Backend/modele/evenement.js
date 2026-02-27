@@ -1,6 +1,4 @@
-
-
-import { pool } from '../db/db.js'
+import { pool } from "../db/db.js";
 
 /**
  *
@@ -10,7 +8,6 @@ import { pool } from '../db/db.js'
  * @returns {Promise<boolean>} true si conflit détecté, false sinon.
  */
 export async function hasReservationConflict(id_salle, date_debut, date_fin) {
-
   const [rows] = await pool.query(
     `
     SELECT COUNT(*) AS nb
@@ -18,10 +15,10 @@ export async function hasReservationConflict(id_salle, date_debut, date_fin) {
     WHERE id_salle = ?
       AND (date_debut < ? AND date_fin > ?)
     `,
-    [id_salle, date_fin, date_debut]
-  )
+    [id_salle, date_fin, date_debut],
+  );
 
-  return rows[0].nb > 0
+  return rows[0].nb > 0;
 }
 
 /**
@@ -40,32 +37,31 @@ export async function hasReservationConflict(id_salle, date_debut, date_fin) {
  * @returns {Promise<number>} Identifiant de l'événement créé.
  */
 export async function createEvenement(data) {
-
   const {
     nom_evenement,
     type_evenement,
     description,
     date_debut,
     date_fin,
-    statut = 'Brouillon',
+    statut = "Brouillon",
     id_salle,
     id_organisateur,
-    services = []
-  } = data
+    services = [],
+  } = data;
 
   // Vérification d'un éventuel conflit de réservation
-  const conflict = await hasReservationConflict(id_salle, date_debut, date_fin)
+  const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
 
   if (conflict) {
-    const err = new Error('RESERVATION_CONFLICT')
-    throw err
+    const err = new Error("RESERVATION_CONFLICT");
+    throw err;
   }
 
   // Démarrage de la transaction
-  const conn = await pool.getConnection()
+  const conn = await pool.getConnection();
 
   try {
-    await conn.beginTransaction()
+    await conn.beginTransaction();
 
     // Insertion de l'événement
     const [evResult] = await conn.query(
@@ -82,11 +78,11 @@ export async function createEvenement(data) {
         date_fin,
         statut,
         id_salle,
-        id_organisateur
-      ]
-    )
+        id_organisateur,
+      ],
+    );
 
-    const id_evenement = evResult.insertId
+    const id_evenement = evResult.insertId;
 
     // Insertion de la réservation associée
     await conn.query(
@@ -94,8 +90,8 @@ export async function createEvenement(data) {
       INSERT INTO reservations (id_salle, id_evenement, date_debut, date_fin)
       VALUES (?, ?, ?, ?)
       `,
-      [id_salle, id_evenement, date_debut, date_fin]
-    )
+      [id_salle, id_evenement, date_debut, date_fin],
+    );
 
     // Association des services (si fournis)
     for (const id_service of services) {
@@ -104,17 +100,21 @@ export async function createEvenement(data) {
         INSERT INTO evenement_services (id_evenement, id_service, statut)
         VALUES (?, ?, 'Demande')
         `,
-        [id_evenement, id_service]
-      )
+        [id_evenement, id_service],
+      );
     }
 
-    await conn.commit()
-    return id_evenement
-
+    await conn.commit();
+    return id_evenement;
   } catch (e) {
-    await conn.rollback()
-    throw e
+    await conn.rollback();
+    throw e;
   } finally {
-    conn.release()
+    conn.release();
   }
+}
+
+export async function getAllEvenements() {
+  const [rows] = await pool.query("SELECT * FROM evenements");
+  return rows;
 }
