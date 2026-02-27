@@ -86,6 +86,15 @@ export default function App() {
                 }
               />
 
+              <Route
+                path="admin/reservations"
+                element={
+                  <RoleGate allowedRoles={[1]}>
+                    <Calendar />
+                  </RoleGate>
+                }
+              />
+
               {/* Organisateur */}
               <Route
                 path="organisateur"

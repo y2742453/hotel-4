@@ -8,6 +8,7 @@ import {
   FaConciergeBell,
   FaTags,
   FaChartLine,
+  FaCalendar,
 } from "react-icons/fa";
 
 export default function OrganisateurHome() {
@@ -29,24 +30,24 @@ export default function OrganisateurHome() {
       enabled: true,
     },
     {
+      title: "Reservations",
+      desc: "Gestion des réservations",
+      icon: <FaCalendar />,
+      to: "/organisateur/reservations",
+      enabled: true,
+    },
+    {
       title: "Services",
       desc: "Catalogue & options",
       icon: <FaConciergeBell />,
       to: "/organisateur/services",
-      enabled: true,
+      enabled: false,
     },
     {
       title: "Tarification",
       desc: "Prix & promotions",
       icon: <FaTags />,
       to: "/organisateur/tarifs",
-      enabled: false,
-    },
-    {
-      title: "Statistiques",
-      desc: "Vue globale",
-      icon: <FaChartLine />,
-      to: "/organisateur/stats",
       enabled: false,
     },
   ];

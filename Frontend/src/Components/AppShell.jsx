@@ -59,11 +59,11 @@ export default function AppShell() {
               </NavLink>
 
               {/* futurs écrans admin (même si pas encore dev) */}
-              <NavLink to="/admin/evenements" className={linkClass}>
+              <NavLink to="/admin/reservations" className={linkClass}>
                 <span className="ico">
-                  <FaCalendarAlt />
+                  <FaCalendar />
                 </span>
-                Événements
+                Reservations
               </NavLink>
 
               <NavLink to="/admin/facturation" className={linkClass}>
