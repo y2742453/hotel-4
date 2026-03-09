@@ -367,13 +367,21 @@ app.get("/api/salles/:id", async (req, res) => {
 
 // POST ajouter salle
 app.post("/api/salles", async (req, res) => {
-  const id = await createSalle(
-    req.body.nom_salle,
-    req.body.capacite,
-    req.body.equipements,
-    req.body.statut,
-  );
-  res.status(201).json({ id });
+  try {
+    const id = await createSalle(
+      req.body.nom_salle,
+      req.body.type,
+      req.body.capacite,
+      req.body.equipements,
+      req.body.statut
+    );
+
+    res.status(201).json({ id });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 });
 
 // PUT modifier salle
@@ -381,9 +389,10 @@ app.put("/api/salles/:id", async (req, res) => {
   const ok = await updateSalle(
     req.params.id,
     req.body.nom_salle,
+    req.body.type,
     req.body.capacite,
     req.body.equipements,
-    req.body.statut,
+    req.body.statut
   );
 
   if (!ok) {

@@ -70,7 +70,7 @@ const Calendar = () => {
   // Filtrer les salles
   const sallesFiltrees = salles.filter((salle) => {
     // Seulement les salles disponibles
-    if (salle.statut.toLowerCase() !== "disponible") {
+  if (!salle.statut || salle.statut.toLowerCase() !== "disponible") {
       return false;
     }
 
@@ -141,7 +141,7 @@ const Calendar = () => {
       const res = await fetch("http://localhost:5001/api/salles");
       if (!res.ok) throw new Error("Erreur réseau");
       const data = await res.json();
-      setSalles(data);
+      setSalles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur chargement salles:", error);
       setMessage("Erreur lors du chargement des salles.");
