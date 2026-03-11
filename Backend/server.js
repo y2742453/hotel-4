@@ -44,6 +44,15 @@ import {
   deleteService,
 } from "./modele/service.js";
 import { createEvenement, getAllEvenements } from "./modele/evenement.js";
+import {
+  addInvite,
+  deleteInvite,
+  getInviteById,
+  getInvitesByEvent,
+  updateInvite,
+  getInviteStats,
+} from "./modele/invite.js";
+import inviteRoutes from "./routes/invite.js";
 
 // Import middlewares
 import {
@@ -63,6 +72,9 @@ const MemoryStore = memorystore(session);
 app.use(helmet());
 app.use(compression());
 app.use(json());
+
+// Route pour import de fichier CSV/Excel des invités
+app.use("/api/invites", inviteRoutes);
 
 // CORS : en dev, le frontend est sur un port différent → on autorise les requêtes depuis localhost:5173
 app.use(
@@ -272,7 +284,9 @@ app.delete(
   },
 );
 
-// ROUTE DE RESERVATION
+// =====================
+// API - RESERVATIONS
+// =====================
 
 // Route pour créer une réservation
 app.post(
@@ -385,11 +399,10 @@ app.post("/api/salles", async (req, res) => {
       req.body.type,
       req.body.capacite,
       req.body.equipements,
-      req.body.statut
+      req.body.statut,
     );
 
     res.status(201).json({ id });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
@@ -404,7 +417,7 @@ app.put("/api/salles/:id", async (req, res) => {
     req.body.type,
     req.body.capacite,
     req.body.equipements,
-    req.body.statut
+    req.body.statut,
   );
 
   if (!ok) {
@@ -594,6 +607,85 @@ app.post("/api/evenements", async (req, res) => {
       code: err.code || "SERVER_ERROR",
       message: err.message || "Erreur serveur",
     });
+  }
+});
+
+// =====================
+// API - INVITES
+// =====================
+
+// Ajouter un invité
+app.post("/api/invites", async (req, res) => {
+  try {
+    const id = await addInvite(req.body);
+    res.status(201).json({ id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Supprimer un invité
+app.delete("/api/invites/:id", async (req, res) => {
+  try {
+    const success = await deleteInvite(req.params.id);
+
+    if (success) {
+      res.json({ message: "Invité supprimé" });
+    } else {
+      res.status(404).json({ error: "Invité introuvable" });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Obtenir un invité par ID
+app.get("/api/invites/:id", async (req, res) => {
+  try {
+    const invite = await getInviteById(req.params.id);
+
+    if (invite) {
+      res.json(invite);
+    } else {
+      res.status(404).json({ error: "Invité introuvable" });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Obtenir tous les invités d'un événement
+app.get("/api/invites/event/:idEvenement", async (req, res) => {
+  try {
+    const invites = await getInvitesByEvent(req.params.idEvenement);
+    res.json(invites);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Mettre à jour un invité
+app.put("/api/invites/:id", async (req, res) => {
+  try {
+    const success = await updateInvite(req.params.id, req.body);
+
+    if (success) {
+      res.json({ message: "Invité mis à jour" });
+    } else {
+      res.status(400).json({ error: "Aucune donnée mise à jour" });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Obtenir les statistiques d'invités d'un événement
+app.get("/api/invites/stats/:idEvenement", async (req, res) => {
+  try {
+    const stats = await getInviteStats(req.params.idEvenement);
+    res.json(stats);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

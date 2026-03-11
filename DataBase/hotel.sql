@@ -4,6 +4,8 @@ use HotelDB;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS invites;
+
 DROP TABLE IF EXISTS paiements;
 
 DROP TABLE IF EXISTS factures;
@@ -113,4 +115,21 @@ CREATE TABLE paiements (
     mode_paiement VARCHAR(50),
     date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_facture) REFERENCES factures (id_facture)
+);
+
+CREATE TABLE invites (
+    id_invite INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    statut ENUM(
+        'invite',
+        'confirme',
+        'refuse',
+        'en attente'
+    ) DEFAULT 'invite',
+    date_invitation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
+    UNIQUE KEY unique_email_event (email, id_evenement)
 );
