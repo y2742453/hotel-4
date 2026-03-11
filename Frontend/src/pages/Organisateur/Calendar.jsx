@@ -4,6 +4,10 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import frLocale from "@fullcalendar/core/locales/fr";
+
+import { apiFetch } from "../../Api/Client";
+import { useToast } from "../../Components/Toast";
+
 import "../../styles/Calendar.css";
 
 const Calendar = () => {
@@ -14,8 +18,7 @@ const Calendar = () => {
   const [evenements, setEvenements] = useState([]);
   const [selectedSalle, setSelectedSalle] = useState(null);
   const [selectedEvenement, setSelectedEvenement] = useState(null);
-
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedReservation, setSelectedReservation] = useState(null);
 
   const [filtreCapacite, setFiltreCapacite] = useState("");
   const [filtreEquipement, setFiltreEquipement] = useState("");
@@ -25,7 +28,7 @@ const Calendar = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const toast = useToast();
   const [modalMessage, setModalMessage] = useState("");
 
   const [newReservation, setNewReservation] = useState({
@@ -33,9 +36,12 @@ const Calendar = () => {
     dateFin: "",
   });
 
-  const [initialView, setInitialView] = useState(
-    window.innerWidth <= 768 ? "timeGridDay" : "timeGridWeek",
-  );
+  const getInitialView = () =>
+    typeof window !== "undefined" && window.innerWidth <= 768
+      ? "timeGridDay"
+      : "timeGridWeek";
+
+  const [initialView, setInitialView] = useState(getInitialView());
 
   // Fonctions utilitaires
   const formatDateForInput = (date) => {
@@ -51,26 +57,9 @@ const Calendar = () => {
     return dateString.replace("T", " ") + ":00";
   };
 
-  // Extraire tous les équipements uniques
-  const tousLesEquipements = (() => {
-    const equipementsSet = new Set();
-
-    salles.forEach((salle) => {
-      if (salle.equipements) {
-        const liste = salle.equipements.split(",").map((e) => e.trim());
-        liste.forEach((eq) => {
-          if (eq) equipementsSet.add(eq);
-        });
-      }
-    });
-
-    return Array.from(equipementsSet).sort();
-  })();
-
   // Filtrer les salles
   const sallesFiltrees = salles.filter((salle) => {
-    // Seulement les salles disponibles
-  if (!salle.statut || salle.statut.toLowerCase() !== "disponible") {
+    if ((salle.statut || "").toLowerCase() !== "disponible") {
       return false;
     }
 
@@ -117,7 +106,7 @@ const Calendar = () => {
     if (selectedSalle) {
       chargerReservations();
     } else {
-      setEvents([]); // Vider le calendrier si pas de salle
+      setEvents([]);
     }
   }, [selectedSalle]);
 
@@ -129,46 +118,54 @@ const Calendar = () => {
       );
 
       if (!salleValide) {
-        console.log("⚠️ Salle désélectionnée car filtrée");
+        toast.info("La salle sélectionnée ne correspond plus aux filtres.");
         setSelectedSalle(null);
         setEvents([]);
       }
     }
   }, [sallesFiltrees, selectedSalle]);
 
+  /**
+   * Récupère la liste des salles depuis l'API
+   */
   async function chargerSalles() {
     try {
-      const res = await fetch("http://localhost:5001/api/salles");
+      const { res, data } = await apiFetch("/api/salles");
       if (!res.ok) throw new Error("Erreur réseau");
-      const data = await res.json();
       setSalles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur chargement salles:", error);
-      setMessage("Erreur lors du chargement des salles.");
+      toast.error("Erreur lors du chargement des salles.");
     }
   }
 
+  /**
+   * Récupère les événements disponibles
+   */
   async function chargerEvenements() {
     try {
-      const res = await fetch("http://localhost:5001/api/evenements");
+      const { res, data } = await apiFetch("/api/evenements");
+
       if (!res.ok) throw new Error("Erreur réseau");
-      const data = await res.json();
-      setEvenements(data);
+
+      setEvenements(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur chargement événements:", error);
-      setMessage("Erreur lors du chargement des événements.");
+      toast.error("Erreur lors du chargement des événements.");
     }
   }
 
+  /**
+   * Charge les réservations pour la salle sélectionnée
+   * et les transforme pour FullCalendar
+   */
   async function chargerReservations() {
-    setMessage("");
-
     try {
-      const res = await fetch(
-        `http://localhost:5001/api/reservation/salle/${selectedSalle}`,
+      const { res, data } = await apiFetch(
+        `/api/reservation/salle/${selectedSalle}`,
       );
       if (!res.ok) throw new Error("Erreur réseau");
-      const reservations = await res.json();
+      const reservations = data;
 
       setEvents(
         reservations.map((r) => ({
@@ -183,20 +180,19 @@ const Calendar = () => {
       );
     } catch (error) {
       console.error("Erreur chargement réservations:", error);
-      setMessage("Erreur lors du chargement des réservations.");
+      toast.error("Erreur lors du chargement des réservations.");
     }
   }
 
   /* CALENDAR HANDLERS */
   const handleEventClick = (info) => {
-    setSelectedEvent(info.event);
+    setSelectedReservation(info.event);
     setShowEventModal(true);
   };
 
   const handleSelectSlot = (info) => {
-    // Vérifier qu'une salle est sélectionnée
     if (!selectedSalle) {
-      setMessage("Veuillez d'abord sélectionner une salle.");
+      toast.info("Veuillez d'abord sélectionner une salle.");
       calendarRef.current?.getApi().unselect();
       return;
     }
@@ -241,12 +237,14 @@ const Calendar = () => {
       return;
     }
 
-    // On affiche directement la confirmation
     setModalMessage("");
     setShowConfirmModal(true);
   }
 
-  /* CREATE RESERVATION */
+  /**
+   * Envoie la réservation au backend
+   * et recharge le calendrier après création
+   */
   async function creerReservation() {
     if (loading) return;
     setLoading(true);
@@ -262,14 +260,13 @@ const Calendar = () => {
     console.log("Création réservation:", payload);
 
     try {
-      const response = await fetch("http://localhost:5001/api/reservation", {
+      const { res } = await apiFetch("/api/reservation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        if (response.status === 409) {
+      if (!res.ok) {
+        if (res.status === 409) {
           setModalMessage("Cette salle est déjà réservée pour cette période.");
         } else {
           setModalMessage("Erreur serveur. Veuillez réessayer.");
@@ -279,55 +276,54 @@ const Calendar = () => {
 
       console.log("Réservation créée avec succès");
 
-      // Fermer les modals et recharger
       setShowCreateModal(false);
       setShowConfirmModal(false);
-      setSelectedEvenement(null); // Reset l'événement
-      chargerReservations();
+      setSelectedEvenement(null);
 
-      // Effacer le message après 3 secondes
-      setTimeout(() => setMessage(""), 3000);
+      toast.success("Réservation créée avec succès.");
+
+      chargerReservations();
     } catch (error) {
       console.error("Erreur:", error);
-      setModalMessage("Erreur serveur.");
+      toast.error("Erreur serveur.");
     } finally {
       setLoading(false);
     }
   }
 
-  /* DELETE RESERVATION */
+  /**
+   * Supprime une réservation existante
+   * puis recharge le calendrier
+   */
   async function handleDelete() {
-    if (!selectedEvent) return;
+    if (!selectedReservation) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5001/api/reservation/${selectedEvent.id}`,
+      const { res } = await apiFetch(
+        `/api/reservation/${selectedReservation.id}`,
         {
           method: "DELETE",
         },
       );
 
       if (!res.ok) {
-        setMessage("Erreur lors de la suppression.");
+        toast.error("Erreur lors de la suppression.");
         return;
       }
 
       console.log("Réservation supprimée");
       setShowEventModal(false);
+      toast.success("Réservation supprimée.");
       chargerReservations();
-      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("Erreur:", error);
-      setMessage("Erreur lors de la suppression.");
+      toast.error("Erreur lors de la suppression.");
     }
   }
 
   return (
     <div className="calendar-container">
       <h1>Réservation de salles</h1>
-
-      {/* Messages d'information */}
-      {message && <div className="message-error">{message}</div>}
 
       {/* SECTION FILTRES */}
       <div className="filters-section">
@@ -362,7 +358,6 @@ const Calendar = () => {
               setFiltreEquipement("");
               setSelectedSalle(null);
               setEvents([]);
-              setMessage("");
             }}
           >
             Réinitialiser
@@ -384,7 +379,6 @@ const Calendar = () => {
           onChange={(e) => {
             const newSalle = Number(e.target.value);
             setSelectedSalle(newSalle);
-            setMessage("");
           }}
         >
           <option value="" disabled>
@@ -616,17 +610,17 @@ const Calendar = () => {
       )}
 
       {/* EVENT MODAL */}
-      {showEventModal && selectedEvent && (
+      {showEventModal && selectedReservation && (
         <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
           <div
             className="modal modal-event"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2>{selectedEvent.title}</h2>
+            <h2>{selectedReservation.title}</h2>
 
             <p className="event-dates">
               {" "}
-              {selectedEvent.start.toLocaleString("fr-FR", {
+              {selectedReservation.start.toLocaleString("fr-FR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
@@ -634,7 +628,7 @@ const Calendar = () => {
                 minute: "2-digit",
               })}
               {" → "}
-              {selectedEvent.end?.toLocaleString("fr-FR", {
+              {selectedReservation.end?.toLocaleString("fr-FR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
@@ -644,7 +638,8 @@ const Calendar = () => {
             </p>
 
             <p className="event-description">
-              {selectedEvent.extendedProps.description || "Aucune description"}
+              {selectedReservation.extendedProps.description ||
+                "Aucune description"}
             </p>
 
             <div className="modal-buttons">

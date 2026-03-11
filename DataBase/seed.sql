@@ -9,6 +9,15 @@ INSERT INTO
         `date_creation`
     )
 VALUES (
+        'Admin',
+        'System',
+        'admin@hotel.com',
+        '$2b$10$GEjPDdjVrCXQtQXXr18GxeL5TYfcOTgEK8.KTxy8vrjZLwjYB1SBq',
+        1,
+        1,
+        NOW()
+    ),
+    (
         'Franck',
         'Junior',
         'franck@gmail.com',
@@ -145,34 +154,33 @@ VALUES (
     );
 
 INSERT INTO
-    `salles`
+    `salles` (
+        `id_salle`,
+        `nom_salle`,
+        `capacite`,
+        `equipements`,
+        `statut`
+    )
 VALUES (
         1,
         'Salle Versailles',
         100,
         'Projecteur',
-        'disponible'
+        'Disponible'
     ),
     (
         2,
         'Salle Champs-Élysées',
         50,
         'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
-        'disponible'
+        'Disponible'
     ),
     (
         3,
         'Salle Montmartre',
         30,
-        'Caméra, Climatiseur, Table de mixage, LED',
-        'disponible'
-    ),
-    (
-        4,
-        'Salle Test',
-        75,
-        'Photobooth, Caméra, Climatiseur',
-        'disponible'
+        NULL,
+        'Disponible'
     );
 
 INSERT INTO
@@ -252,28 +260,4 @@ VALUES (
         'Brouillon',
         2,
         1
-    );
-
-INSERT INTO
-    `salles`
-VALUES (
-        1,
-        'Salle Versailles',
-        100,
-        'Projecteur',
-        'Disponible'
-    ),
-    (
-        2,
-        'Salle Champs-Élysées',
-        50,
-        'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
-        'Disponible'
-    ),
-    (
-        3,
-        'Salle Montmartre',
-        30,
-        NULL,
-        'Disponible'
     );

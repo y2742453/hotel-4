@@ -275,35 +275,47 @@ app.delete(
 // ROUTE DE RESERVATION
 
 // Route pour créer une réservation
-app.post("/api/reservation", async (request, response) => {
-  try {
-    const idReservation = await addReservation(request.body);
-    response.status(201).json({ idReservation }); //Logique pour pouvoir implementer les reservations dans le frontend
-  } catch (error) {
-    if (error.message === "RESERVATION_CONFLICT") {
-      response.status(409).json({ error: "Conflit de réservation" });
-    } else if (error.message === "SALLE_INDISPONIBLE") {
-      response.status(400).json({ error: "Salle indisponible" });
-    } else {
-      response.status(500).json({ error: "Erreur serveur" });
+app.post(
+  "/api/reservation",
+  userAuth,
+  allowRoles(1, 2),
+  async (request, response) => {
+    try {
+      const idReservation = await addReservation(request.body);
+      response.status(201).json({ idReservation }); //Logique pour pouvoir implementer les reservations dans le frontend
+    } catch (error) {
+      if (error.message === "RESERVATION_CONFLICT") {
+        response.status(409).json({ error: "Conflit de réservation" });
+      } else if (error.message === "SALLE_INDISPONIBLE") {
+        response.status(400).json({ error: "Salle indisponible" });
+      } else {
+        response.status(500).json({ error: "Erreur serveur" });
+      }
     }
-  }
-});
+  },
+);
 
 // Route pour supprimer une reservation
-app.delete("/api/reservation/:id", async (request, response) => {
-  try {
-    const deleted = await deleteReservation(request.params.id);
+app.delete(
+  "/api/reservation/:id",
+  userAuth,
+  allowRoles(1, 2),
+  async (request, response) => {
+    try {
+      const deleted = await deleteReservation(request.params.id);
 
-    if (!deleted) {
-      return response.status(404).json({ error: "Réservation introuvable" });
+      if (!deleted) {
+        return response.status(404).json({ error: "Réservation introuvable" });
+      }
+
+      response
+        .status(204)
+        .json({ message: "Réservation supprimé avec succés" });
+    } catch (error) {
+      response.status(500).json({ error: "Erreur serveur" });
     }
-
-    response.status(204).json({ message: "Réservation supprimé avec succés" });
-  } catch (error) {
-    response.status(500).json({ error: "Erreur serveur" });
-  }
-});
+  },
+);
 
 // Route pour obtenir la liste des salles
 app.get("/api/salles", async (request, response) => {

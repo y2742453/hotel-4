@@ -2,7 +2,27 @@ CREATE DATABASE IF NOT EXISTS HotelDB;
 
 use HotelDB;
 
-drop table if exists roles;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS paiements;
+
+DROP TABLE IF EXISTS factures;
+
+DROP TABLE IF EXISTS evenement_services;
+
+DROP TABLE IF EXISTS reservations;
+
+DROP TABLE IF EXISTS evenements;
+
+DROP TABLE IF EXISTS services;
+
+DROP TABLE IF EXISTS salles;
+
+DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS roles;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE roles (
     id_role INT AUTO_INCREMENT PRIMARY KEY,
@@ -16,8 +36,6 @@ VALUES ('Administrateur'),
     ('Coordonnateur'),
     ('Comptabilite');
 
-drop table if exists users;
-
 CREATE TABLE users (
     id_user INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -30,8 +48,6 @@ CREATE TABLE users (
     FOREIGN KEY (id_role) REFERENCES roles (id_role)
 );
 
-drop table if exists salles;
-
 CREATE TABLE salles (
     id_salle INT AUTO_INCREMENT PRIMARY KEY,
     nom_salle VARCHAR(100) NOT NULL,
@@ -40,16 +56,12 @@ CREATE TABLE salles (
     statut VARCHAR(20) DEFAULT 'Disponible'
 );
 
-drop table if exists services;
-
 CREATE TABLE services (
     id_service INT AUTO_INCREMENT PRIMARY KEY,
     nom_service VARCHAR(100) NOT NULL,
     description TEXT,
     tarif DECIMAL(10, 2) NOT NULL
 );
-
-drop table if exists evenements;
 
 CREATE TABLE evenements (
     id_evenement INT AUTO_INCREMENT PRIMARY KEY,
@@ -65,8 +77,6 @@ CREATE TABLE evenements (
     FOREIGN KEY (id_organisateur) REFERENCES users (id_user)
 );
 
-drop table if exists reservations;
-
 CREATE TABLE reservations (
     id_reservation INT AUTO_INCREMENT PRIMARY KEY,
     id_salle INT NOT NULL,
@@ -77,8 +87,6 @@ CREATE TABLE reservations (
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
 
-drop table if exists evenement_services;
-
 CREATE TABLE evenement_services (
     id_evenement INT NOT NULL,
     id_service INT NOT NULL,
@@ -87,8 +95,6 @@ CREATE TABLE evenement_services (
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
     FOREIGN KEY (id_service) REFERENCES services (id_service)
 );
-
-drop table if exists factures;
 
 CREATE TABLE factures (
     id_facture INT AUTO_INCREMENT PRIMARY KEY,
@@ -99,8 +105,6 @@ CREATE TABLE factures (
     date_facture DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
-
-drop table if exists paiements;
 
 CREATE TABLE paiements (
     id_paiement INT AUTO_INCREMENT PRIMARY KEY,
