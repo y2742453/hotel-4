@@ -57,22 +57,6 @@ const Calendar = () => {
     return dateString.replace("T", " ") + ":00";
   };
 
-  // Extraire tous les équipements uniques
-  const tousLesEquipements = (() => {
-    const equipementsSet = new Set();
-
-    salles.forEach((salle) => {
-      if (salle.equipements) {
-        const liste = salle.equipements.split(",").map((e) => e.trim());
-        liste.forEach((eq) => {
-          if (eq) equipementsSet.add(eq);
-        });
-      }
-    });
-
-    return Array.from(equipementsSet).sort();
-  })();
-
   // Filtrer les salles
   const sallesFiltrees = salles.filter((salle) => {
     if ((salle.statut || "").toLowerCase() !== "disponible") {
@@ -148,7 +132,7 @@ const Calendar = () => {
     try {
       const { res, data } = await apiFetch("/api/salles");
       if (!res.ok) throw new Error("Erreur réseau");
-      setSalles(data);
+      setSalles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur chargement salles:", error);
       toast.error("Erreur lors du chargement des salles.");
@@ -164,7 +148,7 @@ const Calendar = () => {
 
       if (!res.ok) throw new Error("Erreur réseau");
 
-      setEvenements(data);
+      setEvenements(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur chargement événements:", error);
       toast.error("Erreur lors du chargement des événements.");

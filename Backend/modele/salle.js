@@ -6,10 +6,10 @@ import { pool } from "../db/db.js";
  */
 export async function getSalles() {
   const [rows] = await pool.query(`
-    SELECT id_salle, nom_salle, capacite, equipements, statut
+    SELECT id_salle, nom_salle, type, capacite, equipements, statut
     FROM salles
-    ORDER BY id_salle DESC
   `);
+
   return rows;
 }
 
@@ -50,16 +50,17 @@ export async function getSalleById(id_salle) {
  */
 export async function createSalle(
   nom_salle,
+  type,
   capacite,
   equipements,
   statut = "Disponible",
 ) {
   const [result] = await pool.query(
     `
-    INSERT INTO salles (nom_salle, capacite, equipements, statut)
-    VALUES (?, ?, ?, ?)
-  `,
-    [nom_salle, capacite, equipements ?? null, statut],
+    INSERT INTO salles (nom_salle, type, capacite, equipements, statut)
+    VALUES (?, ?, ?, ?, ?)
+    `,
+    [nom_salle, type, capacite, equipements, statut]
   );
 
   return result.insertId;
@@ -77,6 +78,7 @@ export async function createSalle(
 export async function updateSalle(
   id_salle,
   nom_salle,
+  type,
   capacite,
   equipements,
   statut,
@@ -84,10 +86,10 @@ export async function updateSalle(
   const [result] = await pool.query(
     `
     UPDATE salles
-    SET nom_salle = ?, capacite = ?, equipements = ?, statut = ?
+    SET nom_salle = ?, type = ?, capacite = ?, equipements = ?, statut = ?
     WHERE id_salle = ?
-  `,
-    [nom_salle, capacite, equipements ?? null, statut, id_salle],
+    `,
+    [nom_salle, type, capacite, equipements ?? null, statut, id_salle]
   );
 
   return result.affectedRows > 0;
