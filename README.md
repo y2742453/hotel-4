@@ -1,4 +1,18 @@
-# Installation du projet Hotel-4
+# Hotel-4
+
+Application web de gestion d'événements pour un hôtel.
+
+## Prérequis
+
+Les logiciels suivants doivent être installés avant d'exécuter le projet :
+
+1. Node.js: [https://nodejs.org/fr/download](https://nodejs.org/fr/download)
+2. MySQL Server: [https://dev.mysql.com/downloads/mysql/](https://dev.mysql.com/downloads/mysql/)
+3. MySQL Workbench (optionnel pour gérer la base de données):
+   [https://dev.mysql.com/downloads/workbench/](https://dev.mysql.com/downloads/workbench/)
+4. Git: [https://git-scm.com/install/](https://git-scm.com/install/)
+
+## Installation du projet Hotel-4
 
 ```bash
 git clone https://github.com/y2742453/hotel-4.git
@@ -29,6 +43,8 @@ SESSION_SECRET="hkjdshfkjnhfkjdnhfjdhfkjdfdfdn"
 
 Vous pouvez modifier le fichier `.env` selon vos besoins pour qu'il corresponde à votre configuration MySQL locale.
 
+### Configuration de la base de données
+
 Il faut donner les permissions nécessaires si vous créez un utilisateur (ici `admin`) avec une commande comme :
 
 ```sql
@@ -39,18 +55,18 @@ FLUSH PRIVILEGES;
 Importer le schéma :
 
 ```bash
-mysql -u admin -p < Database/schema.sql
+mysql -u admin -p < ../Database/hotel.sql
 ```
 
-Entrer le mot de passe : `admin` (ou `DB_PASSWORD`).
+Entrer le mot de passe défini dans DB_PASSWORD.
 
 Données pour la démonstration et les tests :
 
 ```bash
-mysql -u admin -p HotelDB < Database/seed.sql
+mysql -u admin -p HotelDB < ../Database/seed.sql
 ```
 
-Entrer le mot de passe : `admin` (ou `DB_PASSWORD`).
+Entrer le mot de passe défini dans DB_PASSWORD.
 
 ```bash
 cd ../Frontend
@@ -63,4 +79,36 @@ Dans `Frontend/.env`, ajouter la route du backend :
 VITE_API_URL=http://localhost:5001
 ```
 
-(Remplacer par votre route backend si différente.)
+### Lancer le projet:
+
+Tout d'abord, ouvrir deux terminaux (bash ou cmd).
+
+- Depuis un premier terminal
+
+```bash
+cd Backend
+npm run dev
+```
+
+La console doit afficher le message `Connecté à la base de données MySQL`
+
+- Depuis le deuxième terminal
+
+```bash
+cd Frontend
+npm run dev
+```
+
+Les deux terminaux doivent se lancer sans erreur.
+
+L'application sera accessible à l'adresse suivante :
+
+http://localhost:5173
+
+### Compte administrateur par défaut:
+
+Email: admin@hotel.com
+
+Mot de passe: admin123
+
+Pour des raisons de sécurité, il est fortement recommandé de changer ce mot de passe.
