@@ -45,7 +45,9 @@ Vous pouvez modifier le fichier `.env` selon vos besoins pour qu'il corresponde 
 
 ### Configuration de la base de données
 
-Il faut donner les permissions nécessaires si vous créez un utilisateur (ici `admin`) avec une commande comme :
+Premierement, il faut creer un utilisateur `admin` avec mot de passe `admin`.
+
+Il faut donner les permissions nécessaires à partir de `root` si vous créez un utilisateur (ici `admin`) avec une commande comme :
 
 ```sql
 GRANT ALL PRIVILEGES ON HotelDB.* TO 'admin'@'%';
