@@ -1,3 +1,5 @@
+use HotelDB;
+
 INSERT INTO
     `users` (
         `nom`,

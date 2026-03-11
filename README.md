@@ -52,18 +52,24 @@ GRANT ALL PRIVILEGES ON HotelDB.* TO 'admin'@'%';
 FLUSH PRIVILEGES;
 ```
 
-Importer le schéma :
+Depuis workbench ou un query sql copiez, coller et executer le contenu de `hotel.sql`
+
+Ou importer le schéma avec cette commande:
 
 ```bash
-mysql -u admin -p < ../Database/hotel.sql
+mysql -u admin -p < Database/hotel.sql
 ```
 
 Entrer le mot de passe défini dans DB_PASSWORD.
 
 Données pour la démonstration et les tests :
 
+Depuis workbench ou un query sql copiez, coller et executer le contenu de `seed.sql`
+
+Ou:
+
 ```bash
-mysql -u admin -p HotelDB < ../Database/seed.sql
+mysql -u admin -p HotelDB < Database/seed.sql
 ```
 
 Entrer le mot de passe défini dans DB_PASSWORD.
