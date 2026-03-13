@@ -57,8 +57,6 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
 }
 
 .btn:active {
@@ -68,29 +66,29 @@
 /* ----- Variantes (plus spécifiques pour ne pas être écrasées) ----- */
 
 /* Neutre */
-.btn.btnGhost {
+.btn .btnGhost {
   background-color: #ffffff;
   border-color: #d7dee8;
   color: #0f172a;
 }
-.btn.btnGhost:hover {
+.btn .btnGhost:hover {
   background-color: #eef3fb;
   border-color: #c7d3ea;
 }
 
 /* Principal (Bleu) */
-.btn.btnPrimary {
+.btn .btnPrimary {
   background-color: #1f4db8;
   border-color: #1f4db8;
   color: #ffffff;
 }
-.btn.btnPrimary:hover {
+.btn .btnPrimary:hover {
   background-color: #1a42a0;
   border-color: #1a42a0;
 }
 
 /* Attention (Orange) */
-.btn.btnWarn {
+.btn .btnWarn {
   background-color: #f59e0b;
   border-color: #f59e0b;
   color: #ffffff;
@@ -101,12 +99,12 @@
 }
 
 /* Danger (Rouge) */
-.btn.btnDanger {
+.btn .btnDanger {
   background-color: #dc2626;
   border-color: #dc2626;
   color: #ffffff;
 }
-.btn.btnDanger:hover {
+.btn .btnDanger:hover {
   background-color: #b91c1c;
   border-color: #b91c1c;
 }
