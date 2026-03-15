@@ -53,6 +53,14 @@ import {
 
 import { allowRoles, userAuth, userNotAuth } from "./Midlewares/auth.js";
 
+// import  des services de restauration
+import {
+  createRestaurationRequest,
+  getRestaurationRequestByEvent,
+  updateRestaurationRequest,
+  restaurationRequestExists,
+} from "./modele/evenementService.js";
+
 // Création du serveur
 const app = express();
 
@@ -597,6 +605,148 @@ app.post("/api/evenements", async (req, res) => {
   }
 });
 
+
+/**
+ * Créer une demande de restauration
+ * POST /api/restauration
+ * Accès : Organisateur uniquement
+ */
+app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
+  try {
+    const { id_evenement, id_service, details, quantite, montant_estime } = req.body;
+
+    if (!id_evenement || !id_service) {
+      return res.status(400).json({
+        message: "id_evenement et id_service sont requis",
+      });
+    }
+
+    const exists = await restaurationRequestExists(id_evenement, id_service);
+
+    if (exists) {
+      return res.status(409).json({
+        message: "Une demande de restauration existe déjà pour cet événement",
+      });
+    }
+
+    const created = await createRestaurationRequest({
+      id_evenement,
+      id_service,
+      details,
+      quantite,
+      montant_estime,
+    });
+
+    if (!created) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de la demande de restauration",
+      });
+    }
+
+    return res.status(201).json({
+      message: "Demande de restauration créée avec succès",
+    });
+  } catch (error) {
+    console.error("Erreur POST /api/restauration :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+
+/**
+ * Lire une demande de restauration
+ * GET /api/restauration/:id_evenement/:id_service
+ * Accès : Organisateur uniquement
+ */
+app.get(
+  "/api/restauration/:id_evenement/:id_service",
+  userAuth,
+  allowRoles(2),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+
+      if (!id_evenement || !id_service) {
+        return res.status(400).json({
+          message: "id_evenement et id_service sont requis",
+        });
+      }
+
+      const demande = await getRestaurationRequestByEvent(id_evenement, id_service);
+
+      if (!demande) {
+        return res.status(404).json({
+          message: "Demande de restauration introuvable",
+        });
+      }
+
+      return res.status(200).json(demande);
+    } catch (error) {
+      console.error("Erreur GET /api/restauration/:id_evenement/:id_service :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
+);
+
+
+/**
+ * Modifier une demande de restauration
+ * PUT /api/restauration/:id_evenement/:id_service
+ * Accès : Organisateur uniquement
+ */
+app.put(
+  "/api/restauration/:id_evenement/:id_service",
+  userAuth,
+  allowRoles(2),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+      const { details, quantite, montant_estime } = req.body;
+
+      if (!id_evenement || !id_service) {
+        return res.status(400).json({
+          message: "id_evenement et id_service sont requis",
+        });
+      }
+
+      const exists = await restaurationRequestExists(id_evenement, id_service);
+
+      if (!exists) {
+        return res.status(404).json({
+          message: "Aucune demande de restauration à modifier",
+        });
+      }
+
+      const updated = await updateRestaurationRequest(id_evenement, id_service, {
+        details,
+        quantite,
+        montant_estime,
+      });
+
+      if (!updated) {
+        return res.status(500).json({
+          message: "Erreur lors de la mise à jour de la demande de restauration",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Demande de restauration mise à jour avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur PUT /api/restauration/:id_evenement/:id_service :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
+);
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {
