@@ -29,28 +29,13 @@ export async function getInvitesByEvent(idEvenement) {
 }
 
 /**
- * Récupère un invité par email pour un evenement
- * @param {string} email email de l'invité
- * @param {number} id_evenement ID de l'événement
- * @returns {Promise<Object|null>} - l'invité selectionné ou null
- */
-export async function getInviteByEmailAndEvent(email, id_evenement) {
-  const [rows] = await pool.execute(
-    `SELECT * FROM invites WHERE email = ? AND id_evenement = ?`,
-    [email, id_evenement],
-  );
-
-  return rows[0] || null;
-}
-
-/**
  * Ajoute un invité
  * @param {Object} invite - Données de l'invité
  * @param {number} invite.idEvenement - ID de l'événement
  * @param {string} invite.nom - nom de l'iinvité
  * @param {string} invite.prenom - prenom de l'invité
  * @param {string} invite.email - email de l'invité
- * @param {string} [invite.statut] - 'invité' par défaut, statut de l'invité
+ * @param {string} [invite.statut] - 'invite' par défaut, statut de l'invité
  * @returns {Promise<number>} ID de l'invité créé
  */
 export async function addInvite(invite) {
@@ -58,7 +43,7 @@ export async function addInvite(invite) {
     `INSERT INTO invites (id_evenement, nom, prenom, email, statut)
      VALUES (?, ?, ?, ?, ?)`,
     [
-      invite.idEvenement,
+      invite.id_evenement,
       invite.nom,
       invite.prenom,
       invite.email,
@@ -120,24 +105,4 @@ export async function deleteInvite(idInvite) {
   );
 
   return result.affectedRows > 0;
-}
-
-/**
- * Récupère les stats d'un événement
- * @param {number} idEvenement - l'id de l'événement
- * @returns {Promise<Object>} { total, confirmes, refuses, en_attente }
- */
-export async function getInviteStats(idEvenement) {
-  const [rows] = await pool.execute(
-    `SELECT 
-        COUNT(*) AS total,
-        SUM(CASE WHEN statut = 'confirme' THEN 1 ELSE 0 END) AS confirmes,
-        SUM(CASE WHEN statut = 'refuse' THEN 1 ELSE 0 END) AS refuses,
-        SUM(CASE WHEN statut = 'en attente' THEN 1 ELSE 0 END) AS en_attente
-     FROM invites
-     WHERE id_evenement = ?`,
-    [idEvenement],
-  );
-
-  return rows[0];
 }

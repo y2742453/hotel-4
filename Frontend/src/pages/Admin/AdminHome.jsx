@@ -14,6 +14,7 @@ import {
   FaListAlt,
   FaCalendar,
   FaCalendarAlt,
+  FaEnvelopeOpenText,
 } from "react-icons/fa";
 
 export default function AdminHome() {
@@ -53,6 +54,13 @@ export default function AdminHome() {
       desc: "Reserver une salle",
       icon: <FaCalendar />,
       to: "/admin/reservations",
+      enabled: true,
+    },
+    {
+      title: "Invités",
+      desc: "Gestion des invités",
+      icon: <FaEnvelopeOpenText />,
+      to: "/admin/invites",
       enabled: true,
     },
     {

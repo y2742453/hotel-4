@@ -1,0 +1,304 @@
+/* Page */
+.page {
+  padding: 20px;
+}
+
+.invites-page h2 {
+  margin-bottom: 20px;
+}
+
+/* ===================== */
+/* SECTION / CARD */
+/* ===================== */
+.section-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* ===================== */
+/* TOP ACTION BAR */
+/* ===================== */
+.invites-page > select {
+  margin-bottom: 15px;
+}
+
+.invites-page .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 15px 0;
+}
+
+/* File input alignment fix */
+.invites-page .actions input[type="file"] {
+  margin: 0;
+}
+
+/* Make buttons consistent height */
+.invites-page .actions button {
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+/* Optional: align select nicely */
+.invites-page > select {
+  margin-bottom: 15px;
+  height: 36px;
+}
+
+/* ===================== */
+/* INPUTS */
+/* ===================== */
+select,
+input[type="file"],
+.modal input,
+.modal select {
+  display: block;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Modal inputs full width */
+.modal input,
+.modal select {
+  max-width: 100%;
+}
+
+/* ===================== */
+/* BUTTONS */
+/* ===================== */
+
+.btnPrimary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.btnPrimary:hover {
+  background-color: #1e4fd6;
+}
+
+.btnDanger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.btnDanger:hover {
+  background-color: #b91c1c;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===================== */
+/* TABLE */
+/* ===================== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.table th {
+  background: #f3f4f6;
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.table td {
+  padding: 12px;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+}
+
+/* Row hover */
+.table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.table th:last-child,
+.table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.table td:last-child {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+/* ===================== */
+/* MODAL */
+/* ===================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+  margin-bottom: 5px;
+}
+
+/* Modal buttons */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+/* STATUS BADGES */
+.status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Colors */
+.status.invite {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.status.confirme {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status.refuse {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status.en_attente {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* BASE BUTTON */
+button {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnPrimary {
+  background: #2563eb;
+  color: white;
+}
+
+.btnPrimary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btnDanger {
+  background: #dc2626;
+  color: white;
+}
+
+.btnDanger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.btnSecondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btnSecondary:hover {
+  background: #d1d5db;
+}
+
+.table td button {
+  margin-right: 6px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Status text styling */
+.table td:nth-child(4) {
+  font-weight: 500;
+}
+
+/* Optional color coding */
+.table td:nth-child(4):has(span.invite) {
+  color: #2563eb;
+}
+.table td:nth-child(4):has(span.confirme) {
+  color: #16a34a;
+}
+.table td:nth-child(4):has(span.refuse) {
+  color: #dc2626;
+}
+.table td:nth-child(4):has(span.en_attente) {
+  color: #6b7280;
+}
+
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+@media (max-width: 768px) {
+  .table {
+    font-size: 12px;
+  }
+
+  .modal {
+    width: 90%;
+  }
+
+  .invites-page .actions {
+    flex-direction: column;
+  }
+}
