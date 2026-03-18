@@ -27,6 +27,8 @@ import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import SallesPage from "./pages/Admin/Salles.jsx";
 import ServicesPage from "./pages/Admin/Services.jsx";
 import EvenementsAdmin from "./pages/Admin/Evenements.jsx";
+import ListeEvenements from "./pages/Organisateur/ListeEvenements.jsx";
+
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div style={{ padding: 20 }}>Chargement...</div>;
@@ -140,16 +142,33 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route
+                path="organisateur/evenements"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <ListeEvenements />
+                  </RoleGate>
+                }
+              />
 
-            <Route
-            path="organisateur/evenements"
-            element={
-             <RoleGate allowedRoles={[2]}>
-              <CreerEvenement />
-            </RoleGate>
-           }
-          />  
-          </Route>          
+              <Route
+                path="organisateur/evenements/creer"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <CreerEvenement />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="organisateur/evenements/modifier/:id"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <CreerEvenement />
+                  </RoleGate>
+                }
+              />
+            </Route>
             <Route path="*" element={<Notfound />} />
           </Routes>
         </BrowserRouter>
