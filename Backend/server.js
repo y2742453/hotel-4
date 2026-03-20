@@ -608,6 +608,81 @@ app.post("/api/evenements", async (req, res) => {
     });
   }
 });
+//Modification d'un événement
+app.put("/api/evenements/:id", async (req, res) => {
+
+  const id = req.params.id;
+
+  const {
+    nom_evenement,
+    type_evenement,
+    description,
+    date_debut,
+    date_fin,
+    id_salle,
+    nb_participants,
+    budget
+  } = req.body;
+
+  try {
+
+    const [result] = await pool.query(
+      `UPDATE evenements
+       SET nom_evenement=?, type_evenement=?, description=?, date_debut=?, date_fin=?, id_salle=?, nb_participants=?, budget=?, updated_at=NOW()
+       WHERE id_evenement=?`,
+      [
+        nom_evenement,
+        type_evenement,
+        description,
+        date_debut,
+        date_fin,
+        id_salle,
+        nb_participants,
+        budget,
+        id
+      ]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    res.json({ message: "Événement modifié avec succès" });
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+
+  }
+
+});
+//Annuler evenement
+app.put("/api/evenements/:id/annuler", async (req, res) => {
+
+  const id = req.params.id;
+
+  try {
+
+    const [result] = await pool.query(
+      "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    res.json({ message: "Événement annulé avec succès" });
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+
+  }
+
+});
 
 
 /**
