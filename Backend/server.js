@@ -55,13 +55,17 @@ import { allowRoles, userAuth, userNotAuth } from "./Midlewares/auth.js";
 
 // import  des services de restauration
 import {
-  createRestaurationRequest,
-  getRestaurationRequestByEvent,
-  updateRestaurationRequest,
-  restaurationRequestExists,
+  createServiceRequest,
+  getServiceRequestByEvent,
+  getAllServiceRequests,
+  getPendingServiceRequests,
+  getAllServiceRequestsByEvent,
+  updateServiceRequest,
+  updateServiceRequestStatus,
+  serviceRequestExists,
 } from "./modele/evenementService.js";
 
-// Création du serveur
+// Création du serveur  `
 const app = express();
 
 // Initialisation du store de session
@@ -607,11 +611,11 @@ app.post("/api/evenements", async (req, res) => {
 
 
 /**
- * Créer une demande de restauration
- * POST /api/restauration
- * Accès : Organisateur uniquement
+ * Créer une demande de service
+ * POST /api/services
+ * Accès : Organisateur
  */
-app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
+app.post("/api/evenementservices", userAuth, allowRoles(1,2), async (req, res) => {
   try {
     const { id_evenement, id_service, details, quantite, montant_estime } = req.body;
 
@@ -621,15 +625,15 @@ app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
       });
     }
 
-    const exists = await restaurationRequestExists(id_evenement, id_service);
+    const exists = await serviceRequestExists(id_evenement, id_service);
 
     if (exists) {
       return res.status(409).json({
-        message: "Une demande de restauration existe déjà pour cet événement",
+        message: "Une demande existe déjà pour cet événement et ce service",
       });
     }
 
-    const created = await createRestaurationRequest({
+    const created = await createServiceRequest({
       id_evenement,
       id_service,
       details,
@@ -639,15 +643,15 @@ app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
 
     if (!created) {
       return res.status(500).json({
-        message: "Erreur lors de la création de la demande de restauration",
+        message: "Erreur lors de la création de la demande de service",
       });
     }
 
     return res.status(201).json({
-      message: "Demande de restauration créée avec succès",
+      message: "Demande de service créée avec succès",
     });
   } catch (error) {
-    console.error("Erreur POST /api/restauration :", error);
+    console.error("Erreur POST /api/services :", error);
     return res.status(500).json({
       message: "Erreur serveur",
       error: error.message,
@@ -655,37 +659,30 @@ app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
   }
 });
 
-
 /**
- * Lire une demande de restauration
- * GET /api/restauration/:id_evenement/:id_service
- * Accès : Organisateur uniquement
+ * Lire une demande de service
+ * GET /api/services/:id_evenement/:id_service
+ * Accès : Organisateur
  */
 app.get(
-  "/api/restauration/:id_evenement/:id_service",
+  "/api/evenementservices/:id_evenement/:id_service",
   userAuth,
-  allowRoles(2),
+  allowRoles(1,2),
   async (req, res) => {
     try {
       const { id_evenement, id_service } = req.params;
 
-      if (!id_evenement || !id_service) {
-        return res.status(400).json({
-          message: "id_evenement et id_service sont requis",
-        });
-      }
-
-      const demande = await getRestaurationRequestByEvent(id_evenement, id_service);
+      const demande = await getServiceRequestByEvent(id_evenement, id_service);
 
       if (!demande) {
         return res.status(404).json({
-          message: "Demande de restauration introuvable",
+          message: "Demande de service introuvable",
         });
       }
 
       return res.status(200).json(demande);
     } catch (error) {
-      console.error("Erreur GET /api/restauration/:id_evenement/:id_service :", error);
+      console.error("Erreur GET /api/services/:id_evenement/:id_service :", error);
       return res.status(500).json({
         message: "Erreur serveur",
         error: error.message,
@@ -694,36 +691,29 @@ app.get(
   }
 );
 
-
 /**
- * Modifier une demande de restauration
- * PUT /api/restauration/:id_evenement/:id_service
- * Accès : Organisateur uniquement
+ * Modifier une demande de service
+ * PUT /api/services/:id_evenement/:id_service
+ * Accès : Organisateur
  */
 app.put(
-  "/api/restauration/:id_evenement/:id_service",
+  "/api/evenementservices/:id_evenement/:id_service",
   userAuth,
-  allowRoles(2),
+  allowRoles(1,2),
   async (req, res) => {
     try {
       const { id_evenement, id_service } = req.params;
       const { details, quantite, montant_estime } = req.body;
 
-      if (!id_evenement || !id_service) {
-        return res.status(400).json({
-          message: "id_evenement et id_service sont requis",
-        });
-      }
-
-      const exists = await restaurationRequestExists(id_evenement, id_service);
+      const exists = await serviceRequestExists(id_evenement, id_service);
 
       if (!exists) {
         return res.status(404).json({
-          message: "Aucune demande de restauration à modifier",
+          message: "Aucune demande de service à modifier",
         });
       }
 
-      const updated = await updateRestaurationRequest(id_evenement, id_service, {
+      const updated = await updateServiceRequest(id_evenement, id_service, {
         details,
         quantite,
         montant_estime,
@@ -731,15 +721,15 @@ app.put(
 
       if (!updated) {
         return res.status(500).json({
-          message: "Erreur lors de la mise à jour de la demande de restauration",
+          message: "Erreur lors de la mise à jour de la demande de service",
         });
       }
 
       return res.status(200).json({
-        message: "Demande de restauration mise à jour avec succès",
+        message: "Demande de service mise à jour avec succès",
       });
     } catch (error) {
-      console.error("Erreur PUT /api/restauration/:id_evenement/:id_service :", error);
+      console.error("Erreur PUT /api/services/:id_evenement/:id_service :", error);
       return res.status(500).json({
         message: "Erreur serveur",
         error: error.message,

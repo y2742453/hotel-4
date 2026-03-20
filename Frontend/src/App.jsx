@@ -27,6 +27,7 @@ import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import SallesPage from "./pages/Admin/Salles.jsx";
 import ServicesPage from "./pages/Admin/Services.jsx";
 import EvenementsAdmin from "./pages/Admin/Evenements.jsx";
+import EvenementServices from "./pages/Organisateur/EvenementServices.jsx";
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div style={{ padding: 20 }}>Chargement...</div>;
