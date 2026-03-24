@@ -128,7 +128,7 @@ CREATE TABLE invites (
         'confirme',
         'refuse',
         'en_attente'
-    ) DEFAULT 'invite',
+    ) DEFAULT 'en_attente',
     date_invitation DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
     UNIQUE KEY unique_email_event (email, id_evenement)

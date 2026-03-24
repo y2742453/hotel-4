@@ -81,20 +81,6 @@ export default function AppShell() {
                 Événements
               </NavLink>
 
-              <NavLink to="/admin/reservations" className={linkClass}>
-                <span className="ico">
-                  <FaCalendar />
-                </span>
-                Reservations
-              </NavLink>
-
-              <NavLink to="/admin/invites" className={linkClass}>
-                <span>
-                  <FaEnvelopeOpenText />
-                </span>
-                Invités
-              </NavLink>
-
               <NavLink to="/admin/facturation" className={linkClass}>
                 <span className="ico">
                   <FaFileInvoiceDollar />
@@ -125,7 +111,7 @@ export default function AppShell() {
                 Réservations
               </NavLink>
               <NavLink to="/organisateur/invites" className={linkClass}>
-                <span>
+                <span className="ico">
                   <FaEnvelopeOpenText />
                 </span>
                 Invités

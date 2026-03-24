@@ -50,20 +50,6 @@ export default function AdminHome() {
       enabled: true,
     },
     {
-      title: "Reservations",
-      desc: "Reserver une salle",
-      icon: <FaCalendar />,
-      to: "/admin/reservations",
-      enabled: true,
-    },
-    {
-      title: "Invités",
-      desc: "Gestion des invités",
-      icon: <FaEnvelopeOpenText />,
-      to: "/admin/invites",
-      enabled: true,
-    },
-    {
       title: "Tarification",
       desc: "Prix & promotions",
       icon: <FaTags />,

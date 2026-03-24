@@ -18,13 +18,6 @@ export default function OrganisateurHome() {
 
   const actions = [
     {
-      title: "Mes clients",
-      desc: "Liste & gestion des clients",
-      icon: <FaUsers />,
-      to: "/organisateur/clients",
-      enabled: false,
-    },
-    {
       title: "Événements",
       desc: "Créer un evenement",
       icon: <FaCalendarAlt />,

@@ -44,13 +44,6 @@ import {
   deleteService,
 } from "./modele/service.js";
 import { createEvenement, getAllEvenements } from "./modele/evenement.js";
-import {
-  addInvite,
-  deleteInvite,
-  getInviteById,
-  getInvitesByEvent,
-  updateInvite,
-} from "./modele/invite.js";
 import inviteRoutes from "./routes/invite.js";
 
 // Import middlewares
@@ -101,7 +94,7 @@ app.use(passport.session());
 app.use(express.static("public"));
 
 // Route pour import de fichier CSV/Excel des invités
-app.use("/api/invites", allowRoles(1, 2), inviteRoutes);
+app.use("/api/invites", allowRoles(2), inviteRoutes);
 
 // ROUTES AUTHENTIFICATION
 

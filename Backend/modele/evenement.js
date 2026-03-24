@@ -118,3 +118,12 @@ export async function getAllEvenements() {
   const [rows] = await pool.query("SELECT * FROM evenements");
   return rows;
 }
+
+export async function getEvenementById(id_evenement) {
+  const [rows] = await pool.execute(
+    "SELECT * FROM evenements WHERE id_evenement = ?",
+    [id_evenement],
+  );
+
+  return rows[0] || null;
+}

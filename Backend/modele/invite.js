@@ -29,13 +29,37 @@ export async function getInvitesByEvent(idEvenement) {
 }
 
 /**
+ * Récupère tous les status des invités d'un événement
+ * @param {number} id_evenement l'id de l'événement
+ * @returns {Array} - Les status des invités filtrées dans un objet
+ */
+export async function getStatsByEvent(id_evenement) {
+  const [rows] = await pool.execute(
+    `SELECT statut, COUNT(*) AS total
+     FROM invites
+     WHERE id_evenement = ?
+     GROUP BY statut`,
+    [id_evenement],
+  );
+
+  const stats = { en_attente: 0, invite: 0, confirme: 0, refuse: 0 };
+  rows.forEach((row) => {
+    if (row.statut && stats.hasOwnProperty(row.statut)) {
+      stats[row.statut] = Number(row.total);
+    }
+  });
+
+  return stats;
+}
+
+/**
  * Ajoute un invité
  * @param {Object} invite - Données de l'invité
  * @param {number} invite.idEvenement - ID de l'événement
  * @param {string} invite.nom - nom de l'iinvité
  * @param {string} invite.prenom - prenom de l'invité
  * @param {string} invite.email - email de l'invité
- * @param {string} [invite.statut] - 'invite' par défaut, statut de l'invité
+ * @param {string} [invite.statut] - 'En attente' par défaut, statut de l'invité
  * @returns {Promise<number>} ID de l'invité créé
  */
 export async function addInvite(invite) {
@@ -47,7 +71,7 @@ export async function addInvite(invite) {
       invite.nom,
       invite.prenom,
       invite.email,
-      invite.statut || "invite",
+      invite.statut || "en_attente",
     ],
   );
 
