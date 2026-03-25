@@ -1,19 +1,88 @@
-import { test, expect, beforeAll, afterEach } from "@jest/globals";
+import { test, expect, beforeAll, afterEach, afterAll } from "@jest/globals";
 import {
   addReservation,
   hasConflict,
   getReservationsBySalle,
 } from "../../modele/reservation.js";
 import { pool } from "../../db/db.js";
-import { afterAll } from "@jest/globals";
 
-// Variables globales pour les tests
 let testSalle;
 let testEvenement;
 let testUser;
 
 beforeAll(async () => {
-  // Netoyage des tables
+  await pool.query("CREATE DATABASE IF NOT EXISTS HotelDB_Test");
+  await pool.query("USE HotelDB_Test");
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS roles (
+      id_role INT AUTO_INCREMENT PRIMARY KEY,
+      nom_role VARCHAR(50) NOT NULL UNIQUE
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id_user INT AUTO_INCREMENT PRIMARY KEY,
+      nom VARCHAR(100) NOT NULL,
+      prenom VARCHAR(100) NOT NULL,
+      email VARCHAR(150) NOT NULL UNIQUE,
+      mot_de_passe VARCHAR(255) NOT NULL,
+      actif BOOLEAN DEFAULT TRUE,
+      id_role INT NOT NULL,
+      date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (id_role) REFERENCES roles(id_role)
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS salles (
+      id_salle INT AUTO_INCREMENT PRIMARY KEY,
+      nom_salle VARCHAR(100) NOT NULL,
+      capacite INT NOT NULL,
+      equipements TEXT,
+      statut VARCHAR(20) DEFAULT 'Disponible'
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS evenements (
+      id_evenement INT AUTO_INCREMENT PRIMARY KEY,
+      nom_evenement VARCHAR(150) NOT NULL,
+      type_evenement VARCHAR(50),
+      description TEXT,
+      date_debut DATETIME NOT NULL,
+      date_fin DATETIME NOT NULL,
+      statut VARCHAR(20) DEFAULT 'Brouillon',
+      id_salle INT NOT NULL,
+      id_organisateur INT NOT NULL,
+      FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
+      FOREIGN KEY (id_organisateur) REFERENCES users(id_user)
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS reservations (
+      id_reservation INT AUTO_INCREMENT PRIMARY KEY,
+      id_salle INT NOT NULL,
+      id_evenement INT NOT NULL,
+      date_debut DATETIME NOT NULL,
+      date_fin DATETIME NOT NULL,
+      FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
+      FOREIGN KEY (id_evenement) REFERENCES evenements(id_evenement)
+    )
+  `);
+
+  const [roles] = await pool.query(
+    "SELECT * FROM roles WHERE nom_role = 'Organisateur'",
+  );
+  if (roles.length === 0) {
+    await pool.query(`
+      INSERT INTO roles (nom_role) VALUES
+      ('Administrateur'), ('Organisateur'), ('Coordonnateur'), ('Comptabilite')
+    `);
+  }
+
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   await pool.execute("TRUNCATE TABLE reservations");
   await pool.execute("TRUNCATE TABLE evenements");
@@ -21,30 +90,28 @@ beforeAll(async () => {
   await pool.execute("TRUNCATE TABLE users");
   await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 
-  // Créer un rôle si nécessaire
-  const [roleCheck] = await pool.execute(
+  const [roleResult] = await pool.execute(
     "SELECT id_role FROM roles WHERE nom_role = ?",
     ["Organisateur"],
   );
-  const roleId = roleCheck.length > 0 ? roleCheck[0].id_role : 2;
+  const roleId = roleResult[0].id_role;
 
-  // Créer un utilisateur de test
   const [userResult] = await pool.execute(
     "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
     ["Test", "User", "test@jest.com", "password123", roleId],
   );
   testUser = userResult.insertId;
 
-  // Créer une salle de test
   const [salleResult] = await pool.execute(
     "INSERT INTO salles (nom_salle, capacite, equipements, statut) VALUES (?, ?, ?, ?)",
     ["Salle Jest", 50, "Projecteur, Wifi", "Disponible"],
   );
   testSalle = salleResult.insertId;
 
-  // Créer un événement de test
   const [eventResult] = await pool.execute(
-    "INSERT INTO evenements (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    `INSERT INTO evenements 
+      (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       "Événement Jest",
       "Test",
@@ -59,9 +126,10 @@ beforeAll(async () => {
   testEvenement = eventResult.insertId;
 });
 
-// Après CHAQUE test: nettoyer
 afterEach(async () => {
-  await pool.execute("DELETE FROM reservations");
+  await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
+  await pool.execute("TRUNCATE TABLE reservations");
+  await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 });
 
 afterAll(async () => {

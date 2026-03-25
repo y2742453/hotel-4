@@ -91,7 +91,7 @@ export default function Invites() {
         return;
       }
 
-      const { res } = await apiFetch("/api/invites", {
+      const { res, data } = await apiFetch("/api/invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +104,9 @@ export default function Invites() {
         toast.success("Invité ajouté");
         setIsAdding(false);
         loadInvites();
-      } else toast.error("Erreur ajout");
+      } else {
+        toast.error(data?.error || "Erreur ajout");
+      }
     } catch {
       toast.error("Erreur serveur");
     }
@@ -117,7 +119,7 @@ export default function Invites() {
         return;
       }
 
-      const { res } = await apiFetch(
+      const { res, data } = await apiFetch(
         `/api/invites/${editingInvite.id_invite}`,
         {
           method: "PUT",
@@ -130,23 +132,29 @@ export default function Invites() {
         toast.success("Mis à jour");
         setEditingInvite(null);
         loadInvites();
-      } else toast.error("Erreur");
+      } else {
+        toast.error(data?.error || "Erreur");
+      }
     } catch {
       toast.error("Erreur serveur");
     }
   };
 
   const handleDelete = async (id) => {
-    const { res } = await apiFetch(`/api/invites/${id}`, { method: "DELETE" });
+    const { res, data } = await apiFetch(`/api/invites/${id}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
       setInvites((prev) => prev.filter((i) => i.id_invite !== id));
       loadStats();
-    } else toast.error("Erreur suppression");
+    } else {
+      toast.error(data?.error || "Erreur suppression");
+    }
   };
 
   const updateStatut = async (id, statut) => {
     try {
-      const { res } = await apiFetch(`/api/invites/${id}`, {
+      const { res, data } = await apiFetch(`/api/invites/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ statut }),
@@ -159,7 +167,7 @@ export default function Invites() {
 
         setTimeout(() => setUpdatedRow(null), 800);
       } else {
-        toast.error("Erreur");
+        toast.error(data?.error || "Erreur");
       }
     } catch {
       toast.error("Erreur serveur");
@@ -180,12 +188,22 @@ export default function Invites() {
       rows = XLSX.utils.sheet_to_json(sheet);
     }
 
-    await apiFetch(`/api/invites/import/${selectedEvent.id_evenement}`, {
-      method: "POST",
-      body: JSON.stringify({ rows }),
-    });
+    const { res, data } = await apiFetch(
+      `/api/invites/import/${selectedEvent.id_evenement}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ rows }),
+      },
+    );
 
-    toast.success("Import terminé");
+    if (!res.ok) {
+      toast.error(data?.error || "Erreur import");
+      return;
+    }
+
+    toast.success(
+      `Import terminé: ${data.success} succès, ${data.errors} erreurs`,
+    );
     setFile(null);
     loadInvites();
   };
@@ -212,7 +230,7 @@ export default function Invites() {
       loadInvites();
     } catch (err) {
       console.error(err);
-      toast.error("Erreur envoi");
+      toast.error(err.message || "Erreur envoi");
     }
   };
 

@@ -31,7 +31,7 @@ CREATE TABLE roles (
     nom_role VARCHAR(50) NOT NULL UNIQUE
 );
 
-INSERT INTO
+INSERT IGNORE INTO
     roles (nom_role)
 VALUES ('Administrateur'),
     ('Organisateur'),

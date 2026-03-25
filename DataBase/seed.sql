@@ -1,4 +1,14 @@
-use HotelDB;
+USE HotelDB;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE evenements;
+
+TRUNCATE TABLE salles;
+
+TRUNCATE TABLE users;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO
     `users` (
@@ -157,28 +167,24 @@ VALUES (
 
 INSERT INTO
     `salles` (
-        `id_salle`,
         `nom_salle`,
         `capacite`,
         `equipements`,
         `statut`
     )
 VALUES (
-        1,
         'Salle Versailles',
         100,
         'Projecteur',
         'Disponible'
     ),
     (
-        2,
         'Salle Champs-Élysées',
         50,
         'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
         'Disponible'
     ),
     (
-        3,
         'Salle Montmartre',
         30,
         NULL,
@@ -187,7 +193,6 @@ VALUES (
 
 INSERT INTO
     `evenements` (
-        `id_evenement`,
         `nom_evenement`,
         `type_evenement`,
         `description`,
@@ -198,7 +203,6 @@ INSERT INTO
         `id_organisateur`
     )
 VALUES (
-        1,
         'Événement Test',
         'Réunion',
         'Pour tester les réservations : Cette section permet de simuler des réservations afin de vérifier le fonctionnement du système. On peut créer, modifier ou annuler des réservations fictives pour voir comment le calendrier et les notifications réagissent, sans affecter les données réelles.',
@@ -209,7 +213,6 @@ VALUES (
         1
     ),
     (
-        2,
         'Réunion Projet Alpha',
         'Réunion',
         'Réunion de suivi du projet Alpha',
@@ -220,7 +223,6 @@ VALUES (
         1
     ),
     (
-        3,
         'Conférence Marketing',
         'Conférence',
         'Présentation des nouvelles stratégies marketing',
@@ -231,7 +233,6 @@ VALUES (
         1
     ),
     (
-        4,
         'Atelier Design',
         'Atelier',
         'Atelier pratique sur le design UX/UI',
@@ -242,7 +243,6 @@ VALUES (
         1
     ),
     (
-        5,
         'Séminaire RH',
         'Séminaire',
         'Séminaire sur la gestion des talents',
@@ -253,7 +253,6 @@ VALUES (
         1
     ),
     (
-        6,
         'Formation Sécurité',
         'Formation',
         'Formation obligatoire sur la sécurité informatique',
