@@ -3,7 +3,7 @@ import "dotenv/config";
 import express from "express";
 import multer from "multer";
 import { Parser } from "json2csv";
-// import nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 
 import {
   addInvite,
@@ -13,23 +13,12 @@ import {
   getStatsByEvent,
   updateInvite,
 } from "../modele/invite.js";
-// import { getEvenementById } from "../modele/evenement.js";
+import { sendInvitation } from "../services/emailService.js";
+import { getEvenementById } from "../modele/evenement.js";
 import { emailEstValide } from "../Midlewares/validation.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
-
-// Fonction pour formatter la date
-// function formatDate(date) {
-//   if (!date) return "À confirmer";
-
-//   return new Date(date).toLocaleDateString("fr-CA", {
-//     weekday: "long",
-//     year: "numeric",
-//     month: "long",
-//     day: "numeric",
-//   });
-// }
 
 // Ajouter un invité
 router.post("/", emailEstValide, async (req, res) => {
@@ -203,110 +192,43 @@ router.get("/export/:id_evenement", async (req, res) => {
 });
 
 // Envoyer une invitation
-// router.post("/send/:id", async (req, res) => {
-//   try {
-//     const id = Number(req.params.id);
+router.post("/send/:id", async (req, res) => {
+  try {
+    const invite = await getInviteById(Number(req.params.id));
+    if (!invite) return res.status(404).json({ error: "Invité non trouvé" });
 
-//     const invite = await getInviteById(id);
-//     if (!invite) return res.status(404).json({ error: "Invité non trouvé" });
+    const evenement = await getEvenementById(invite.id_evenement);
+    if (!evenement)
+      return res.status(404).json({ error: "Événement non trouvé" });
 
-//     const evenement = await getEventById(invite.id_evenement);
-//     if (!evenement)
-//       return res.status(404).json({ error: "Événement introuvable" });
+    await sendInvitation(invite, evenement);
 
-//     const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
-//     const confirmUrl = `${baseUrl}/api/invites/respond/${invite.id_invite}?response=confirm`;
-//     const declineUrl = `${baseUrl}/api/invites/respond/${invite.id_invite}?response=refuse`;
+    await updateInvite(invite.id_invite, { statut: "invite" });
 
-//     const html = `
-//       <div style="font-family: Arial; background:#f4f4f4; padding:20px;">
-//         <div style="max-width:600px; margin:auto; background:white; border-radius:8px; overflow:hidden;">
+    res.json({ message: "Invitation envoyée" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-//           <div style="background:#2563eb; color:white; padding:20px; text-align:center;">
-//             <h1>Invitation</h1>
-//           </div>
+// Réponse à l'invitation
+router.get("/respond/:id_invite", async (req, res) => {
+  try {
+    const id = Number(req.params.id_invite);
+    const { response } = req.query;
 
-//           <div style="padding:25px;">
-//             <p>Bonjour <strong>${invite.prenom} ${invite.nom}</strong>,</p>
+    if (!["confirm", "decline"].includes(response)) {
+      return res.status(400).json({ error: "Réponse invalide" });
+    }
 
-//             <p>Vous êtes invité à :</p>
+    const statut = response === "confirm" ? "confirme" : "refuse";
 
-//             <div style="background:#f9fafb; padding:20px; border-left:4px solid #2563eb; border-radius:6px;">
-//               <h2 style="margin-top:0;">${evenement.nom_evenement}</h2>
-//               <p><strong>Date :</strong> ${formatDate(evenement.date_debut)}</p>
-//               ${
-//                 evenement.description
-//                   ? `<p><strong>📝 Description :</strong> ${evenement.description}</p>`
-//                   : ""
-//               }
-//             </div>
+    await updateInvite(id, { statut });
 
-//             <p>Merci de confirmer votre présence :</p>
-
-//             <div style="text-align:center; margin:30px 0;">
-//               <a href="${confirmUrl}"
-//                  style="background:#16a34a; color:white; padding:12px 25px; text-decoration:none; border-radius:6px; margin-right:10px;">
-//                  Confirmer
-//               </a>
-
-//               <a href="${declineUrl}"
-//                  style="background:#dc2626; color:white; padding:12px 25px; text-decoration:none; border-radius:6px;">
-//                  Refuser
-//               </a>
-//             </div>
-
-//             <p style="font-size:12px; color:#666;">
-//               Si les boutons ne fonctionnent pas :<br/>
-//               Confirmer : ${confirmUrl}<br/>
-//               Refuser : ${declineUrl}
-//             </p>
-//           </div>
-
-//           <div style="text-align:center; font-size:12px; color:#888; padding:15px;">
-//             <p>Email automatique - ne pas répondre</p>
-//             <p>© ${new Date().getFullYear()}</p>
-//           </div>
-
-//         </div>
-//       </div>
-//     `;
-
-//     // ✅ Create Ethereal test account
-//     const testAccount = await nodemailer.createTestAccount();
-
-//     // ✅ Use Ethereal credentials
-//     const transporter = nodemailer.createTransport({
-//       host: testAccount.smtp.host,
-//       port: testAccount.smtp.port,
-//       secure: testAccount.smtp.secure,
-//       auth: {
-//         user: testAccount.user,
-//         pass: testAccount.pass,
-//       },
-//     });
-
-//     // ✅ Send email
-//     const info = await transporter.sendMail({
-//       from: '"Test App" <no-reply@hotel.com>',
-//       to: invite.email,
-//       subject: `Invitation : ${evenement.nom_evenement}`,
-//       html,
-//     });
-
-//     console.log("Message sent: %s", info.messageId);
-//     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-
-//     // Update invite status
-//     await updateInvite(id, { statut: "invite" });
-
-//     res.json({
-//       message: "Invitation envoyée",
-//       previewUrl: nodemailer.getTestMessageUrl(info),
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
+    res.send(`<h1>Merci! Réponse enregistrée!</h1>`);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;

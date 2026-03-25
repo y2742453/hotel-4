@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { useToast } from "../../Components/Toast.jsx";
 import { API_BASE, apiFetch } from "../../Api/Client.jsx";
 import "../../styles/invites.css";
-import { FaUpload } from "react-icons/fa";
+import { FaUpload, FaDownload } from "react-icons/fa";
 
 export default function Invites() {
   const toast = useToast();
@@ -25,6 +25,7 @@ export default function Invites() {
 
   const [editingInvite, setEditingInvite] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [updatedRow, setUpdatedRow] = useState(null);
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -49,7 +50,6 @@ export default function Invites() {
     );
   });
 
-  // Chargements des événements et des invités
   useEffect(() => {
     loadEvents();
   }, []);
@@ -86,6 +86,11 @@ export default function Invites() {
   // CRUD
   const handleAdd = async () => {
     try {
+      if (!formData.nom || !formData.prenom || !formData.email) {
+        toast.error("Champs manquants");
+        return;
+      }
+
       const { res } = await apiFetch("/api/invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,6 +99,7 @@ export default function Invites() {
           id_evenement: selectedEvent.id_evenement,
         }),
       });
+
       if (res.ok) {
         toast.success("Invité ajouté");
         setIsAdding(false);
@@ -106,6 +112,11 @@ export default function Invites() {
 
   const handleEdit = async () => {
     try {
+      if (!formData.nom || !formData.prenom || !formData.email) {
+        toast.error("Champs manquants");
+        return;
+      }
+
       const { res } = await apiFetch(
         `/api/invites/${editingInvite.id_invite}`,
         {
@@ -114,6 +125,7 @@ export default function Invites() {
           body: JSON.stringify(formData),
         },
       );
+
       if (res.ok) {
         toast.success("Mis à jour");
         setEditingInvite(null);
@@ -132,7 +144,29 @@ export default function Invites() {
     } else toast.error("Erreur suppression");
   };
 
-  // Imports
+  const updateStatut = async (id, statut) => {
+    try {
+      const { res } = await apiFetch(`/api/invites/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ statut }),
+      });
+
+      if (res.ok) {
+        setUpdatedRow(id);
+        loadInvites();
+        toast.success("Statut mis à jour");
+
+        setTimeout(() => setUpdatedRow(null), 800);
+      } else {
+        toast.error("Erreur");
+      }
+    } catch {
+      toast.error("Erreur serveur");
+    }
+  };
+
+  // IMPORT
   const handleImport = async () => {
     if (!file || !selectedEvent) return;
 
@@ -156,7 +190,7 @@ export default function Invites() {
     loadInvites();
   };
 
-  // Export
+  // EXPORT
   const handleExport = () => {
     if (!selectedEvent) return;
     const link = document.createElement("a");
@@ -165,16 +199,27 @@ export default function Invites() {
     link.click();
   };
 
+  // SEND ONE
+  const sendInvite = async (id) => {
+    try {
+      const { res, data } = await apiFetch(`/api/invites/send/${id}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error(data?.error);
+
+      toast.success("Invitation envoyée");
+      loadInvites();
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur envoi");
+    }
+  };
+
   return (
     <div className="page invites-page">
       <h2>Gestion des Invités</h2>
-      <p className="muted">
-        Sélectionner un événement, importer, exporter et gérer une liste
-        d'invités.
-      </p>
-
       <div className="card main-card">
-        {/* SELECT EVENT */}
         <select
           value={selectedEvent?.id_evenement || ""}
           onChange={(e) =>
@@ -195,15 +240,15 @@ export default function Invites() {
 
         {selectedEvent && (
           <>
-            {/* ACTIONS */}
             <div className="actions">
               <div className="actions-left">
                 <input
                   type="text"
-                  placeholder="Rechercher (nom, prénom, email)"
+                  placeholder="Rechercher"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
+
                 <button
                   className="btn btnPrimary"
                   onClick={() => {
@@ -216,156 +261,193 @@ export default function Invites() {
                     });
                   }}
                 >
-                  Ajouter un invité
+                  Ajouter
                 </button>
               </div>
 
               <div className="actions-right">
                 <label htmlFor="file-upload" className="custom-file-upload">
-                  <FaUpload /> {file ? file.name : "Choisissez un fichier"}
+                  <FaUpload /> {file ? file.name : "Fichier"}
                 </label>
+
                 <input
                   id="file-upload"
                   type="file"
                   onChange={(e) => setFile(e.target.files[0])}
                 />
-                {file && (
-                  <span className="clear-file" onClick={() => setFile(null)}>
-                    ×
-                  </span>
-                )}
 
-                <button onClick={handleImport} className="btn btnSecondary">
-                  Import
-                </button>
-                <button onClick={handleExport} className="btn btnSecondary">
-                  Export CSV
-                </button>
+                <div className="tooltip">
+                  <button
+                    onClick={handleImport}
+                    className="btn btnSecondary"
+                    disabled={!file}
+                  >
+                    Import
+                  </button>
+
+                  {!file && (
+                    <span className="tooltip-text">
+                      Sélectionnez un fichier d'abord
+                    </span>
+                  )}
+                </div>
+
+                <div className="tooltip">
+                  <button
+                    onClick={handleExport}
+                    className="btn btnSecondary"
+                    disabled={!selectedEvent || invites.length === 0}
+                  >
+                    <FaDownload style={{ marginRight: "10px" }} />
+                    Export
+                  </button>
+
+                  {(!selectedEvent || invites.length === 0) && (
+                    <span className="tooltip-text">
+                      Aucun invité à exporter
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* STATS */}
             <div className="stats">
-              <p className={`en_attente`}>En attente: {stats.en_attente}</p>
-              <p className={`invite`}>Invité: {stats.invite}</p>
-              <p className={`confirme`}>Confirmé: {stats.confirme}</p>
-              <p className={`refuse`}>Refusé: {stats.refuse}</p>
+              <div>En attente: {stats.en_attente}</div>
+              <div>Invités: {stats.invite}</div>
+              <div>Confirmés: {stats.confirme}</div>
+              <div>Refusés: {stats.refuse}</div>
             </div>
 
-            {/* TABLE */}
-            <h3>Liste des invités</h3>
-            <div className="tableWrap">
-              {invitesFiltres.length === 0 ? (
-                <div className="muted" style={{ padding: 12 }}>
-                  Aucun invité
-                </div>
-              ) : (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Prénom</th>
-                      <th>Email</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {invitesFiltres.map((i) => (
-                      <tr key={i.id_invite}>
-                        <td>{i.nom}</td>
-                        <td>{i.prenom}</td>
-                        <td>{i.email}</td>
-                        <td>
-                          <span className={`status ${i.statut}`}>
-                            {statutLabels[i.statut]}
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Prénom</th>
+                  <th>Email</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {invitesFiltres.map((i) => (
+                  <tr
+                    key={i.id_invite}
+                    className={updatedRow === i.id_invite ? "updated" : ""}
+                  >
+                    <td>{i.nom}</td>
+                    <td>{i.prenom}</td>
+                    <td>{i.email}</td>
+                    <td>
+                      <select
+                        value={i.statut}
+                        onChange={(e) =>
+                          updateStatut(i.id_invite, e.target.value)
+                        }
+                      >
+                        <option value="en_attente">En attente</option>
+                        <option value="invite">Invité</option>
+                        <option value="confirme">Confirmé</option>
+                        <option value="refuse">Refusé</option>
+                      </select>
+                    </td>
+
+                    <td>
+                      <div className="tooltip">
+                        <button
+                          className="btn btnPrimary"
+                          disabled={i.statut !== "en_attente"}
+                          onClick={() => sendInvite(i.id_invite)}
+                        >
+                          Inviter
+                        </button>
+
+                        {i.statut !== "en_attente" && (
+                          <span className="tooltip-text">
+                            Déjà traité (non modifiable)
                           </span>
-                        </td>
-                        <td className="actions">
-                          <button
-                            className="btn btnSecondary"
-                            onClick={() => {
-                              setEditingInvite(i);
-                              setFormData(i);
-                            }}
-                          >
-                            Modifier
-                          </button>
-                          <button
-                            className="btn btnDanger"
-                            onClick={() => handleDelete(i.id_invite)}
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                        )}
+                      </div>
+
+                      <button
+                        className="btn btnSecondary"
+                        onClick={() => {
+                          setEditingInvite(i);
+                          setFormData({
+                            nom: i.nom,
+                            prenom: i.prenom,
+                            email: i.email,
+                            statut: i.statut,
+                          });
+                        }}
+                      >
+                        Modifier
+                      </button>
+
+                      <button
+                        className="btn btnDanger"
+                        onClick={() => handleDelete(i.id_invite)}
+                      >
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </>
         )}
+      </div>
+      {(editingInvite || isAdding) && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>{isAdding ? "Ajouter" : "Modifier"} un invité</h3>
 
-        {/* MODAL (ADD / EDIT) */}
-        {(editingInvite || isAdding) && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h3>{isAdding ? "Ajouter" : "Modifier"} un invité</h3>
-              <input
-                placeholder="Nom"
-                value={formData.nom}
-                onChange={(e) =>
-                  setFormData({ ...formData, nom: e.target.value })
-                }
-              />
-              <input
-                placeholder="Prénom"
-                value={formData.prenom}
-                onChange={(e) =>
-                  setFormData({ ...formData, prenom: e.target.value })
-                }
-              />
-              <input
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-              <select
-                value={formData.statut}
-                onChange={(e) =>
-                  setFormData({ ...formData, statut: e.target.value })
-                }
+            <input
+              placeholder="Nom"
+              value={formData.nom}
+              onChange={(e) =>
+                setFormData({ ...formData, nom: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Prénom"
+              value={formData.prenom}
+              onChange={(e) =>
+                setFormData({ ...formData, prenom: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
+
+            <div className="modal-actions">
+              <button
+                onClick={isAdding ? handleAdd : handleEdit}
+                className="btn btnPrimary"
               >
-                <option value="en_attente">En attente</option>
-                <option value="invite">Invité</option>
-                <option value="confirme">Confirmé</option>
-                <option value="refuse">Refusé</option>
-              </select>
+                Sauvegarder
+              </button>
 
-              <div className="modal-actions">
-                <button
-                  onClick={isAdding ? handleAdd : handleEdit}
-                  className="btn btnPrimary"
-                >
-                  Sauvegarder
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingInvite(null);
-                    setIsAdding(false);
-                  }}
-                  className="btn btnSecondary"
-                >
-                  Annuler
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setEditingInvite(null);
+                  setIsAdding(false);
+                }}
+                className="btn btnSecondary"
+              >
+                Annuler
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
