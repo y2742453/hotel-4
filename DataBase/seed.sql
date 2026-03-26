@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
+=======
+use HotelDB;
+>>>>>>> 5b712da1ee0f109192b20a11dc6e30c3247a9415
 
 INSERT INTO
     `users` (
@@ -205,7 +209,7 @@ VALUES (
         'Pour tester les réservations : Cette section permet de simuler des réservations afin de vérifier le fonctionnement du système. On peut créer, modifier ou annuler des réservations fictives pour voir comment le calendrier et les notifications réagissent, sans affecter les données réelles.',
         '2026-01-01 00:00:00',
         '2026-12-31 23:59:59',
-        'Brouillon',
+        'Prévu',
         1,
         1
     ),
@@ -216,7 +220,7 @@ VALUES (
         'Réunion de suivi du projet Alpha',
         '2026-02-15 09:00:00',
         '2026-02-15 10:30:00',
-        'Confirmé',
+        'Prévu',
         1,
         1
     ),
@@ -227,7 +231,7 @@ VALUES (
         'Présentation des nouvelles stratégies marketing',
         '2026-02-16 11:00:00',
         '2026-02-16 12:30:00',
-        'Brouillon',
+        'Prévu',
         2,
         1
     ),
@@ -260,7 +264,7 @@ VALUES (
         'Formation obligatoire sur la sécurité informatique',
         '2026-02-19 13:00:00',
         '2026-02-19 15:00:00',
-        'Brouillon',
+        'Prévu',
         2,
         1
     );

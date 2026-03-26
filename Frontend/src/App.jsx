@@ -26,7 +26,8 @@ import OrganisateurHome from "./pages/Organisateur/OrganisateurHome.jsx";
 import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import SallesPage from "./pages/Admin/Salles.jsx";
 import ServicesPage from "./pages/Admin/Services.jsx";
-import EvenementsAdmin from "./pages/Admin/Evenements.jsx";
+import ListeEvenements from "./pages/Organisateur/ListeEvenements.jsx";
+
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div style={{ padding: 20 }}>Chargement...</div>;
@@ -61,7 +62,7 @@ export default function App() {
               <Route index element={<HomeRedirect />} />
               <Route path="app" element={<SimpleUserHome />} />
 
-              {/* Admin */}
+              {/* ADMIN */}
               <Route
                 path="admin"
                 element={
@@ -97,6 +98,7 @@ export default function App() {
                   </RoleGate>
                 }
               />
+
               <Route
                 path="admin/salles"
                 element={
@@ -105,6 +107,7 @@ export default function App() {
                   </RoleGate>
                 }
               />
+
               <Route
                 path="admin/services"
                 element={
@@ -113,16 +116,27 @@ export default function App() {
                   </RoleGate>
                 }
               />
+
               <Route
                 path="admin/evenements"
                 element={
                   <RoleGate allowedRoles={[1]}>
-                    <EvenementsAdmin />
+                    <ListeEvenements />
                   </RoleGate>
                 }
               />
 
-              {/* Organisateur */}
+              {/* ✅ MODIFIER ÉVÉNEMENT ADMIN */}
+              <Route
+                path="admin/evenements/modifier/:id"
+                element={
+                  <RoleGate allowedRoles={[1]}>
+                    <CreerEvenement />
+                  </RoleGate>
+                }
+              />
+
+              {/* ORGANISATEUR */}
               <Route
                 path="organisateur"
                 element={
@@ -141,15 +155,35 @@ export default function App() {
                 }
               />
 
-            <Route
-            path="organisateur/evenements"
-            element={
-             <RoleGate allowedRoles={[2]}>
-              <CreerEvenement />
-            </RoleGate>
-           }
-          />  
-          </Route>          
+              <Route
+                path="organisateur/evenements"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <ListeEvenements />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="organisateur/evenements/creer"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <CreerEvenement />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="organisateur/evenements/modifier/:id"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <CreerEvenement />
+                  </RoleGate>
+                }
+              />
+            </Route>
+
+            {/* 404 */}
             <Route path="*" element={<Notfound />} />
           </Routes>
         </BrowserRouter>

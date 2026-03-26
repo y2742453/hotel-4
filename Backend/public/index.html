@@ -3,71 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Frontend - Gestion Salles</title>
-  <link rel="stylesheet" href="/app.css">
+  <title>Backend</title>
 </head>
 <body>
-  <header>
-    <h1>Gestion Salles - Frontend de Test</h1>
-    <nav>
-      <button id="tab-salles">Salles</button>
-      <button id="tab-services">Services</button>
-      <button id="tab-evenements">Événements</button>
-    </nav>
-  </header>
-
-  <main>
-    <section id="salles" class="tab">
-      <h2>Salles</h2>
-      <form id="form-salle">
-        <input type="hidden" id="salle-id">
-        <input id="salle-nom" placeholder="Nom salle" required>
-        <input id="salle-capacite" type="number" placeholder="Capacité">
-        <input id="salle-equipements" placeholder="Équipements (csv)">
-        <select id="salle-statut">
-          <option value="disponible">disponible</option>
-          <option value="indisponible">indisponible</option>
-        </select>
-        <button type="submit">Enregistrer</button>
-        <button type="button" id="salle-reset">Réinitialiser</button>
-      </form>
-      <div id="liste-salles"></div>
-    </section>
-
-    <section id="services" class="tab" style="display:none">
-      <h2>Services</h2>
-      <form id="form-service">
-        <input type="hidden" id="service-id">
-        <input id="service-nom" placeholder="Nom service" required>
-        <input id="service-desc" placeholder="Description">
-        <input id="service-tarif" type="number" step="0.01" placeholder="Tarif">
-        <button type="submit">Enregistrer</button>
-        <button type="button" id="service-reset">Réinitialiser</button>
-      </form>
-      <div id="liste-services"></div>
-    </section>
-
-    <section id="evenements" class="tab" style="display:none">
-      <h2>Événements</h2>
-      <form id="form-evenement">
-        <input id="evt-nom" placeholder="Nom événement" required>
-        <input id="evt-type" placeholder="Type">
-        <textarea id="evt-desc" placeholder="Description"></textarea>
-        <label>Date début<input id="evt-debut" type="datetime-local" required></label>
-        <label>Date fin<input id="evt-fin" type="datetime-local" required></label>
-        <select id="evt-salle"></select>
-        <select id="evt-services" multiple></select>
-        <input id="evt-organisateur" type="number" placeholder="ID organisateur" required>
-        <button type="submit">Créer événement</button>
-      </form>
-      <div id="liste-evenements"></div>
-    </section>
-  </main>
-
-  <footer>
-    <small>Frontend pour tester l'API.</small>
-  </footer>
-
-  <script src="/app.js"></script>
+  <h1>Backend</h1>
 </body>
 </html>
