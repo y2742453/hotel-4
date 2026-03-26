@@ -33,10 +33,13 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  await pool.execute("DELETE FROM evenements");
-  await pool.execute("DELETE FROM reservations");
-});
+  try {
+    await pool.execute("DELETE FROM evenement_services");
+  } catch (e) {}
 
+  await pool.execute("DELETE FROM reservations");
+  await pool.execute("DELETE FROM evenements");
+});
 afterAll(async () => {
   await pool.end();
 });
