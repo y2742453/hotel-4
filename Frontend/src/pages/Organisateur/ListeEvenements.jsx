@@ -21,9 +21,6 @@ export default function ListeEvenements() {
     loadEvenements();
   }, []);
 
-  // ======================
-  // ANNULER
-  // ======================
   async function handleAnnuler(id) {
     const confirm = window.confirm("Annuler cet événement ?");
     if (!confirm) return;
@@ -40,20 +37,70 @@ export default function ListeEvenements() {
     }
   }
 
+  function getStatutStyle(statut) {
+    const value = (statut || "").toLowerCase();
+
+    if (value === "confirmé" || value === "confirme") {
+      return {
+        background: "#dcfce7",
+        color: "#166534",
+      };
+    }
+
+    if (value === "brouillon") {
+      return {
+        background: "#f3f4f6",
+        color: "#374151",
+      };
+    }
+
+    if (value === "annulé" || value === "annule") {
+      return {
+        background: "#fee2e2",
+        color: "#b91c1c",
+      };
+    }
+
+    return {
+      background: "#fef3c7",
+      color: "#92400e",
+    };
+  }
+
+  function isConfirme(statut) {
+    const value = (statut || "").toLowerCase();
+    return value === "confirmé" || value === "confirme";
+  }
+
   return (
     <div className="page">
       <div
         className="pageHeader"
-        style={{ display: "flex", justifyContent: "space-between" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
       >
         <h2>Liste des événements</h2>
 
-        <button
-          className="btn btnPrimary"
-          onClick={() => navigate("/organisateur/evenements/creer")}
-        >
-          + Créer un événement
-        </button>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <button
+            className="btn btnPrimary"
+            onClick={() => navigate("/organisateur/demandes-services")}
+          >
+            Mes demandes de services
+          </button>
+
+          <button
+            className="btn btnPrimary"
+            onClick={() => navigate("/organisateur/evenements/creer")}
+          >
+            + Créer un événement
+          </button>
+        </div>
       </div>
 
       <div className="card">
@@ -71,57 +118,115 @@ export default function ListeEvenements() {
           </thead>
 
           <tbody>
-            {evenements.map((e) => (
-              <tr key={e.id_evenement}>
-                <td>{e.nom_evenement}</td>
-                <td>{e.type_evenement}</td>
-                <td>{e.id_salle}</td>
-                <td>{new Date(e.date_debut).toLocaleString()}</td>
-                <td>{new Date(e.date_fin).toLocaleString()}</td>
+            {evenements.map((e) => {
+              const evenementConfirme = isConfirme(e.statut);
+              const evenementAnnule = (e.statut || "").toLowerCase() === "annulé" ||
+                (e.statut || "").toLowerCase() === "annule";
 
-                {/* STATUT COULEUR */}
-                <td>
-                  <span
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: 6,
-                      background:
-                        e.statut === "annulé"
-                          ? "#ffcccc"
-                          : e.statut === "prévu"
-                          ? "#ccffcc"
-                          : "#eee",
-                    }}
-                  >
-                    {e.statut}
-                  </span>
-                </td>
+              return (
+                <tr key={e.id_evenement}>
+                  <td>{e.nom_evenement}</td>
+                  <td>{e.type_evenement}</td>
+                  <td>{e.id_salle}</td>
+                  <td>{new Date(e.date_debut).toLocaleString()}</td>
+                  <td>{new Date(e.date_fin).toLocaleString()}</td>
 
-                <td style={{ display: "flex", gap: 8 }}>
-                  {/* MODIFIER */}
-                  <button
-                    className="btn btnSecondary"
-                    onClick={() =>
-                      navigate(
-                        `/organisateur/evenements/modifier/${e.id_evenement}`
-                      )
-                    }
-                  >
-                    Modifier
-                  </button>
+                  <td>
+                    <span
+                      style={{
+                        ...getStatutStyle(e.statut),
+                        padding: "8px 14px",
+                        borderRadius: "999px",
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: "110px",
+                      }}
+                    >
+                      {e.statut}
+                    </span>
+                  </td>
 
-                  {/* ANNULER */}
-                  <button
-                    className="btn"
-                    style={{ background: "#999", color: "white" }}
-                    disabled={e.statut === "annulé"}
-                    onClick={() => handleAnnuler(e.id_evenement)}
-                  >
-                    Annuler
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <button
+                        className="btn btnSecondary"
+                        style={{
+                          minWidth: "115px",
+                          borderRadius: "12px",
+                          fontWeight: 700,
+                        }}
+                        onClick={() =>
+                          navigate(`/organisateur/evenements/modifier/${e.id_evenement}`)
+                        }
+                      >
+                        Modifier
+                      </button>
+
+                      <button
+                        className="btn btnPrimary"
+                        style={{
+                          minWidth: "115px",
+                          borderRadius: "12px",
+                          fontWeight: 700,
+                          opacity: evenementConfirme ? 1 : 0.6,
+                          cursor: evenementConfirme ? "pointer" : "not-allowed",
+                        }}
+                        disabled={!evenementConfirme}
+                        title={
+                          evenementConfirme
+                            ? "Saisir les besoins de cet événement"
+                            : "Vous ne pouvez ajouter les besoins que pour un événement confirmé"
+                        }
+                        onClick={() =>
+                          navigate(`/organisateur/evenements/${e.id_evenement}/services`)
+                        }
+                      >
+                        Besoins
+                      </button>
+
+                      <button
+                        className="btn btnDanger"
+                        style={{
+                          minWidth: "115px",
+                          borderRadius: "12px",
+                          fontWeight: 700,
+                          color: "white",
+                          opacity: evenementAnnule ? 0.6 : 1,
+                          cursor: evenementAnnule ? "not-allowed" : "pointer",
+                        }}
+                        disabled={evenementAnnule}
+                        onClick={() => handleAnnuler(e.id_evenement)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+
+                    {!evenementConfirme && (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          fontSize: "0.88rem",
+                          color: "#92400e",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Les besoins sont disponibles seulement après confirmation.
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
 
             {evenements.length === 0 && (
               <tr>

@@ -65,6 +65,17 @@ import {
   serviceRequestExists,
 } from "./modele/evenementService.js";
 
+import {
+  getDemandesValideesPourDevis,
+  getDemandeValideePourDevis,
+  createDevis,
+  getAllDevis,
+  getDevisById,
+  updateDevisPdfPath,
+  updateDevisStatut,
+  updateDevisDateEnvoi,
+  deleteDevis,
+} from "./modele/devis.js";
 // Création du serveur  `
 const app = express();
 
@@ -733,7 +744,55 @@ app.post("/api/evenementservices", userAuth, allowRoles(1,2), async (req, res) =
     });
   }
 });
+/**
+ * Voir toutes les demandes de services
+ * GET /api/evenementservices
+ * Accès : Organisateur, Coordonnateur, Admin
+ */
+app.get(
+  "/api/evenementservices",
+  userAuth,
+  allowRoles(1, 2, 3),
+  async (req, res) => {
+    try {
+      const demandes = await getAllServiceRequests();
 
+      return res.status(200).json(demandes);
+    } catch (error) {
+      console.error("Erreur GET /api/evenementservices :", error);
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
+);
+
+app.get(
+  "/api/evenementservices/evenement/:id_evenement",
+  userAuth,
+  allowRoles(1, 2, 3),
+  async (req, res) => {
+    try {
+      const { id_evenement } = req.params;
+
+      const demandes = await getAllServiceRequestsByEvent(id_evenement);
+
+      return res.status(200).json(demandes);
+    } catch (error) {
+      console.error(
+        "Erreur GET /api/evenementservices/evenement/:id_evenement :",
+        error
+      );
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
+);
 /**
  * Lire une demande de service
  * GET /api/services/:id_evenement/:id_service
@@ -812,6 +871,182 @@ app.put(
     }
   }
 );
+
+app.put(
+  "/api/evenementservices/:id_evenement/:id_service/statut",
+  userAuth,
+  allowRoles(1, 3),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+      const { statut } = req.body;
+
+      if (!["Valide", "Refuse"].includes(statut)) {
+        return res.status(400).json({ message: "Statut invalide" });
+      }
+
+      const exists = await serviceRequestExists(id_evenement, id_service);
+
+      if (!exists) {
+        return res.status(404).json({
+          message: "Demande de service introuvable",
+        });
+      }
+
+      const updated = await updateServiceRequestStatus(
+        id_evenement,
+        id_service,
+        statut
+      );
+
+      if (!updated) {
+        return res.status(500).json({
+          message: "Impossible de mettre à jour le statut",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Statut mis à jour avec succès",
+      });
+    } catch (error) {
+      console.error(
+        "Erreur PUT /api/evenementservices/:id_evenement/:id_service/statut :",
+        error
+      );
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  }
+);
+
+
+// Voir les demandes validées prêtes pour devis
+app.get("/api/devis/demandes-validees", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const rows = await getDemandesValideesPourDevis();
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("Erreur GET /api/devis/demandes-validees :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Créer un devis simple
+app.post("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const {
+      id_evenement,
+      id_service,
+      montant_ht,
+      taxes,
+      montant_ttc,
+    } = req.body;
+
+    if (!id_evenement || !id_service) {
+      return res.status(400).json({
+        message: "id_evenement et id_service sont requis",
+      });
+    }
+
+    const demande = await getDemandeValideePourDevis(id_evenement, id_service);
+
+    if (!demande) {
+      return res.status(404).json({
+        message: "Demande validée introuvable",
+      });
+    }
+
+    const reference = `DEV-${id_evenement}-${id_service}-${Date.now()}`;
+
+    const id_devis = await createDevis({
+      id_evenement,
+      id_service,
+      reference,
+      montant_ht,
+      taxes,
+      montant_ttc,
+      statut: "Brouillon",
+    });
+
+    return res.status(201).json({
+      message: "Devis créé avec succès",
+      id_devis,
+      reference,
+    });
+  } catch (error) {
+    console.error("Erreur POST /api/devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Voir tous les devis
+app.get("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const rows = await getAllDevis();
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("Erreur GET /api/devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Voir un devis précis
+app.get("/api/devis/:id_devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const { id_devis } = req.params;
+    const devis = await getDevisById(id_devis);
+
+    if (!devis) {
+      return res.status(404).json({
+        message: "Devis introuvable",
+      });
+    }
+
+    return res.status(200).json(devis);
+  } catch (error) {
+    console.error("Erreur GET /api/devis/:id_devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+app.delete("/api/devis/:id_devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const { id_devis } = req.params;
+
+    const deleted = await deleteDevis(id_devis);
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Devis introuvable",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Devis supprimé avec succès",
+    });
+  } catch (error) {
+    console.error("Erreur DELETE /api/devis/:id_devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {

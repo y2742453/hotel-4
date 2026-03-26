@@ -233,16 +233,12 @@ export async function getPendingServiceRequests() {
  * @param {string} statut
  * @returns {Promise<boolean>}
  */
-export async function updateServiceRequestStatus(
-  id_evenement,
-  id_service,
-  statut
-) {
+export async function updateServiceRequestStatus(id_evenement, id_service, statut) {
   const [result] = await pool.query(
     `
-    UPDATE evenement_services
-    SET statut = ?
-    WHERE id_evenement = ? AND id_service = ?
+      UPDATE evenement_services
+      SET statut = ?
+      WHERE id_evenement = ? AND id_service = ?
     `,
     [statut, id_evenement, id_service]
   );

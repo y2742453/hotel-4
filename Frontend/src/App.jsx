@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -18,17 +17,22 @@ import Notfound from "./pages/Notfound.jsx";
 import AdminHome from "./pages/Admin/AdminHome.jsx";
 import UsersPage from "./pages/Admin/Users.jsx";
 import RolesPermissionsPage from "./pages/Admin/RolesPermission.jsx";
-
-import Calendar from "./pages/Organisateur/Calendar.jsx";
-
-import "./styles/global.css";
-import OrganisateurHome from "./pages/Organisateur/OrganisateurHome.jsx";
-import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import SallesPage from "./pages/Admin/Salles.jsx";
 import ServicesPage from "./pages/Admin/Services.jsx";
 import EvenementsAdmin from "./pages/Admin/Evenements.jsx";
+
+import Calendar from "./pages/Organisateur/Calendar.jsx";
+import OrganisateurHome from "./pages/Organisateur/OrganisateurHome.jsx";
+import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import EvenementServices from "./pages/Organisateur/EvenementServices.jsx";
 import ListeEvenements from "./pages/Organisateur/ListeEvenements.jsx";
+import MesDemandesServices from "./pages/Organisateur/demandes-services.jsx";
+
+import CoordonnateurHome from "./pages/Coordonnateur/CoordonnateurHome.jsx";
+import DemandesValidation from "./pages/Coordonnateur/DemandesValidation.jsx";
+
+import "./styles/global.css";
+import Devis from "./pages/Coordonnateur/Devis.jsx";
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -37,6 +41,8 @@ function HomeRedirect() {
 
   if (user.id_role === 1) return <Navigate to="/admin" replace />;
   if (user.id_role === 2) return <Navigate to="/organisateur" replace />;
+  if (user.id_role === 3) return <Navigate to="/coordonnateur" replace />;
+
   return <Navigate to="/app" replace />;
 }
 
@@ -73,7 +79,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="admin/users"
                 element={
@@ -82,7 +87,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="admin/roles-permissions"
                 element={
@@ -91,7 +95,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="admin/reservations"
                 element={
@@ -134,7 +137,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="organisateur/reservations"
                 element={
@@ -151,7 +153,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="organisateur/evenements/creer"
                 element={
@@ -160,7 +161,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-
               <Route
                 path="organisateur/evenements/modifier/:id"
                 element={
@@ -169,8 +169,51 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route
+                path="organisateur/evenements/:id_evenement/services"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <EvenementServices />
+                  </RoleGate>
+                }
+              />
+              <Route
+                path="organisateur/demandes-services"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <MesDemandesServices />
+                  </RoleGate>
+                }
+              />
+
+              {/* Coordinateur */}
+              <Route
+                path="coordonnateur"
+                element={
+                  <RoleGate allowedRoles={[3]}>
+                    <CoordonnateurHome />
+                  </RoleGate>
+                }
+              />
+              <Route
+                path="coordonnateur/demandes"
+                element={
+                  <RoleGate allowedRoles={[3]}>
+                    <DemandesValidation />
+                  </RoleGate>
+                }
+              />
+              <Route
+                  path="coordonnateur/Devis"
+                  element={
+                    <RoleGate allowedRoles={[3]}>
+                      <Devis/>
+                    </RoleGate>
+                  }
+                />
+
+              <Route path="*" element={<Notfound />} />
             </Route>
-            <Route path="*" element={<Notfound />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
