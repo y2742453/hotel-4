@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import { useToast } from "../../Components/Toast.jsx";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 import "../../styles/forms.css";
 import "../../styles/table.css";
@@ -10,8 +11,10 @@ import "../../styles/evenement.css";
 export default function CreerEvenement() {
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const isEdit = id && id !== "new";
+  const isAdmin = location.pathname.includes("admin");
 
   const [salles, setSalles] = useState([]);
   const [services, setServices] = useState([]);
@@ -329,6 +332,19 @@ export default function CreerEvenement() {
               ))}
             </div>
           </div>
+
+
+          {/* UPLOAD DOCUMENT - visible uniquement pour non-admin */}
+          {!isAdmin && (
+            <div className="field">
+              <label>Ajouter un document</label>
+              <input
+                type="file"
+                onChange={e => setFile(e.target.files[0] || null)}
+              />
+              {file && <div style={{marginTop:4, fontSize:'0.95em'}}>Fichier sélectionné : <b>{file.name}</b></div>}
+            </div>
+          )}
 
           <button type="submit" className="btnPrimary">
             {isEdit ? "Modifier" : "Créer l'événement"}

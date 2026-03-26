@@ -12,72 +12,64 @@ export default function ListeEvenements() {
   const [evenements, setEvenements] = useState([]);
   const [filter, setFilter] = useState("tous");
 
-async function loadEvenements() {
-  const { res, data } = await apiFetch("/api/evenements");
-  if (res.ok) {
-    setEvenements(data || []);
+  async function loadEvenements() {
+    const { res, data } = await apiFetch("/api/evenements");
+    if (res.ok) {
+      setEvenements(data || []);
+    }
   }
-}
 
+  useEffect(() => {
+    loadEvenements();
+  }, []);
 
-useEffect(() => {
-  loadEvenements();
-}, []);
   function toggleMenu(id) {
-  if (openMenu === id) {
-    setOpenMenu(null);
-  } else {
-    setOpenMenu(id);
+    setOpenMenu(openMenu === id ? null : id);
   }
-}
 
-function handleEdit(id) {
-  if (isAdmin) {
-    navigate(`/admin/evenements/${id}`);
-  } else {
-    navigate(`/organisateur/evenements/${id}`);
+  // ✅ CORRIGÉ ICI
+  function handleEdit(id) {
+    const base = isAdmin ? "admin" : "organisateur";
+    navigate(`/${base}/evenements/modifier/${id}`);
   }
-}
 
-async function handleCancel(id) {
-  const confirmCancel = window.confirm("Annuler cet événement ?");
-  if (!confirmCancel) return;
+  async function handleCancel(id) {
+    const confirmCancel = window.confirm("Annuler cet événement ?");
+    if (!confirmCancel) return;
 
-  const { res } = await apiFetch(`/api/evenements/${id}/annuler`, {
-    method: "PUT",
-  });
+    const { res } = await apiFetch(`/api/evenements/${id}/annuler`, {
+      method: "PUT",
+    });
 
-  if (res.ok) {
-    setEvenements((prev) =>
-      prev.map((e) =>
-        e.id_evenement === id
-          ? { ...e, statut: "annulé" }
-          : e
-      )
-    );
-  } else {
-    alert("Erreur");
+    if (res.ok) {
+      setEvenements((prev) =>
+        prev.map((e) =>
+          e.id_evenement === id ? { ...e, statut: "annulé" } : e
+        )
+      );
+    } else {
+      alert("Erreur");
+    }
   }
-}
 
-async function handleConfirm(id) {
-  const confirm = window.confirm("Confirmer cet événement ?");
-  if (!confirm) return;
-  const { res } = await apiFetch(`/api/evenements/${id}/confirmer`, {
-    method: "PUT",
-  });
-  if (res.ok) {
-    setEvenements((prev) =>
-      prev.map((e) =>
-        e.id_evenement === id
-          ? { ...e, statut: "confirmé" }
-          : e
-      )
-    );
-  } else {
-    alert("Erreur lors de la confirmation");
+  async function handleConfirm(id) {
+    const confirm = window.confirm("Confirmer cet événement ?");
+    if (!confirm) return;
+
+    const { res } = await apiFetch(`/api/evenements/${id}/confirmer`, {
+      method: "PUT",
+    });
+
+    if (res.ok) {
+      setEvenements((prev) =>
+        prev.map((e) =>
+          e.id_evenement === id ? { ...e, statut: "confirmé" } : e
+        )
+      );
+    } else {
+      alert("Erreur lors de la confirmation");
+    }
   }
-}
 
   return (
     <div className="events-dashboard">
@@ -85,12 +77,17 @@ async function handleConfirm(id) {
         {/* HEADER */}
         <div className="events-header">
           <h2>Événements</h2>
-          <button
-            className="btn-new"
-            onClick={() => navigate("/organisateur/evenements/new")}
-          >
-            + Nouvel événement
-          </button>
+
+          {!isAdmin && (
+            <button
+              className="btn-new"
+              onClick={() =>
+                navigate("/organisateur/evenements/creer") // ✅ CORRIGÉ
+              }
+            >
+              + Nouvel événement
+            </button>
+          )}
         </div>
 
         {/* TABS */}
@@ -129,62 +126,63 @@ async function handleConfirm(id) {
                   return (e.statut || "").toLowerCase() === filter;
                 })
                 .map((ev) => (
-                <tr key={ev.id_evenement}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
+                  <tr key={ev.id_evenement}>
+                    <td>
+                      <input type="checkbox" />
+                    </td>
 
-                  <td className="name">{ev.nom_evenement}</td>
-                  <td>{ev.type_evenement}</td>
+                    <td className="name">{ev.nom_evenement}</td>
+                    <td>{ev.type_evenement}</td>
 
-                  <td>
-                    <span className={`badge ${ev.statut?.toLowerCase()}`}>
-                      {ev.statut}
-                    </span>
-                  </td>
+                    <td>
+                      <span className={`badge ${ev.statut?.toLowerCase()}`}>
+                        {ev.statut}
+                      </span>
+                    </td>
 
-                  <td>{ev.date_debut}</td>
-                  <td>{ev.date_fin}</td>
-                  <td>{ev.id_salle}</td>
-                  <td className="actions">
-                    <div className="menu-container">
-                      <button onClick={() => toggleMenu(ev.id_evenement)}>
-                        ⋯
-                      </button>
+                    <td>{ev.date_debut}</td>
+                    <td>{ev.date_fin}</td>
+                    <td>{ev.id_salle}</td>
 
-                      {openMenu === ev.id_evenement && (
-                        <div className="dropdown">
-                          <div onClick={() => handleEdit(ev.id_evenement)}>
-                            Modifier
+                    <td className="actions">
+                      <div className="menu-container">
+                        <button onClick={() => toggleMenu(ev.id_evenement)}>
+                          ⋯
+                        </button>
+
+                        {openMenu === ev.id_evenement && (
+                          <div className="dropdown">
+                            <div onClick={() => handleEdit(ev.id_evenement)}>
+                              Modifier
+                            </div>
+
+                            {isAdmin && ev.statut !== "confirmé" && (
+                              <div
+                                onClick={() => {
+                                  handleConfirm(ev.id_evenement);
+                                  setOpenMenu(null);
+                                }}
+                              >
+                                Confirmer
+                              </div>
+                            )}
+
+                            {ev.statut !== "annulé" && (
+                              <div
+                                onClick={() => {
+                                  handleCancel(ev.id_evenement);
+                                  setOpenMenu(null);
+                                }}
+                              >
+                                Annuler
+                              </div>
+                            )}
                           </div>
-                          {/* ADMIN : bouton confirmer si pas déjà confirmé */}
-                          {isAdmin && ev.statut !== "confirmé" && (
-                            <div
-                              onClick={() => {
-                                handleConfirm(ev.id_evenement);
-                                setOpenMenu(null);
-                              }}
-                            >
-                              ✔️ Confirmer
-                            </div>
-                          )}
-                          {/* ANNULER : visible pour tous sauf si déjà annulé */}
-                          {ev.statut !== "annulé" && (
-                            <div
-                              onClick={() => {
-                                handleCancel(ev.id_evenement);
-                                setOpenMenu(null);
-                              }}
-                            >
-                              ❌ Annuler
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

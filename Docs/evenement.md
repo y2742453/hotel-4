@@ -31,21 +31,72 @@ Il contient notamment :
 
 ### POST /api/evenements
 
-Crée un événement (et réserve la salle). Body (JSON) :
+
+Crée un événement (et réserve la salle). Body (JSON) :
 
 ```json
+{
+  "nom_evenement": "Conférence Node",
+  "type_evenement": "Conférence",
+  "description": "Journée dev",
+  "date_debut": "2026-03-01 09:00:00",
+  "date_fin": "2026-03-01 17:00:00",
+  "statut": "Prévu", // ou omettre ce champ
+  "id_salle": 2,
+  "id_organisateur": 1,
+  "services": [1,3]
+}
+```
+
+#### Ajouter des services à un événement
+
+Le champ `services` est un tableau d'identifiants de services à associer à l'événement. Lors de la création, chaque service sera lié à l'événement avec le statut "Demande".
+
+---
+
+### Upload de documents liés à un événement
+
+**POST** `/api/evenements/:id/documents`
+
+Permet d'uploader un fichier/document lié à un événement. Utilise un formulaire `multipart/form-data` avec le champ `file`.
+
+Réponse (200) :
+
+```json
+{
+  "message": "Upload réussi"
+}
+```
+
+Pour obtenir la liste des documents d'un événement :
+
+**GET** `/api/evenements/:id/documents`
+
+Réponse :
+
+```json
+[
   {
-    "nom_evenement": "Conférence Node",
-    "type_evenement": "Conférence",
-    "description": "Journée dev",
-    "date_debut": "2026-03-01 09:00:00",
-    "date_fin": "2026-03-01 17:00:00",
-    "statut": "Brouillon",
-    "id_salle": 2,
-    "id_organisateur": 1,
-    "services": [1,3]
+    "id": 1,
+    "id_evenement": 42,
+    "nom_fichier": "programme.pdf",
+    "chemin_fichier": "uploads/42/programme.pdf",
+    "type_mime": "application/pdf",
+    "taille": 123456
   }
-  ```
+]
+}
+```
+
+> **Note** : Le champ `statut` est optionnel, et sera toujours `"Prévu"` à la création (même si "Brouillon" est envoyé).
+
+#### Migration des anciens événements
+
+Pour convertir tous les événements existants de "Brouillon" à "Prévu" :
+
+```sql
+UPDATE evenements SET statut = 'Prévu' WHERE statut = 'Brouillon';
+```
 
   #### Réponses
 
