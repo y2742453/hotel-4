@@ -743,6 +743,31 @@ app.put("/api/evenements/:id", async (req, res) => {
   }
 });
 
+app.put("/api/evenements/:id/annuler", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const [result] = await pool.query(
+      `
+      UPDATE evenements
+      SET statut = 'Annulé'
+      WHERE id_evenement = ?
+      `,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    res.json({ message: "Événement annulé avec succès" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 /**
  * Modifier une demande de restauration
  * PUT /api/restauration/:id_evenement/:id_service

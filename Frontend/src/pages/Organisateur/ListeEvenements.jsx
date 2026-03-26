@@ -27,7 +27,7 @@ export default function ListeEvenements() {
     setOpenMenu(openMenu === id ? null : id);
   }
 
-  // ✅ CORRIGÉ ICI
+  // CORRIGÉ ICI
   function handleEdit(id) {
     const base = isAdmin ? "admin" : "organisateur";
     navigate(`/${base}/evenements/modifier/${id}`);
@@ -82,7 +82,7 @@ export default function ListeEvenements() {
             <button
               className="btn-new"
               onClick={() =>
-                navigate("/organisateur/evenements/creer") // ✅ CORRIGÉ
+                navigate("/organisateur/evenements/creer") // 
               }
             >
               + Nouvel événement
