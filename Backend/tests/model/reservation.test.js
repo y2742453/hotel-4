@@ -161,8 +161,12 @@ test("Créer deux réservations sans conflit", async () => {
   // Vérification
   expect(id1).not.toBe(id2);
 
-  const reservations = await getReservationsBySalle(testSalle);
-  expect(reservations.length).toBe(2);
+  const [rows] = await pool.execute(
+  "SELECT * FROM reservations WHERE id_salle = ?",
+  [testSalle]
+);
+
+expect(rows.length).toBe(2);
 });
 
 test("Vérifier hasConflict() sans conflit", async () => {
