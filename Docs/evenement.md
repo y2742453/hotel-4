@@ -129,3 +129,91 @@ Crée un événement (et réserve la salle). Body (JSON) :
   }
   ```
 
+    ---
+
+### 4. Modifier un événement
+
+**PUT** `/api/evenements/:id`
+
+Permet de modifier un événement existant, ainsi que sa réservation et ses services associés.
+
+#### Body (JSON)
+
+```json
+{
+  "nom_evenement": "Conférence Node JS",
+  "type_evenement": "Conférence",
+  "description": "Conférence mise à jour",
+  "date_debut": "2026-03-01 10:00:00",
+  "date_fin": "2026-03-01 18:00:00",
+  "statut": "Confirmé",
+  "id_salle": 2,
+  "services": [1, 2]
+}
+```
+
+#### Réponses
+
+**200 – Succès**
+
+```json
+{
+  "message": "Événement modifié avec succès"
+}
+```
+
+**404 – Introuvable**
+
+```json
+{
+  "message": "Événement introuvable"
+}
+```
+
+**409 – Conflit**
+
+```json
+{
+  "message": "Conflit de réservation pour la salle et la période choisies."
+}
+```
+
+**500 – Erreur serveur**
+
+```json
+{
+  "message": "Erreur serveur"
+}
+```
+
+---
+
+### 5. Annuler un événement
+
+**PUT** `/api/evenements/:id/annuler`
+
+Permet d'annuler un événement (statut = "Annulé").
+
+#### Réponse (200)
+
+```json
+{
+  "message": "Événement annulé avec succès"
+}
+```
+
+**404 – Introuvable**
+
+```json
+{
+  "message": "Événement introuvable"
+}
+```
+
+**500 – Erreur serveur**
+
+```json
+{
+  "message": "Erreur serveur"
+}
+```

@@ -1,137 +1,193 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
-import { useNavigate } from "react-router-dom";
-import "../../styles/table.css";
+import "../../styles/evenement-table.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function ListeEvenements() {
-  const [evenements, setEvenements] = useState([]);
+  const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdmin = location.pathname.includes("admin");
 
-  async function loadEvenements() {
-    const { res, data } = await apiFetch("/api/evenements");
+  const [evenements, setEvenements] = useState([]);
+  const [filter, setFilter] = useState("tous");
 
-    if (res.ok) {
-      setEvenements(data);
-    } else {
-      console.error("Erreur chargement événements");
-    }
+async function loadEvenements() {
+  const { res, data } = await apiFetch("/api/evenements");
+  if (res.ok) {
+    setEvenements(data || []);
   }
+}
 
-  useEffect(() => {
-    loadEvenements();
-  }, []);
 
-  // ======================
-  // ANNULER
-  // ======================
-  async function handleAnnuler(id) {
-    const confirm = window.confirm("Annuler cet événement ?");
-    if (!confirm) return;
-
-    const { res } = await apiFetch(`/api/evenements/${id}/annuler`, {
-      method: "PUT",
-    });
-
-    if (res.ok) {
-      alert("Événement annulé !");
-      loadEvenements();
-    } else {
-      alert("Erreur");
-    }
+useEffect(() => {
+  loadEvenements();
+}, []);
+  function toggleMenu(id) {
+  if (openMenu === id) {
+    setOpenMenu(null);
+  } else {
+    setOpenMenu(id);
   }
+}
+
+function handleEdit(id) {
+  if (isAdmin) {
+    navigate(`/admin/evenements/${id}`);
+  } else {
+    navigate(`/organisateur/evenements/${id}`);
+  }
+}
+
+async function handleCancel(id) {
+  const confirmCancel = window.confirm("Annuler cet événement ?");
+  if (!confirmCancel) return;
+
+  const { res } = await apiFetch(`/api/evenements/${id}/annuler`, {
+    method: "PUT",
+  });
+
+  if (res.ok) {
+    setEvenements((prev) =>
+      prev.map((e) =>
+        e.id_evenement === id
+          ? { ...e, statut: "annulé" }
+          : e
+      )
+    );
+  } else {
+    alert("Erreur");
+  }
+}
+
+async function handleConfirm(id) {
+  const confirm = window.confirm("Confirmer cet événement ?");
+  if (!confirm) return;
+  const { res } = await apiFetch(`/api/evenements/${id}/confirmer`, {
+    method: "PUT",
+  });
+  if (res.ok) {
+    setEvenements((prev) =>
+      prev.map((e) =>
+        e.id_evenement === id
+          ? { ...e, statut: "confirmé" }
+          : e
+      )
+    );
+  } else {
+    alert("Erreur lors de la confirmation");
+  }
+}
 
   return (
-    <div className="page">
-      <div
-        className="pageHeader"
-        style={{ display: "flex", justifyContent: "space-between" }}
-      >
-        <h2>Liste des événements</h2>
+    <div className="events-dashboard">
+      <div className="events-container">
+        {/* HEADER */}
+        <div className="events-header">
+          <h2>Événements</h2>
+          <button
+            className="btn-new"
+            onClick={() => navigate("/organisateur/evenements/new")}
+          >
+            + Nouvel événement
+          </button>
+        </div>
 
-        <button
-          className="btn btnPrimary"
-          onClick={() => navigate("/organisateur/evenements/creer")}
-        >
-          + Créer un événement
-        </button>
-      </div>
+        {/* TABS */}
+        <div className="events-tabs">
+          <button className={`tab${filter === "tous" ? " active" : ""}`} onClick={() => setFilter("tous")}>Tous</button>
+          <button className={`tab${filter === "confirmé" ? " active" : ""}`} onClick={() => setFilter("confirmé")}>Confirmés</button>
+          <button className={`tab${filter === "prévu" ? " active" : ""}`} onClick={() => setFilter("prévu")}>Prévus</button>
+          <button className={`tab${filter === "annulé" ? " active" : ""}`} onClick={() => setFilter("annulé")}>Annulés</button>
+        </div>
 
-      <div className="card">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Type</th>
-              <th>Salle</th>
-              <th>Date début</th>
-              <th>Date fin</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+        {/* SEARCH */}
+        <div className="events-search">
+          <input placeholder="Rechercher..." />
+        </div>
 
-          <tbody>
-            {evenements.map((e) => (
-              <tr key={e.id_evenement}>
-                <td>{e.nom_evenement}</td>
-                <td>{e.type_evenement}</td>
-                <td>{e.id_salle}</td>
-                <td>{new Date(e.date_debut).toLocaleString()}</td>
-                <td>{new Date(e.date_fin).toLocaleString()}</td>
-
-                {/* STATUT COULEUR */}
-                <td>
-                  <span
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: 6,
-                      background:
-                        e.statut === "annulé"
-                          ? "#ffcccc"
-                          : e.statut === "prévu"
-                          ? "#ccffcc"
-                          : "#eee",
-                    }}
-                  >
-                    {e.statut}
-                  </span>
-                </td>
-
-                <td style={{ display: "flex", gap: 8 }}>
-                  {/* MODIFIER */}
-                  <button
-                    className="btn btnSecondary"
-                    onClick={() =>
-                      navigate(
-                        `/organisateur/evenements/modifier/${e.id_evenement}`
-                      )
-                    }
-                  >
-                    Modifier
-                  </button>
-
-                  {/* ANNULER */}
-                  <button
-                    className="btn"
-                    style={{ background: "#999", color: "white" }}
-                    disabled={e.statut === "annulé"}
-                    onClick={() => handleAnnuler(e.id_evenement)}
-                  >
-                    Annuler
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {evenements.length === 0 && (
+        {/* TABLE */}
+        <div className="table-wrapper">
+          <table className="events-table">
+            <thead>
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
-                  Aucun événement trouvé
-                </td>
+                <th></th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Salle</th>
+                <th></th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {evenements
+                .filter((e) => {
+                  if (filter === "tous") return true;
+                  return (e.statut || "").toLowerCase() === filter;
+                })
+                .map((ev) => (
+                <tr key={ev.id_evenement}>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+
+                  <td className="name">{ev.nom_evenement}</td>
+                  <td>{ev.type_evenement}</td>
+
+                  <td>
+                    <span className={`badge ${ev.statut?.toLowerCase()}`}>
+                      {ev.statut}
+                    </span>
+                  </td>
+
+                  <td>{ev.date_debut}</td>
+                  <td>{ev.date_fin}</td>
+                  <td>{ev.id_salle}</td>
+                  <td className="actions">
+                    <div className="menu-container">
+                      <button onClick={() => toggleMenu(ev.id_evenement)}>
+                        ⋯
+                      </button>
+
+                      {openMenu === ev.id_evenement && (
+                        <div className="dropdown">
+                          <div onClick={() => handleEdit(ev.id_evenement)}>
+                            Modifier
+                          </div>
+                          {/* ADMIN : bouton confirmer si pas déjà confirmé */}
+                          {isAdmin && ev.statut !== "confirmé" && (
+                            <div
+                              onClick={() => {
+                                handleConfirm(ev.id_evenement);
+                                setOpenMenu(null);
+                              }}
+                            >
+                              ✔️ Confirmer
+                            </div>
+                          )}
+                          {/* ANNULER : visible pour tous sauf si déjà annulé */}
+                          {ev.statut !== "annulé" && (
+                            <div
+                              onClick={() => {
+                                handleCancel(ev.id_evenement);
+                                setOpenMenu(null);
+                              }}
+                            >
+                              ❌ Annuler
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

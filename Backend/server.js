@@ -1,3 +1,4 @@
+
 // Chargement de la configuration
 import "dotenv/config";
 
@@ -10,6 +11,7 @@ import session from "express-session";
 import memorystore from "memorystore";
 import passport from "passport";
 import { pool } from "./db/db.js";
+import { upload } from "./Midlewares/upload.js";
 
 // Import configuration Passport
 import "./auth.js";
@@ -63,6 +65,7 @@ const MemoryStore = memorystore(session);
 app.use(helmet());
 app.use(compression());
 app.use(json());
+app.use("/uploads", express.static("uploads"));
 
 // CORS : en dev, le frontend est sur un port différent → on autorise les requêtes depuis localhost:5173
 app.use(
@@ -492,6 +495,20 @@ app.put("/api/services/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur" });
   }
+  // supprimer anciens services
+await pool.query(
+  "DELETE FROM evenement_services WHERE id_evenement = ?",
+  [id]
+);
+
+// ajouter nouveaux
+for (const idService of req.body.services) {
+  await pool.query(
+    `INSERT INTO evenement_services (id_evenement, id_service, statut)
+     VALUES (?, ?, 'Demande')`,
+    [id, idService]
+  );
+}
 });
 
 // DELETE supprimer un service
@@ -501,6 +518,32 @@ app.delete("/api/services/:id", async (req, res) => {
     if (!ok) return res.status(404).json({ message: "Service introuvable" });
     res.json({ message: "Service supprimé" });
   } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// =====================
+// API - SERVICES D'UN EVENEMENT
+// =====================
+
+app.get("/api/evenements/:id/services", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const [rows] = await pool.query(
+      `
+      SELECT s.id_service, s.nom_service, es.statut
+      FROM evenement_services es
+      JOIN services s ON es.id_service = s.id_service
+      WHERE es.id_evenement = ?
+      `,
+      [id]
+    );
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -645,33 +688,114 @@ app.put("/api/evenements/:id", async (req, res) => {
   }
 
 });
+// Confirmer evenement
+app.put("/api/evenements/:id/confirmer", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [result] = await pool.query(
+      "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+    res.json({ message: "Événement confirmé avec succès" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 //Annuler evenement
 app.put("/api/evenements/:id/annuler", async (req, res) => {
-
   const id = req.params.id;
-
   try {
-
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
       [id]
     );
-
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
     }
-
     res.json({ message: "Événement annulé avec succès" });
-
   } catch (error) {
-
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
-
   }
+});
+// Route pour uploader un document lié à un événement
+app.post("/api/evenements/:id/documents", upload.single("file"), async (req, res) => {
+  try {
+    const id_evenement = req.params.id;
 
+    if (!req.file) {
+      return res.status(400).json({ message: "Aucun fichier" });
+    }
+
+    const { filename, path, mimetype, size } = req.file;
+
+    await pool.execute(
+      `INSERT INTO evenement_documents 
+      (id_evenement, nom_fichier, chemin_fichier, type_mime, taille)
+      VALUES (?, ?, ?, ?, ?)`,
+      [id_evenement, filename, path, mimetype, size]
+    );
+
+    res.json({ message: "Upload réussi" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 });
 
+app.get("/api/evenements/:id/documents", async (req, res) => {
+  const id_evenement = req.params.id;
+
+  const [rows] = await pool.execute(
+    "SELECT * FROM evenement_documents WHERE id_evenement = ?",
+    [id_evenement]
+  );
+
+  res.json(rows);
+});
+// Route pour supprimer un document lié à un événement
+import fs from "fs";
+
+app.delete("/api/documents/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // récupérer le document
+    const [rows] = await pool.execute(
+      "SELECT * FROM evenement_documents WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Document introuvable" });
+    }
+
+    const doc = rows[0];
+
+    // supprimer fichier physique
+    if (fs.existsSync(doc.chemin_fichier)) {
+      fs.unlinkSync(doc.chemin_fichier);
+    }
+
+    // supprimer dans DB
+    await pool.execute(
+      "DELETE FROM evenement_documents WHERE id = ?",
+      [id]
+    );
+
+    res.json({ message: "Document supprimé" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {

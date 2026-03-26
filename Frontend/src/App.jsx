@@ -29,6 +29,7 @@ import ServicesPage from "./pages/Admin/Services.jsx";
 import EvenementsAdmin from "./pages/Admin/Evenements.jsx";
 import ListeEvenements from "./pages/Organisateur/ListeEvenements.jsx";
 
+
 function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return <div style={{ padding: 20 }}>Chargement...</div>;
@@ -119,7 +120,7 @@ export default function App() {
                 path="admin/evenements"
                 element={
                   <RoleGate allowedRoles={[1]}>
-                    <EvenementsAdmin />
+                    <ListeEvenements />
                   </RoleGate>
                 }
               />
@@ -150,6 +151,7 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route path="/organisateur/evenements/:id" element={<CreerEvenement />} />
 
               <Route
                 path="organisateur/evenements/creer"

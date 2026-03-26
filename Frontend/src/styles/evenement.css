@@ -1,0 +1,128 @@
+/* GRID FORM */
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* FIELD */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* INPUT STYLE */
+.field input,
+.field select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid #dbeafe;
+  background: #f9fafb;
+  transition: 0.2s;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* DATES GRID */
+.grid2 {
+  display: flex;
+  gap: 12px;
+}
+
+.grid2 .field {
+  flex: 1;
+}
+/* SERVICES GRID */
+.servicesGrid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.serviceCard {
+  background: #eef2ff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.serviceCard:hover {
+  background: #dbeafe;
+}
+
+.serviceCard.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* SELECTED */
+.selectedBox {
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.selectedItem {
+  padding: 6px;
+}
+
+/* DOCUMENT */
+.documentsBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.docCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* DELETE BUTTON */
+.btnDanger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* BUTTON */
+.btnPrimary {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.2);
+}
