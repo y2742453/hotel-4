@@ -647,99 +647,101 @@ app.post("/api/evenements", async (req, res) => {
     });
   }
 });
-//Modification d'un événement
+// =====================
+// MODIFIER UN ÉVÉNEMENT
+// =====================
 app.put("/api/evenements/:id", async (req, res) => {
-
-<<<<<<< HEAD
-
-/**
- * Créer une demande de restauration
- * POST /api/restauration
- * Accès : Organisateur uniquement
- */
-app.post("/api/restauration", userAuth, allowRoles(2), async (req, res) => {
   try {
-    const { id_evenement, id_service, details, quantite, montant_estime } = req.body;
+    const id = Number(req.params.id);
 
-    if (!id_evenement || !id_service) {
+    const {
+      nom_evenement,
+      type_evenement,
+      description,
+      date_debut,
+      date_fin,
+      statut,
+      id_salle,
+      id_organisateur,
+      services = [],
+    } = req.body;
+
+    // Vérification basique
+    if (!nom_evenement || !date_debut || !date_fin) {
       return res.status(400).json({
-        message: "id_evenement et id_service sont requis",
+        message: "nom_evenement, date_debut et date_fin sont requis",
       });
     }
 
-    const exists = await restaurationRequestExists(id_evenement, id_service);
+    // Transaction
+    const conn = await pool.getConnection();
 
-    if (exists) {
-      return res.status(409).json({
-        message: "Une demande de restauration existe déjà pour cet événement",
-      });
+    try {
+      await conn.beginTransaction();
+
+      // 1. UPDATE evenement
+      const [result] = await conn.query(
+        `
+        UPDATE evenements
+        SET nom_evenement = ?, type_evenement = ?, description = ?, 
+            date_debut = ?, date_fin = ?, statut = ?, 
+            id_salle = ?, id_organisateur = ?
+        WHERE id_evenement = ?
+        `,
+        [
+          nom_evenement,
+          type_evenement ?? null,
+          description ?? null,
+          date_debut,
+          date_fin,
+          statut ?? "Prévu",
+          id_salle,
+          id_organisateur,
+          id,
+        ]
+      );
+
+      if (result.affectedRows === 0) {
+        await conn.rollback();
+        return res.status(404).json({ message: "Événement introuvable" });
+      }
+
+      // 2. SUPPRIMER anciens services
+      await conn.query(
+        "DELETE FROM evenement_services WHERE id_evenement = ?",
+        [id]
+      );
+
+      // 3. AJOUT nouveaux services
+      if (services && services.length > 0) {
+        for (const id_service of services) {
+          await conn.query(
+            `
+            INSERT INTO evenement_services (id_evenement, id_service, statut)
+            VALUES (?, ?, 'Demande')
+            `,
+            [id, id_service]
+          );
+        }
+      }
+
+      await conn.commit();
+
+      res.json({ message: "Événement modifié avec succès" });
+
+    } catch (error) {
+      await conn.rollback();
+      console.error("UPDATE EVENT ERROR:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    } finally {
+      conn.release();
     }
 
-    const created = await createRestaurationRequest({
-      id_evenement,
-      id_service,
-      details,
-      quantite,
-      montant_estime,
-    });
-
-    if (!created) {
-      return res.status(500).json({
-        message: "Erreur lors de la création de la demande de restauration",
-      });
-    }
-
-    return res.status(201).json({
-      message: "Demande de restauration créée avec succès",
-    });
-  } catch (error) {
-    console.error("Erreur POST /api/restauration :", error);
-    return res.status(500).json({
-      message: "Erreur serveur",
-      error: error.message,
-    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
-
-
-/**
- * Lire une demande de restauration
- * GET /api/restauration/:id_evenement/:id_service
- * Accès : Organisateur uniquement
- */
-app.get(
-  "/api/restauration/:id_evenement/:id_service",
-  userAuth,
-  allowRoles(2),
-  async (req, res) => {
-    try {
-      const { id_evenement, id_service } = req.params;
-
-      if (!id_evenement || !id_service) {
-        return res.status(400).json({
-          message: "id_evenement et id_service sont requis",
-        });
-      }
-
-      const demande = await getRestaurationRequestByEvent(id_evenement, id_service);
-
-      if (!demande) {
-        return res.status(404).json({
-          message: "Demande de restauration introuvable",
-        });
-      }
-
-      return res.status(200).json(demande);
-    } catch (error) {
-      console.error("Erreur GET /api/restauration/:id_evenement/:id_service :", error);
-      return res.status(500).json({
-        message: "Erreur serveur",
-        error: error.message,
-      });
-    }
-  }
-);
-
 
 /**
  * Modifier une demande de restauration
@@ -793,162 +795,6 @@ app.put(
     }
   }
 );
-=======
-  const id = req.params.id;
-
-  const {
-    nom_evenement,
-    type_evenement,
-    description,
-    date_debut,
-    date_fin,
-    id_salle,
-    nb_participants,
-    budget
-  } = req.body;
-
-  try {
-
-    const [result] = await pool.query(
-      `UPDATE evenements
-       SET nom_evenement=?, type_evenement=?, description=?, date_debut=?, date_fin=?, id_salle=?, nb_participants=?, budget=?, updated_at=NOW()
-       WHERE id_evenement=?`,
-      [
-        nom_evenement,
-        type_evenement,
-        description,
-        date_debut,
-        date_fin,
-        id_salle,
-        nb_participants,
-        budget,
-        id
-      ]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
-    }
-
-    res.json({ message: "Événement modifié avec succès" });
-
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
-
-  }
-
-});
-// Confirmer evenement
-app.put("/api/evenements/:id/confirmer", async (req, res) => {
-  const id = req.params.id;
-  try {
-    const [result] = await pool.query(
-      "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
-      [id]
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
-    }
-    res.json({ message: "Événement confirmé avec succès" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-
-//Annuler evenement
-app.put("/api/evenements/:id/annuler", async (req, res) => {
-  const id = req.params.id;
-  try {
-    const [result] = await pool.query(
-      "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
-      [id]
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
-    }
-    res.json({ message: "Événement annulé avec succès" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-// Route pour uploader un document lié à un événement
-app.post("/api/evenements/:id/documents", upload.single("file"), async (req, res) => {
-  try {
-    const id_evenement = req.params.id;
-
-    if (!req.file) {
-      return res.status(400).json({ message: "Aucun fichier" });
-    }
-
-    const { filename, path, mimetype, size } = req.file;
-
-    await pool.execute(
-      `INSERT INTO evenement_documents 
-      (id_evenement, nom_fichier, chemin_fichier, type_mime, taille)
-      VALUES (?, ?, ?, ?, ?)`,
-      [id_evenement, filename, path, mimetype, size]
-    );
-
-    res.json({ message: "Upload réussi" });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-
-app.get("/api/evenements/:id/documents", async (req, res) => {
-  const id_evenement = req.params.id;
-
-  const [rows] = await pool.execute(
-    "SELECT * FROM evenement_documents WHERE id_evenement = ?",
-    [id_evenement]
-  );
-
-  res.json(rows);
-});
-// Route pour supprimer un document lié à un événement
-import fs from "fs";
-
-app.delete("/api/documents/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    // récupérer le document
-    const [rows] = await pool.execute(
-      "SELECT * FROM evenement_documents WHERE id = ?",
-      [id]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "Document introuvable" });
-    }
-
-    const doc = rows[0];
-
-    // supprimer fichier physique
-    if (fs.existsSync(doc.chemin_fichier)) {
-      fs.unlinkSync(doc.chemin_fichier);
-    }
-
-    // supprimer dans DB
-    await pool.execute(
-      "DELETE FROM evenement_documents WHERE id = ?",
-      [id]
-    );
-
-    res.json({ message: "Document supprimé" });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
->>>>>>> 5b712da1ee0f109192b20a11dc6e30c3247a9415
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {
