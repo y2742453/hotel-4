@@ -55,14 +55,6 @@ import {
 
 import { allowRoles, userAuth, userNotAuth } from "./Midlewares/auth.js";
 
-// import  des services de restauration
-import {
-  createRestaurationRequest,
-  getRestaurationRequestByEvent,
-  updateRestaurationRequest,
-  restaurationRequestExists,
-} from "./modele/evenementService.js";
-
 // Création du serveur
 const app = express();
 
@@ -647,120 +639,109 @@ app.post("/api/evenements", async (req, res) => {
     });
   }
 });
-// =====================
-// MODIFIER UN ÉVÉNEMENT
-// =====================
+//Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
+
+  const id = req.params.id;
+
+  const {
+    nom_evenement,
+    type_evenement,
+    description,
+    date_debut,
+    date_fin,
+    id_salle,
+    nb_participants,
+    budget
+  } = req.body;
+
   try {
-    const id = Number(req.params.id);
-
-    const {
-      nom_evenement,
-      type_evenement,
-      description,
-      date_debut,
-      date_fin,
-      statut,
-      id_salle,
-      id_organisateur,
-      services = [],
-    } = req.body;
-
-    // Vérification basique
-    if (!nom_evenement || !date_debut || !date_fin) {
-      return res.status(400).json({
-        message: "nom_evenement, date_debut et date_fin sont requis",
-      });
-    }
-
-    // Transaction
-    const conn = await pool.getConnection();
-
-    try {
-      await conn.beginTransaction();
-
-      // 1. UPDATE evenement
-      const [result] = await conn.query(
-        `
-        UPDATE evenements
-        SET nom_evenement = ?, type_evenement = ?, description = ?, 
-            date_debut = ?, date_fin = ?, statut = ?, 
-            id_salle = ?, id_organisateur = ?
-        WHERE id_evenement = ?
-        `,
-        [
-          nom_evenement,
-          type_evenement ?? null,
-          description ?? null,
-          date_debut,
-          date_fin,
-          statut ?? "Prévu",
-          id_salle,
-          id_organisateur,
-          id,
-        ]
-      );
-
-      if (result.affectedRows === 0) {
-        await conn.rollback();
-        return res.status(404).json({ message: "Événement introuvable" });
-      }
-
-      // 2. SUPPRIMER anciens services
-      await conn.query(
-        "DELETE FROM evenement_services WHERE id_evenement = ?",
-        [id]
-      );
-
-      // 3. AJOUT nouveaux services
-      if (services && services.length > 0) {
-        for (const id_service of services) {
-          await conn.query(
-            `
-            INSERT INTO evenement_services (id_evenement, id_service, statut)
-            VALUES (?, ?, 'Demande')
-            `,
-            [id, id_service]
-          );
-        }
-      }
-
-      await conn.commit();
-
-      res.json({ message: "Événement modifié avec succès" });
-
-    } catch (error) {
-      await conn.rollback();
-      console.error("UPDATE EVENT ERROR:", error);
-      res.status(500).json({ message: "Erreur serveur" });
-    } finally {
-      conn.release();
-    }
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-
-app.put("/api/evenements/:id/annuler", async (req, res) => {
-  try {
-    const id = Number(req.params.id);
 
     const [result] = await pool.query(
-      `
-      UPDATE evenements
-      SET statut = 'Annulé'
-      WHERE id_evenement = ?
-      `,
-      [id]
+      `UPDATE evenements
+       SET nom_evenement=?, type_evenement=?, description=?, date_debut=?, date_fin=?, id_salle=?, nb_participants=?, budget=?, updated_at=NOW()
+       WHERE id_evenement=?`,
+      [
+        nom_evenement,
+        type_evenement,
+        description,
+        date_debut,
+        date_fin,
+        id_salle,
+        nb_participants,
+        budget,
+        id
+      ]
     );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
     }
 
+    res.json({ message: "Événement modifié avec succès" });
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+
+  }
+
+});
+// Confirmer evenement
+app.put("/api/evenements/:id/confirmer", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [result] = await pool.query(
+      "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+    res.json({ message: "Événement confirmé avec succès" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+//Annuler evenement
+app.put("/api/evenements/:id/annuler", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [result] = await pool.query(
+      "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
     res.json({ message: "Événement annulé avec succès" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+// Route pour uploader un document lié à un événement
+app.post("/api/evenements/:id/documents", upload.single("file"), async (req, res) => {
+  try {
+    const id_evenement = req.params.id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Aucun fichier" });
+    }
+
+    const { filename, path, mimetype, size } = req.file;
+
+    await pool.execute(
+      `INSERT INTO evenement_documents 
+      (id_evenement, nom_fichier, chemin_fichier, type_mime, taille)
+      VALUES (?, ?, ?, ?, ?)`,
+      [id_evenement, filename, path, mimetype, size]
+    );
+
+    res.json({ message: "Upload réussi" });
 
   } catch (err) {
     console.error(err);
@@ -768,58 +749,53 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
   }
 });
 
-/**
- * Modifier une demande de restauration
- * PUT /api/restauration/:id_evenement/:id_service
- * Accès : Organisateur uniquement
- */
-app.put(
-  "/api/restauration/:id_evenement/:id_service",
-  userAuth,
-  allowRoles(2),
-  async (req, res) => {
-    try {
-      const { id_evenement, id_service } = req.params;
-      const { details, quantite, montant_estime } = req.body;
+app.get("/api/evenements/:id/documents", async (req, res) => {
+  const id_evenement = req.params.id;
 
-      if (!id_evenement || !id_service) {
-        return res.status(400).json({
-          message: "id_evenement et id_service sont requis",
-        });
-      }
+  const [rows] = await pool.execute(
+    "SELECT * FROM evenement_documents WHERE id_evenement = ?",
+    [id_evenement]
+  );
 
-      const exists = await restaurationRequestExists(id_evenement, id_service);
+  res.json(rows);
+});
+// Route pour supprimer un document lié à un événement
+import fs from "fs";
 
-      if (!exists) {
-        return res.status(404).json({
-          message: "Aucune demande de restauration à modifier",
-        });
-      }
+app.delete("/api/documents/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
 
-      const updated = await updateRestaurationRequest(id_evenement, id_service, {
-        details,
-        quantite,
-        montant_estime,
-      });
+    // récupérer le document
+    const [rows] = await pool.execute(
+      "SELECT * FROM evenement_documents WHERE id = ?",
+      [id]
+    );
 
-      if (!updated) {
-        return res.status(500).json({
-          message: "Erreur lors de la mise à jour de la demande de restauration",
-        });
-      }
-
-      return res.status(200).json({
-        message: "Demande de restauration mise à jour avec succès",
-      });
-    } catch (error) {
-      console.error("Erreur PUT /api/restauration/:id_evenement/:id_service :", error);
-      return res.status(500).json({
-        message: "Erreur serveur",
-        error: error.message,
-      });
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Document introuvable" });
     }
+
+    const doc = rows[0];
+
+    // supprimer fichier physique
+    if (fs.existsSync(doc.chemin_fichier)) {
+      fs.unlinkSync(doc.chemin_fichier);
+    }
+
+    // supprimer dans DB
+    await pool.execute(
+      "DELETE FROM evenement_documents WHERE id = ?",
+      [id]
+    );
+
+    res.json({ message: "Document supprimé" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
   }
-);
+});
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {
