@@ -7,7 +7,7 @@ export async function hasReservationConflict(id_salle, date_debut, date_fin) {
   const [rows] = await pool.query(
     `
     SELECT COUNT(*) AS nb
-    FROM reservations
+    FROM evenements
     WHERE id_salle = ?
       AND (date_debut < ? AND date_fin > ?)
     `,
@@ -33,10 +33,11 @@ export async function createEvenement(data) {
     services = [],
   } = data;
 
-  // Si aucun statut n'est fourni ou si statut = 'Brouillon', on force à 'Prévu'
-  const statutFinal = !statut || statut === 'Brouillon' ? 'Prévu' : statut;
+  // Statut par défaut
+  const statutFinal =
+    !statut || statut === "Brouillon" ? "Prévu" : statut;
 
-  // 1. Vérifier conflit
+  // 🔥 1. Vérifier conflit
   const conflict = await hasReservationConflict(
     id_salle,
     date_debut,
@@ -47,13 +48,13 @@ export async function createEvenement(data) {
     throw new Error("RESERVATION_CONFLICT");
   }
 
-  // 2. Transaction
+  // 🔥 2. Transaction
   const conn = await pool.getConnection();
 
   try {
     await conn.beginTransaction();
 
-    // 3. Créer événement
+    // 🔥 3. Créer événement
     const [evResult] = await conn.query(
       `
       INSERT INTO evenements
@@ -74,7 +75,7 @@ export async function createEvenement(data) {
 
     const id_evenement = evResult.insertId;
 
-    // 4. Réservation
+    // 🔥 4. Créer réservation
     await conn.query(
       `
       INSERT INTO reservations (id_salle, id_evenement, date_debut, date_fin)
@@ -83,23 +84,20 @@ export async function createEvenement(data) {
       [id_salle, id_evenement, date_debut, date_fin],
     );
 
-    // 5. Ajouter services
-   // AJOUT SERVICES
-if (services && services.length > 0) {
-  console.log("INSERT SERVICES:", services); // DEBUG
+    // 🔥 5. Ajouter services
+    if (services && services.length > 0) {
+      for (const id_service of services) {
+        await conn.query(
+          `
+          INSERT INTO evenement_services (id_evenement, id_service, statut)
+          VALUES (?, ?, 'Demande')
+          `,
+          [id_evenement, id_service]
+        );
+      }
+    }
 
-  for (const id_service of services) {
-    await conn.query(
-      `
-      INSERT INTO evenement_services (id_evenement, id_service, statut)
-      VALUES (?, ?, 'Demande')
-      `,
-      [id_evenement, id_service]
-    );
-  }
-}
-
-    // 6. Commit
+    // 🔥 6. Commit
     await conn.commit();
 
     return id_evenement;
