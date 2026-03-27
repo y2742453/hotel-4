@@ -85,23 +85,25 @@ export default function ListeEvenements() {
         <div className="events-header">
           <h2>Événements</h2>
 
-          {!isAdmin && (
-            <button
-              className="btn-new"
-              onClick={() => navigate("/organisateur/demandes-services")}
-            >
-              Mes demandes de services
-            </button>
-          )}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            {!isAdmin && (
+              <button
+                className="btn-new"
+                onClick={() => navigate("/organisateur/demandes-services")}
+              >
+                Mes demandes de services
+              </button>
+            )}
 
-          {!isAdmin && (
-            <button
-              className="btn-new"
-              onClick={() => navigate("/organisateur/evenements/creer")}
-            >
-              + Nouvel événement
-            </button>
-          )}
+            {!isAdmin && (
+              <button
+                className="btn-new"
+                onClick={() => navigate("/organisateur/evenements/creer")}
+              >
+                + Nouvel événement
+              </button>
+            )}
+          </div>
         </div>
 
         {/* TABS */}

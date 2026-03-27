@@ -326,6 +326,14 @@ export default function Invites() {
                     </span>
                   )}
                 </div>
+
+                <button
+                  className="btn btnSecondary"
+                  onClick={loadInvites}
+                  style={{ padding: 15, margin: "auto" }}
+                >
+                  Actualiser
+                </button>
               </div>
             </div>
 
@@ -370,7 +378,7 @@ export default function Invites() {
                       </select>
                     </td>
 
-                    <td>
+                    <td style={{ display: "flex", flexWrap: "wrap" }}>
                       <div className="tooltip">
                         <button
                           className="btn btnPrimaraire"
