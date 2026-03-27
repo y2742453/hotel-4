@@ -85,12 +85,14 @@ export default function ListeEvenements() {
         <div className="events-header">
           <h2>Événements</h2>
 
-          <button
-            className="btn btnPrimary"
-            onClick={() => navigate("/organisateur/demandes-services")}
-          >
-            Mes demandes de services
-          </button>
+          {!isAdmin && (
+            <button
+              className="btn btnPrimary"
+              onClick={() => navigate("/organisateur/demandes-services")}
+            >
+              Mes demandes de services
+            </button>
+          )}
 
           {!isAdmin && (
             <button
@@ -172,21 +174,23 @@ export default function ListeEvenements() {
                           Modifier
                         </button>
 
-                        <button
-                          className="btn btnPrimary"
-                          disabled={!confirme}
-                          style={{
-                            opacity: confirme ? 1 : 0.6,
-                            cursor: confirme ? "pointer" : "not-allowed",
-                          }}
-                          onClick={() =>
-                            navigate(
-                              `/organisateur/evenements/${e.id_evenement}/services`,
-                            )
-                          }
-                        >
-                          Besoins
-                        </button>
+                        {!isAdmin && (
+                          <button
+                            className="btn btnPrimary"
+                            disabled={!confirme}
+                            style={{
+                              opacity: confirme ? 1 : 0.6,
+                              cursor: confirme ? "pointer" : "not-allowed",
+                            }}
+                            onClick={() =>
+                              navigate(
+                                `/organisateur/evenements/${e.id_evenement}/services`,
+                              )
+                            }
+                          >
+                            Besoins
+                          </button>
+                        )}
 
                         <button
                           className="btn btnDanger"
