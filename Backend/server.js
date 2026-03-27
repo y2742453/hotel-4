@@ -1,4 +1,3 @@
-
 // Chargement de la configuration
 import "dotenv/config";
 
@@ -55,7 +54,30 @@ import {
 
 import { allowRoles, userAuth, userNotAuth } from "./Midlewares/auth.js";
 
-// Création du serveur
+// import  des services de restauration
+import {
+  createServiceRequest,
+  getServiceRequestByEvent,
+  getAllServiceRequests,
+  getPendingServiceRequests,
+  getAllServiceRequestsByEvent,
+  updateServiceRequest,
+  updateServiceRequestStatus,
+  serviceRequestExists,
+} from "./modele/evenementService.js";
+
+import {
+  getDemandesValideesPourDevis,
+  getDemandeValideePourDevis,
+  createDevis,
+  getAllDevis,
+  getDevisById,
+  updateDevisPdfPath,
+  updateDevisStatut,
+  updateDevisDateEnvoi,
+  deleteDevis,
+} from "./modele/devis.js";
+// Création du serveur  `
 const app = express();
 
 // Initialisation du store de session
@@ -388,11 +410,10 @@ app.post("/api/salles", async (req, res) => {
       req.body.type,
       req.body.capacite,
       req.body.equipements,
-      req.body.statut
+      req.body.statut,
     );
 
     res.status(201).json({ id });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
@@ -407,7 +428,7 @@ app.put("/api/salles/:id", async (req, res) => {
     req.body.type,
     req.body.capacite,
     req.body.equipements,
-    req.body.statut
+    req.body.statut,
   );
 
   if (!ok) {
@@ -496,19 +517,18 @@ app.put("/api/services/:id", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
   // supprimer anciens services
-await pool.query(
-  "DELETE FROM evenement_services WHERE id_evenement = ?",
-  [id]
-);
+  await pool.query("DELETE FROM evenement_services WHERE id_evenement = ?", [
+    id,
+  ]);
 
-// ajouter nouveaux
-for (const idService of req.body.services) {
-  await pool.query(
-    `INSERT INTO evenement_services (id_evenement, id_service, statut)
+  // ajouter nouveaux
+  for (const idService of req.body.services) {
+    await pool.query(
+      `INSERT INTO evenement_services (id_evenement, id_service, statut)
      VALUES (?, ?, 'Demande')`,
-    [id, idService]
-  );
-}
+      [id, idService],
+    );
+  }
 });
 
 // DELETE supprimer un service
@@ -537,11 +557,10 @@ app.get("/api/evenements/:id/services", async (req, res) => {
       JOIN services s ON es.id_service = s.id_service
       WHERE es.id_evenement = ?
       `,
-      [id]
+      [id],
     );
 
     res.json(rows);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
@@ -641,7 +660,6 @@ app.post("/api/evenements", async (req, res) => {
 });
 //Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
-
   const id = req.params.id;
 
   const {
@@ -652,11 +670,10 @@ app.put("/api/evenements/:id", async (req, res) => {
     date_fin,
     id_salle,
     nb_participants,
-    budget
+    budget,
   } = req.body;
 
   try {
-
     const [result] = await pool.query(
       `UPDATE evenements
        SET nom_evenement=?, type_evenement=?, description=?, date_debut=?, date_fin=?, id_salle=?, nb_participants=?, budget=?, updated_at=NOW()
@@ -670,8 +687,8 @@ app.put("/api/evenements/:id", async (req, res) => {
         id_salle,
         nb_participants,
         budget,
-        id
-      ]
+        id,
+      ],
     );
 
     if (result.affectedRows === 0) {
@@ -679,14 +696,10 @@ app.put("/api/evenements/:id", async (req, res) => {
     }
 
     res.json({ message: "Événement modifié avec succès" });
-
   } catch (error) {
-
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
-
   }
-
 });
 // Confirmer evenement
 app.put("/api/evenements/:id/confirmer", async (req, res) => {
@@ -694,7 +707,7 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
   try {
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
-      [id]
+      [id],
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
@@ -712,7 +725,7 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
   try {
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
-      [id]
+      [id],
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
@@ -724,37 +737,40 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
   }
 });
 // Route pour uploader un document lié à un événement
-app.post("/api/evenements/:id/documents", upload.single("file"), async (req, res) => {
-  try {
-    const id_evenement = req.params.id;
+app.post(
+  "/api/evenements/:id/documents",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const id_evenement = req.params.id;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Aucun fichier" });
-    }
+      if (!req.file) {
+        return res.status(400).json({ message: "Aucun fichier" });
+      }
 
-    const { filename, path, mimetype, size } = req.file;
+      const { filename, path, mimetype, size } = req.file;
 
-    await pool.execute(
-      `INSERT INTO evenement_documents 
+      await pool.execute(
+        `INSERT INTO evenement_documents 
       (id_evenement, nom_fichier, chemin_fichier, type_mime, taille)
       VALUES (?, ?, ?, ?, ?)`,
-      [id_evenement, filename, path, mimetype, size]
-    );
+        [id_evenement, filename, path, mimetype, size],
+      );
 
-    res.json({ message: "Upload réussi" });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
+      res.json({ message: "Upload réussi" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+);
 
 app.get("/api/evenements/:id/documents", async (req, res) => {
   const id_evenement = req.params.id;
 
   const [rows] = await pool.execute(
     "SELECT * FROM evenement_documents WHERE id_evenement = ?",
-    [id_evenement]
+    [id_evenement],
   );
 
   res.json(rows);
@@ -769,7 +785,7 @@ app.delete("/api/documents/:id", async (req, res) => {
     // récupérer le document
     const [rows] = await pool.execute(
       "SELECT * FROM evenement_documents WHERE id = ?",
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
@@ -784,18 +800,388 @@ app.delete("/api/documents/:id", async (req, res) => {
     }
 
     // supprimer dans DB
-    await pool.execute(
-      "DELETE FROM evenement_documents WHERE id = ?",
-      [id]
-    );
+    await pool.execute("DELETE FROM evenement_documents WHERE id = ?", [id]);
 
     res.json({ message: "Document supprimé" });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+/**
+ * Créer une demande de service
+ * POST /api/services
+ * Accès : Organisateur
+ */
+app.post(
+  "/api/evenementservices",
+  userAuth,
+  allowRoles(1, 2),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service, details, quantite, montant_estime } =
+        req.body;
+
+      if (!id_evenement || !id_service) {
+        return res.status(400).json({
+          message: "id_evenement et id_service sont requis",
+        });
+      }
+
+      const exists = await serviceRequestExists(id_evenement, id_service);
+
+      if (exists) {
+        return res.status(409).json({
+          message: "Une demande existe déjà pour cet événement et ce service",
+        });
+      }
+
+      const created = await createServiceRequest({
+        id_evenement,
+        id_service,
+        details,
+        quantite,
+        montant_estime,
+      });
+
+      if (!created) {
+        return res.status(500).json({
+          message: "Erreur lors de la création de la demande de service",
+        });
+      }
+
+      return res.status(201).json({
+        message: "Demande de service créée avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur POST /api/services :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+/**
+ * Voir toutes les demandes de services
+ * GET /api/evenementservices
+ * Accès : Organisateur, Coordonnateur, Admin
+ */
+app.get(
+  "/api/evenementservices",
+  userAuth,
+  allowRoles(1, 2, 3),
+  async (req, res) => {
+    try {
+      const demandes = await getAllServiceRequests();
+
+      return res.status(200).json(demandes);
+    } catch (error) {
+      console.error("Erreur GET /api/evenementservices :", error);
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+app.get(
+  "/api/evenementservices/evenement/:id_evenement",
+  userAuth,
+  allowRoles(1, 2, 3),
+  async (req, res) => {
+    try {
+      const { id_evenement } = req.params;
+
+      const demandes = await getAllServiceRequestsByEvent(id_evenement);
+
+      return res.status(200).json(demandes);
+    } catch (error) {
+      console.error(
+        "Erreur GET /api/evenementservices/evenement/:id_evenement :",
+        error,
+      );
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+/**
+ * Lire une demande de service
+ * GET /api/services/:id_evenement/:id_service
+ * Accès : Organisateur
+ */
+app.get(
+  "/api/evenementservices/:id_evenement/:id_service",
+  userAuth,
+  allowRoles(1, 2),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+
+      const demande = await getServiceRequestByEvent(id_evenement, id_service);
+
+      if (!demande) {
+        return res.status(404).json({
+          message: "Demande de service introuvable",
+        });
+      }
+
+      return res.status(200).json(demande);
+    } catch (error) {
+      console.error(
+        "Erreur GET /api/services/:id_evenement/:id_service :",
+        error,
+      );
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+/**
+ * Modifier une demande de service
+ * PUT /api/services/:id_evenement/:id_service
+ * Accès : Organisateur
+ */
+app.put(
+  "/api/evenementservices/:id_evenement/:id_service",
+  userAuth,
+  allowRoles(1, 2),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+      const { details, quantite, montant_estime } = req.body;
+
+      const exists = await serviceRequestExists(id_evenement, id_service);
+
+      if (!exists) {
+        return res.status(404).json({
+          message: "Aucune demande de service à modifier",
+        });
+      }
+
+      const updated = await updateServiceRequest(id_evenement, id_service, {
+        details,
+        quantite,
+        montant_estime,
+      });
+
+      if (!updated) {
+        return res.status(500).json({
+          message: "Erreur lors de la mise à jour de la demande de service",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Demande de service mise à jour avec succès",
+      });
+    } catch (error) {
+      console.error(
+        "Erreur PUT /api/services/:id_evenement/:id_service :",
+        error,
+      );
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+app.put(
+  "/api/evenementservices/:id_evenement/:id_service/statut",
+  userAuth,
+  allowRoles(1, 3),
+  async (req, res) => {
+    try {
+      const { id_evenement, id_service } = req.params;
+      const { statut } = req.body;
+
+      if (!["Valide", "Refuse"].includes(statut)) {
+        return res.status(400).json({ message: "Statut invalide" });
+      }
+
+      const exists = await serviceRequestExists(id_evenement, id_service);
+
+      if (!exists) {
+        return res.status(404).json({
+          message: "Demande de service introuvable",
+        });
+      }
+
+      const updated = await updateServiceRequestStatus(
+        id_evenement,
+        id_service,
+        statut,
+      );
+
+      if (!updated) {
+        return res.status(500).json({
+          message: "Impossible de mettre à jour le statut",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Statut mis à jour avec succès",
+      });
+    } catch (error) {
+      console.error(
+        "Erreur PUT /api/evenementservices/:id_evenement/:id_service/statut :",
+        error,
+      );
+
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+// Voir les demandes validées prêtes pour devis
+app.get(
+  "/api/devis/demandes-validees",
+  userAuth,
+  allowRoles(1, 3),
+  async (req, res) => {
+    try {
+      const rows = await getDemandesValideesPourDevis();
+      return res.status(200).json(rows);
+    } catch (error) {
+      console.error("Erreur GET /api/devis/demandes-validees :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+// Créer un devis simple
+app.post("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const { id_evenement, id_service, montant_ht, taxes, montant_ttc } =
+      req.body;
+
+    if (!id_evenement || !id_service) {
+      return res.status(400).json({
+        message: "id_evenement et id_service sont requis",
+      });
+    }
+
+    const demande = await getDemandeValideePourDevis(id_evenement, id_service);
+
+    if (!demande) {
+      return res.status(404).json({
+        message: "Demande validée introuvable",
+      });
+    }
+
+    const reference = `DEV-${id_evenement}-${id_service}-${Date.now()}`;
+
+    const id_devis = await createDevis({
+      id_evenement,
+      id_service,
+      reference,
+      montant_ht,
+      taxes,
+      montant_ttc,
+      statut: "Brouillon",
+    });
+
+    return res.status(201).json({
+      message: "Devis créé avec succès",
+      id_devis,
+      reference,
+    });
+  } catch (error) {
+    console.error("Erreur POST /api/devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Voir tous les devis
+app.get("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
+  try {
+    const rows = await getAllDevis();
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("Erreur GET /api/devis :", error);
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+});
+
+// Voir un devis précis
+app.get(
+  "/api/devis/:id_devis",
+  userAuth,
+  allowRoles(1, 3),
+  async (req, res) => {
+    try {
+      const { id_devis } = req.params;
+      const devis = await getDevisById(id_devis);
+
+      if (!devis) {
+        return res.status(404).json({
+          message: "Devis introuvable",
+        });
+      }
+
+      return res.status(200).json(devis);
+    } catch (error) {
+      console.error("Erreur GET /api/devis/:id_devis :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
+app.delete(
+  "/api/devis/:id_devis",
+  userAuth,
+  allowRoles(1, 3),
+  async (req, res) => {
+    try {
+      const { id_devis } = req.params;
+
+      const deleted = await deleteDevis(id_devis);
+
+      if (!deleted) {
+        return res.status(404).json({
+          message: "Devis introuvable",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Devis supprimé avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur DELETE /api/devis/:id_devis :", error);
+      return res.status(500).json({
+        message: "Erreur serveur",
+        error: error.message,
+      });
+    }
+  },
+);
+
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {

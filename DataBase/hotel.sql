@@ -1,19 +1,29 @@
 SET NAMES utf8mb4;
+
 SET CHARACTER SET utf8mb4;
 
 CREATE DATABASE IF NOT EXISTS HotelDB;
+
 USE HotelDB;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS paiements;
+
 DROP TABLE IF EXISTS factures;
+
 DROP TABLE IF EXISTS evenement_services;
+
 DROP TABLE IF EXISTS reservations;
+
 DROP TABLE IF EXISTS evenements;
+
 DROP TABLE IF EXISTS services;
+
 DROP TABLE IF EXISTS salles;
+
 DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS roles;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -23,9 +33,9 @@ CREATE TABLE roles (
     nom_role VARCHAR(50) NOT NULL UNIQUE
 );
 
-INSERT INTO roles (nom_role)
-VALUES
-    ('Administrateur'),
+INSERT INTO
+    roles (nom_role)
+VALUES ('Administrateur'),
     ('Organisateur'),
     ('Coordonnateur'),
     ('Comptabilite');
@@ -39,7 +49,7 @@ CREATE TABLE users (
     actif BOOLEAN DEFAULT TRUE,
     id_role INT NOT NULL,
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_role) REFERENCES roles(id_role)
+    FOREIGN KEY (id_role) REFERENCES roles (id_role)
 );
 
 CREATE TABLE salles (
@@ -54,14 +64,30 @@ CREATE TABLE services (
     id_service INT AUTO_INCREMENT PRIMARY KEY,
     nom_service VARCHAR(100) NOT NULL,
     description TEXT,
-    tarif DECIMAL(10,2) NOT NULL
+    tarif DECIMAL(10, 2) NOT NULL
 );
 
-INSERT INTO services (nom_service, description, tarif)
-VALUES
-    ('Traiteur', 'Service de restauration pour les événements', 0.00),
-    ('Audiovisuel', 'Équipements audiovisuels et assistance technique', 0.00),
-    ('Sécurité', 'Service de sécurité pour événements', 0.00);
+INSERT INTO
+    services (
+        nom_service,
+        description,
+        tarif
+    )
+VALUES (
+        'Traiteur',
+        'Service de restauration pour les événements',
+        0.00
+    ),
+    (
+        'Audiovisuel',
+        'Équipements audiovisuels et assistance technique',
+        0.00
+    ),
+    (
+        'Sécurité',
+        'Service de sécurité pour événements',
+        0.00
+    );
 
 CREATE TABLE evenements (
     id_evenement INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,8 +99,8 @@ CREATE TABLE evenements (
     statut VARCHAR(20) DEFAULT 'Brouillon',
     id_salle INT NOT NULL,
     id_organisateur INT NOT NULL,
-    FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
-    FOREIGN KEY (id_organisateur) REFERENCES users(id_user)
+    FOREIGN KEY (id_salle) REFERENCES salles (id_salle),
+    FOREIGN KEY (id_organisateur) REFERENCES users (id_user)
 );
 
 CREATE TABLE reservations (
@@ -83,8 +109,8 @@ CREATE TABLE reservations (
     id_evenement INT NOT NULL,
     date_debut DATETIME NOT NULL,
     date_fin DATETIME NOT NULL,
-    FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
-    FOREIGN KEY (id_evenement) REFERENCES evenements(id_evenement)
+    FOREIGN KEY (id_salle) REFERENCES salles (id_salle),
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
 
 CREATE TABLE evenement_services (
@@ -93,28 +119,44 @@ CREATE TABLE evenement_services (
     statut VARCHAR(20) DEFAULT 'Demande',
     details TEXT NULL,
     quantite INT DEFAULT 1,
-    montant_estime DECIMAL(10,2) DEFAULT 0.00,
+    montant_estime DECIMAL(10, 2) DEFAULT 0.00,
     date_demande DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_evenement, id_service),
-    FOREIGN KEY (id_evenement) REFERENCES evenements(id_evenement),
-    FOREIGN KEY (id_service) REFERENCES services(id_service)
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
+    FOREIGN KEY (id_service) REFERENCES services (id_service)
 );
 
 CREATE TABLE factures (
     id_facture INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL UNIQUE,
-    montant_total DECIMAL(10,2),
-    taxes DECIMAL(10,2),
+    montant_total DECIMAL(10, 2),
+    taxes DECIMAL(10, 2),
     statut VARCHAR(20) DEFAULT 'En attente',
     date_facture DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_evenement) REFERENCES evenements(id_evenement)
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
 
 CREATE TABLE paiements (
     id_paiement INT AUTO_INCREMENT PRIMARY KEY,
     id_facture INT NOT NULL,
-    montant DECIMAL(10,2) NOT NULL,
+    montant DECIMAL(10, 2) NOT NULL,
     mode_paiement VARCHAR(50),
     date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_facture) REFERENCES factures(id_facture)
+    FOREIGN KEY (id_facture) REFERENCES factures (id_facture)
+);
+
+CREATE TABLE devis (
+    id_devis INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    id_service INT NOT NULL,
+    reference VARCHAR(100) NOT NULL,
+    montant_ht DECIMAL(10, 2) DEFAULT 0.00,
+    taxes DECIMAL(10, 2) DEFAULT 0.00,
+    montant_ttc DECIMAL(10, 2) DEFAULT 0.00,
+    statut VARCHAR(20) DEFAULT 'Brouillon',
+    pdf_path VARCHAR(255),
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_envoi DATETIME,
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
+    FOREIGN KEY (id_service) REFERENCES services (id_service)
 );

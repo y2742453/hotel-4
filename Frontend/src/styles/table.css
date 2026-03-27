@@ -66,29 +66,29 @@
 /* ----- Variantes (plus spécifiques pour ne pas être écrasées) ----- */
 
 /* Neutre */
-.btn .btnGhost {
+.btn.btnGhost {
   background-color: #ffffff;
   border-color: #d7dee8;
   color: #0f172a;
 }
-.btn .btnGhost:hover {
+.btn.btnGhost:hover {
   background-color: #eef3fb;
   border-color: #c7d3ea;
 }
 
 /* Principal (Bleu) */
-.btn .btnPrimary {
+.btn.btnPrimary {
   background-color: #1f4db8;
   border-color: #1f4db8;
   color: #ffffff;
 }
-.btn .btnPrimary:hover {
+.btn.btnPrimary:hover {
   background-color: #1a42a0;
   border-color: #1a42a0;
 }
 
 /* Attention (Orange) */
-.btn .btnWarn {
+.btn.btnWarn {
   background-color: #f59e0b;
   border-color: #f59e0b;
   color: #ffffff;
@@ -99,12 +99,12 @@
 }
 
 /* Danger (Rouge) */
-.btn .btnDanger {
+.btn.btnDanger {
   background-color: #dc2626;
   border-color: #dc2626;
   color: #ffffff;
 }
-.btn .btnDanger:hover {
+.btn.btnDanger:hover {
   background-color: #b91c1c;
   border-color: #b91c1c;
 }
@@ -125,4 +125,38 @@
   .tableWrap {
     overflow-x: auto;
   }
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.table td:last-child,
+.table th:last-child {
+  min-width: 260px;
+}
+
+.table td:nth-child(5),
+.table th:nth-child(5),
+.table td:nth-child(6),
+.table th:nth-child(6) {
+  white-space: nowrap;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.modalCard {
+  width: min(760px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
 }

@@ -1,7 +1,8 @@
 import { pool } from "../db/db.js";
 
 /**
- * Crée une demande de service restauration pour un événement.
+ * Crée une demande de service pour un événement.
+ * Fonction générique : restauration, audiovisuel, sécurité, etc.
  * @param {Object} data
  * @param {number} data.id_evenement
  * @param {number} data.id_service
@@ -10,7 +11,7 @@ import { pool } from "../db/db.js";
  * @param {number} [data.montant_estime=0]
  * @returns {Promise<boolean>}
  */
-export async function createRestaurationRequest({
+export async function createServiceRequest({
   id_evenement,
   id_service,
   details,
@@ -44,12 +45,12 @@ export async function createRestaurationRequest({
 }
 
 /**
- * Récupère la demande restauration d'un événement.
+ * Récupère une demande de service d'un événement.
  * @param {number} id_evenement
  * @param {number} id_service
  * @returns {Promise<Object|null>}
  */
-export async function getRestaurationRequestByEvent(id_evenement, id_service) {
+export async function getServiceRequestByEvent(id_evenement, id_service) {
   const [rows] = await pool.query(
     `
     SELECT
@@ -79,7 +80,7 @@ export async function getRestaurationRequestByEvent(id_evenement, id_service) {
 }
 
 /**
- * Met à jour les besoins en restauration d'un événement.
+ * Met à jour une demande de service d'un événement.
  * @param {number} id_evenement
  * @param {number} id_service
  * @param {Object} data
@@ -88,7 +89,7 @@ export async function getRestaurationRequestByEvent(id_evenement, id_service) {
  * @param {number} [data.montant_estime=0]
  * @returns {Promise<boolean>}
  */
-export async function updateRestaurationRequest(
+export async function updateServiceRequest(
   id_evenement,
   id_service,
   { details, quantite = 1, montant_estime = 0 }
@@ -109,12 +110,12 @@ export async function updateRestaurationRequest(
 }
 
 /**
- * Vérifie si une demande de restauration existe déjà.
+ * Vérifie si une demande de service existe déjà.
  * @param {number} id_evenement
  * @param {number} id_service
  * @returns {Promise<boolean>}
  */
-export async function restaurationRequestExists(id_evenement, id_service) {
+export async function serviceRequestExists(id_evenement, id_service) {
   const [rows] = await pool.query(
     `
     SELECT 1
@@ -128,10 +129,119 @@ export async function restaurationRequestExists(id_evenement, id_service) {
   return rows.length > 0;
 }
 
+/**
+ * Parse une chaîne JSON en objet, ou retourne la valeur d'origine si invalide.
+ * @param {string} value
+ * @returns {Object|string}
+ */
 function safeParseJSON(value) {
   try {
     return JSON.parse(value);
   } catch {
     return value;
   }
+}
+
+/**
+ * 
+ * @returns
+ */
+export async function getAllServiceRequests() {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      es.id_evenement,
+      es.id_service,
+      s.nom_service,
+      e.nom_evenement,
+      es.details,
+      es.quantite,
+      es.montant_estime,
+      es.statut,
+      es.date_demande
+    FROM evenement_services es
+    JOIN services s ON s.id_service = es.id_service
+    JOIN evenements e ON e.id_evenement = es.id_evenement
+    ORDER BY es.date_demande DESC
+    `
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    details: row.details ? safeParseJSON(row.details) : null,
+  }));
+}
+
+
+
+export async function getAllServiceRequestsByEvent(id_evenement) {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      es.id_evenement,
+      es.id_service,
+      s.nom_service,
+      es.details,
+      es.quantite,
+      es.montant_estime,
+      es.statut,
+      es.date_demande
+    FROM evenement_services es
+    JOIN services s ON s.id_service = es.id_service
+    WHERE es.id_evenement = ?
+    ORDER BY es.date_demande DESC
+    `,
+    [id_evenement]  );
+
+  return rows.map((row) => ({
+    ...row,
+    details: row.details ? safeParseJSON(row.details) : null,
+  }));
+}
+
+export async function getPendingServiceRequests() {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      es.id_evenement,
+      es.id_service,
+      s.nom_service,
+      e.nom_evenement,
+      es.details,
+      es.quantite,
+      es.montant_estime,
+      es.statut,
+      es.date_demande
+    FROM evenement_services es
+    JOIN services s ON s.id_service = es.id_service
+    JOIN evenements e ON e.id_evenement = es.id_evenement
+    WHERE es.statut = 'Demande'
+    ORDER BY es.date_demande DESC
+    `
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    details: row.details ? safeParseJSON(row.details) : null,
+  }));
+}
+
+/**
+ * Met à jour le statut d'une demande de service.
+ * @param {number} id_evenement
+ * @param {number} id_service
+ * @param {string} statut
+ * @returns {Promise<boolean>}
+ */
+export async function updateServiceRequestStatus(id_evenement, id_service, statut) {
+  const [result] = await pool.query(
+    `
+      UPDATE evenement_services
+      SET statut = ?
+      WHERE id_evenement = ? AND id_service = ?
+    `,
+    [statut, id_evenement, id_service]
+  );
+
+  return result.affectedRows > 0;
 }

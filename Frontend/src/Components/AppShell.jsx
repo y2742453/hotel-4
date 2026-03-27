@@ -120,21 +120,29 @@ export default function AppShell() {
           )}
 
           {isCoordonnateur && (
-            <>
-              <NavLink to="/coordinateur" className={linkClass}>
-                <span className="ico">
-                  <FaChartBar />
-                </span>
-                Dashboard
-              </NavLink>
-              <NavLink to="/coordinateur/planning" className={linkClass}>
-                <span className="ico">
-                  <FaCalendarAlt />
-                </span>
-                Planning
-              </NavLink>
-            </>
-          )}
+  <>
+    <NavLink to="/coordonnateur" end className={linkClass}>
+      <span className="ico">
+        <FaChartBar />
+      </span>
+      Dashboard
+    </NavLink>
+
+    <NavLink to="/coordonnateur/demandes" className={linkClass}>
+      <span className="ico">
+        <FaConciergeBell />
+      </span>
+      Gestion des demandes
+    </NavLink>
+
+    <NavLink to="/coordonnateur/devis" className={linkClass}>
+      <span className="ico">
+        <FaFileInvoiceDollar />
+      </span>
+      Devis
+    </NavLink>
+  </>
+)}
 
           {isCompta && (
             <>

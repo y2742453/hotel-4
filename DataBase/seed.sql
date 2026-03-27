@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 SET NAMES utf8mb4;
+
 SET CHARACTER SET utf8mb4;
-=======
+
 use HotelDB;
->>>>>>> 5b712da1ee0f109192b20a11dc6e30c3247a9415
 
 INSERT INTO
     `users` (
