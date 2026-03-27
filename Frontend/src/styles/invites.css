@@ -38,11 +38,11 @@
   transition: all 0.2s ease;
 }
 
-.invites-page .btnPrimary {
+.invites-page .btnPrimaraire {
   background-color: #2563eb;
   color: white;
 }
-.invites-page .btnPrimary:hover {
+.invites-page .btnPrimaraire:hover {
   background-color: #1d4ed8;
 }
 

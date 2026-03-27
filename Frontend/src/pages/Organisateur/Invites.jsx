@@ -268,7 +268,7 @@ export default function Invites() {
                 />
 
                 <button
-                  className="btn btnPrimary"
+                  className="btn btnPrimaraire"
                   onClick={() => {
                     setIsAdding(true);
                     setFormData({
@@ -373,7 +373,7 @@ export default function Invites() {
                     <td>
                       <div className="tooltip">
                         <button
-                          className="btn btnPrimary"
+                          className="btn btnPrimaraire"
                           disabled={i.statut !== "en_attente"}
                           onClick={() => sendInvite(i.id_invite)}
                         >
@@ -448,7 +448,7 @@ export default function Invites() {
             <div className="modal-actions">
               <button
                 onClick={isAdding ? handleAdd : handleEdit}
-                className="btn btnPrimary"
+                className="btn btnPrimaraire"
               >
                 Sauvegarder
               </button>

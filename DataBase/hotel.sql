@@ -10,6 +10,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS invites;
 
+DROP TABLE IF EXISTS evenement_documents;
+
+DROP TABLE IF EXISTS devis;
+
 DROP TABLE IF EXISTS paiements;
 
 DROP TABLE IF EXISTS factures;
@@ -94,13 +98,16 @@ VALUES (
 CREATE TABLE evenements (
     id_evenement INT AUTO_INCREMENT PRIMARY KEY,
     nom_evenement VARCHAR(150) NOT NULL,
-    type_evenement VARCHAR(50),
+    type_evenement VARCHAR(50) NOT NULL,
     description TEXT,
     date_debut DATETIME NOT NULL,
     date_fin DATETIME NOT NULL,
+    nb_participants INT,
+    budget DECIMAL(10, 2),
     statut VARCHAR(20) DEFAULT 'Brouillon',
     id_salle INT NOT NULL,
     id_organisateur INT NOT NULL,
+    updated_at DATETIME,
     FOREIGN KEY (id_salle) REFERENCES salles (id_salle),
     FOREIGN KEY (id_organisateur) REFERENCES users (id_user)
 );
@@ -126,6 +133,17 @@ CREATE TABLE evenement_services (
     PRIMARY KEY (id_evenement, id_service),
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
     FOREIGN KEY (id_service) REFERENCES services (id_service)
+);
+
+CREATE TABLE evenement_documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    nom_fichier VARCHAR(255) DEFAULT NULL,
+    chemin_fichier VARCHAR(255) DEFAULT NULL,
+    type_mime VARCHAR(100) DEFAULT NULL,
+    taille INT DEFAULT NULL,
+    date_upload DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_evenement_documents_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE
 );
 
 CREATE TABLE factures (
@@ -161,6 +179,7 @@ CREATE TABLE devis (
     date_envoi DATETIME,
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
     FOREIGN KEY (id_service) REFERENCES services (id_service)
+);
 
 CREATE TABLE invites (
     id_invite INT AUTO_INCREMENT PRIMARY KEY,

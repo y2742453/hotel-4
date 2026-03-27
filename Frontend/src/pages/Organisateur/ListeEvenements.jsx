@@ -85,12 +85,14 @@ export default function ListeEvenements() {
         <div className="events-header">
           <h2>Événements</h2>
 
-          <button
-            className="btn btnPrimary"
-            onClick={() => navigate("/organisateur/demandes-services")}
-          >
-            Mes demandes de services
-          </button>
+          {!isAdmin && (
+            <button
+              className="btn-new"
+              onClick={() => navigate("/organisateur/demandes-services")}
+            >
+              Mes demandes de services
+            </button>
+          )}
 
           {!isAdmin && (
             <button

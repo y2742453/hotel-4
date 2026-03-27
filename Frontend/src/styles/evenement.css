@@ -31,7 +31,7 @@
 .field input:focus,
 .field select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* DATES GRID */
@@ -124,5 +124,5 @@
 
 .btnPrimary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(37,99,235,0.2);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
 }
