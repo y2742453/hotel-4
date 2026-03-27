@@ -174,21 +174,23 @@ export default function ListeEvenements() {
                           Modifier
                         </button>
 
-                        <button
-                          className="btn btnPrimary"
-                          disabled={!confirme}
-                          style={{
-                            opacity: confirme ? 1 : 0.6,
-                            cursor: confirme ? "pointer" : "not-allowed",
-                          }}
-                          onClick={() =>
-                            navigate(
-                              `/organisateur/evenements/${e.id_evenement}/services`,
-                            )
-                          }
-                        >
-                          Besoins
-                        </button>
+                        {!isAdmin && (
+                          <button
+                            className="btn btnPrimary"
+                            disabled={!confirme}
+                            style={{
+                              opacity: confirme ? 1 : 0.6,
+                              cursor: confirme ? "pointer" : "not-allowed",
+                            }}
+                            onClick={() =>
+                              navigate(
+                                `/organisateur/evenements/${e.id_evenement}/services`,
+                              )
+                            }
+                          >
+                            Besoins
+                          </button>
+                        )}
 
                         <button
                           className="btn btnDanger"
