@@ -105,7 +105,7 @@ export default function Invites() {
         setIsAdding(false);
         loadInvites();
       } else {
-        toast.error(data?.error || "Erreur ajout");
+        toast.error(data?.error || "Erreur pendant l'ajout");
       }
     } catch {
       toast.error("Erreur serveur");
