@@ -8,6 +8,7 @@ USE HotelDB;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS devis;
 DROP TABLE IF EXISTS invites;
 
 DROP TABLE IF EXISTS paiements;
@@ -161,6 +162,7 @@ CREATE TABLE devis (
     date_envoi DATETIME,
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
     FOREIGN KEY (id_service) REFERENCES services (id_service)
+);
 
 CREATE TABLE invites (
     id_invite INT AUTO_INCREMENT PRIMARY KEY,
