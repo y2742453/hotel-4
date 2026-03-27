@@ -1,21 +1,21 @@
 // src/pages/Admin/UsersPage.jsx
-import React, { useEffect, useState } from 'react';
-import { apiFetch } from '../../Api/Client.jsx';
-import { useToast } from '../../Components/Toast.jsx';
-import '../../styles/table.css';
-import '../../styles/forms.css';
+import React, { useEffect, useState } from "react";
+import { apiFetch } from "../../Api/Client.jsx";
+import { useToast } from "../../Components/Toast.jsx";
+import "../../styles/table.css";
+import "../../styles/forms.css";
 
 const ROLES = [
-  { id: 1, label: 'Administrateur' },
-  { id: 2, label: 'Organisateur' },
-  { id: 3, label: 'Coordonnateur' },
-  { id: 4, label: 'Comptabilité' },
+  { id: 1, label: "Administrateur" },
+  { id: 2, label: "Organisateur" },
+  { id: 3, label: "Coordonnateur" },
+  { id: 4, label: "Comptabilité" },
 ];
 
 function formatDate(iso) {
-  if (!iso) return '-';
+  if (!iso) return "-";
   const d = new Date(iso);
-  return d.toLocaleDateString('fr-CA');
+  return d.toLocaleDateString("fr-CA");
 }
 
 export default function UsersPage() {
@@ -25,42 +25,60 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   const [editId, setEditId] = useState(null);
-  const [editForm, setEditForm] = useState({ nom: '', prenom: '', email: '', id_role: 2 });
+  const [editForm, setEditForm] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    id_role: 2,
+  });
 
-  const [form, setForm] = useState({ nom: '', prenom: '', email: '', motDePasse: '', id_role: 2 });
+  const [form, setForm] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    motDePasse: "",
+    id_role: 2,
+  });
 
   async function loadUsers() {
     setLoading(true);
-    const { res, data } = await apiFetch('/api/admin/users');
+    const { res, data } = await apiFetch("/api/admin/users");
     if (res.ok) setUsers(data || []);
     else toast.error(data?.message || "Impossible de charger les utilisateurs");
     setLoading(false);
   }
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   async function handleCreate(e) {
     e.preventDefault();
 
-    if (!form.nom || !form.prenom || !form.email.includes('@') || form.motDePasse.length < 8) {
-      toast.error('Champs invalides (mdp min 8)');
+    if (
+      !form.nom ||
+      !form.prenom ||
+      !form.email.includes("@") ||
+      form.motDePasse.length < 8
+    ) {
+      toast.error("Champs invalides (mdp min 8)");
       return;
     }
 
-    const { res, data } = await apiFetch('/api/admin/users', {
-      method: 'POST',
+    const { res, data } = await apiFetch("/api/admin/users", {
+      method: "POST",
       body: JSON.stringify({ ...form, id_role: Number(form.id_role) }),
     });
 
     if (res.status === 201) {
-      toast.success('Utilisateur créé');
-      setForm({ nom: '', prenom: '', email: '', motDePasse: '', id_role: 2 });
+      toast.success("Utilisateur créé");
+      setForm({ nom: "", prenom: "", email: "", motDePasse: "", id_role: 2 });
       loadUsers();
       return;
     }
 
     if (res.status === 409) {
-      toast.error(data?.message || 'Email déjà utilisé');
+      toast.error(data?.message || "Email déjà utilisé");
       return;
     }
 
@@ -69,7 +87,12 @@ export default function UsersPage() {
 
   function startEdit(u) {
     setEditId(u.id_user);
-    setEditForm({ nom: u.nom, prenom: u.prenom, email: u.email, id_role: u.id_role });
+    setEditForm({
+      nom: u.nom,
+      prenom: u.prenom,
+      email: u.email,
+      id_role: u.id_role,
+    });
   }
 
   function cancelEdit() {
@@ -77,25 +100,25 @@ export default function UsersPage() {
   }
 
   async function saveEdit(id_user) {
-    if (!editForm.nom || !editForm.prenom || !editForm.email.includes('@')) {
-      toast.error('Nom, prénom et email valide requis');
+    if (!editForm.nom || !editForm.prenom || !editForm.email.includes("@")) {
+      toast.error("Nom, prénom et email valide requis");
       return;
     }
 
     const { res, data } = await apiFetch(`/api/admin/users/${id_user}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ ...editForm, id_role: Number(editForm.id_role) }),
     });
 
     if (res.ok) {
-      toast.success('Utilisateur modifié');
+      toast.success("Utilisateur modifié");
       setEditId(null);
       loadUsers();
       return;
     }
 
     if (res.status === 409) {
-      toast.error('Email déjà utilisé');
+      toast.error("Email déjà utilisé");
       return;
     }
 
@@ -103,13 +126,16 @@ export default function UsersPage() {
   }
 
   async function toggleActif(u) {
-    const { res, data } = await apiFetch(`/api/admin/users/${u.id_user}/actif`, {
-      method: 'PATCH',
-      body: JSON.stringify({ actif: u.actif ? 0 : 1 }),
-    });
+    const { res, data } = await apiFetch(
+      `/api/admin/users/${u.id_user}/actif`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ actif: u.actif ? 0 : 1 }),
+      },
+    );
 
     if (res.ok) {
-      toast.success(u.actif ? 'Utilisateur désactivé' : 'Utilisateur activé');
+      toast.success(u.actif ? "Utilisateur désactivé" : "Utilisateur activé");
       loadUsers();
     } else {
       toast.error(data?.message || "Impossible de changer l'état");
@@ -117,13 +143,17 @@ export default function UsersPage() {
   }
 
   async function deleteUser(u) {
-    const ok = window.confirm(`Supprimer définitivement ${u.prenom} ${u.nom} ?`);
+    const ok = window.confirm(
+      `Supprimer définitivement ${u.prenom} ${u.nom} ?`,
+    );
     if (!ok) return;
 
-    const { res, data } = await apiFetch(`/api/admin/users/${u.id_user}`, { method: 'DELETE' });
+    const { res, data } = await apiFetch(`/api/admin/users/${u.id_user}`, {
+      method: "DELETE",
+    });
 
     if (res.ok) {
-      toast.success('Utilisateur supprimé');
+      toast.success("Utilisateur supprimé");
       loadUsers();
     } else {
       toast.error(data?.message || "Suppression impossible");
@@ -134,7 +164,9 @@ export default function UsersPage() {
     <div className="page">
       <div className="pageHeader">
         <h2>Gestion des utilisateurs</h2>
-        <p className="muted">Créer, modifier, désactiver et supprimer des comptes.</p>
+        <p className="muted">
+          Créer, modifier, désactiver et supprimer des comptes.
+        </p>
       </div>
 
       <form className="card formGrid" onSubmit={handleCreate}>
@@ -143,37 +175,65 @@ export default function UsersPage() {
         <div className="grid2">
           <div className="field">
             <label>Nom</label>
-            <input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
+            <input
+              value={form.nom}
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            />
           </div>
 
           <div className="field">
             <label>Prénom</label>
-            <input value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} />
+            <input
+              value={form.prenom}
+              onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+            />
           </div>
         </div>
 
         <div className="grid2">
           <div className="field">
             <label>Email</label>
-            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           </div>
 
           <div className="field">
             <label>Mot de passe</label>
-            <input type="password" value={form.motDePasse} onChange={(e) => setForm({ ...form, motDePasse: e.target.value })} />
+            <input
+              type="password"
+              value={form.motDePasse}
+              onChange={(e) => setForm({ ...form, motDePasse: e.target.value })}
+            />
           </div>
         </div>
 
         <div className="grid2">
           <div className="field">
             <label>Rôle</label>
-            <select value={form.id_role} onChange={(e) => setForm({ ...form, id_role: Number(e.target.value) })}>
-              {ROLES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+            <select
+              value={form.id_role}
+              onChange={(e) =>
+                setForm({ ...form, id_role: Number(e.target.value) })
+              }
+            >
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="field fieldEnd">
-            <button className="btn btnPrimary" type="submit">Créer</button>
+            <button
+              className="btn btnPrimary"
+              type="submit"
+              style={{ marginTop: 25 }}
+            >
+              Créer
+            </button>
           </div>
         </div>
       </form>
@@ -183,7 +243,9 @@ export default function UsersPage() {
 
         <div className="tableWrap">
           {loading ? (
-            <div className="muted" style={{ padding: 12 }}>Chargement...</div>
+            <div className="muted" style={{ padding: 12 }}>
+              Chargement...
+            </div>
           ) : (
             <table className="table">
               <thead>
@@ -203,38 +265,121 @@ export default function UsersPage() {
                   const isEdit = editId === u.id_user;
 
                   return (
-                    <tr key={u.id_user} className={!u.actif ? 'rowDisabled' : ''}>
-                      <td>{isEdit ? <input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} /> : u.nom}</td>
-                      <td>{isEdit ? <input value={editForm.prenom} onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })} /> : u.prenom}</td>
-                      <td>{isEdit ? <input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /> : u.email}</td>
+                    <tr
+                      key={u.id_user}
+                      className={!u.actif ? "rowDisabled" : ""}
+                    >
+                      <td>
+                        {isEdit ? (
+                          <input
+                            value={editForm.nom}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, nom: e.target.value })
+                            }
+                          />
+                        ) : (
+                          u.nom
+                        )}
+                      </td>
+                      <td>
+                        {isEdit ? (
+                          <input
+                            value={editForm.prenom}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                prenom: e.target.value,
+                              })
+                            }
+                          />
+                        ) : (
+                          u.prenom
+                        )}
+                      </td>
+                      <td>
+                        {isEdit ? (
+                          <input
+                            value={editForm.email}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                email: e.target.value,
+                              })
+                            }
+                          />
+                        ) : (
+                          u.email
+                        )}
+                      </td>
 
                       <td>
                         {isEdit ? (
-                          <select value={editForm.id_role} onChange={(e) => setEditForm({ ...editForm, id_role: Number(e.target.value) })}>
-                            {ROLES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+                          <select
+                            value={editForm.id_role}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                id_role: Number(e.target.value),
+                              })
+                            }
+                          >
+                            {ROLES.map((r) => (
+                              <option key={r.id} value={r.id}>
+                                {r.label}
+                              </option>
+                            ))}
                           </select>
                         ) : (
-                          ROLES.find((r) => r.id === u.id_role)?.label || `Rôle ${u.id_role}`
+                          ROLES.find((r) => r.id === u.id_role)?.label ||
+                          `Rôle ${u.id_role}`
                         )}
                       </td>
 
                       <td>{formatDate(u.date_creation)}</td>
-                      <td>{u.actif ? 'Oui' : 'Non'}</td>
+                      <td>{u.actif ? "Oui" : "Non"}</td>
 
                       {/* ✅ className actions À METTRE ICI (tu l'avais déjà bon) */}
                       <td className="actions">
                         {isEdit ? (
                           <>
-                            <button className="btn btnPrimary" type="button" onClick={() => saveEdit(u.id_user)}>Valider</button>
-                            <button className="btn btnGhost" type="button" onClick={cancelEdit}>Annuler</button>
+                            <button
+                              className="btn btnPrimary"
+                              type="button"
+                              onClick={() => saveEdit(u.id_user)}
+                            >
+                              Valider
+                            </button>
+                            <button
+                              className="btn btnGhost"
+                              type="button"
+                              onClick={cancelEdit}
+                            >
+                              Annuler
+                            </button>
                           </>
                         ) : (
                           <>
-                            <button className="btn btnGhost" type="button" onClick={() => startEdit(u)}>Modifier</button>
-                            <button className="btn btnWarn" type="button" onClick={() => toggleActif(u)}>
-                              {u.actif ? 'Désactiver' : 'Activer'}
+                            <button
+                              className="btn btnGhost"
+                              type="button"
+                              onClick={() => startEdit(u)}
+                            >
+                              Modifier
                             </button>
-                            <button className="btn btnDanger" type="button" onClick={() => deleteUser(u)}>Supprimer</button>
+                            <button
+                              className="btn btnWarn"
+                              type="button"
+                              onClick={() => toggleActif(u)}
+                            >
+                              {u.actif ? "Désactiver" : "Activer"}
+                            </button>
+                            <button
+                              className="btn btnDanger"
+                              type="button"
+                              onClick={() => deleteUser(u)}
+                            >
+                              Supprimer
+                            </button>
                           </>
                         )}
                       </td>
@@ -243,7 +388,11 @@ export default function UsersPage() {
                 })}
 
                 {users.length === 0 && (
-                  <tr><td colSpan="7" style={{ textAlign: 'center' }}>Aucun utilisateur</td></tr>
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center" }}>
+                      Aucun utilisateur
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

@@ -11,17 +11,21 @@ label {
   color: #0f172a;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   border: 1px solid #d7e1ef;
   border-radius: 12px;
   padding: 10px 12px;
   outline: none;
   background: #ffffff;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   border-color: #1e4db7;
   box-shadow: 0 0 0 3px rgba(30, 77, 183, 0.15);
 }
@@ -58,7 +62,8 @@ input:focus, select:focus {
   align-items: flex-end;
 }
 
-.formRow input, .formRow select {
+.formRow input,
+.formRow select {
   flex: 1 1 200px;
   min-width: 190px;
 }
@@ -69,6 +74,10 @@ input:focus, select:focus {
 
 /* Mobile */
 @media (max-width: 640px) {
-  .authCard h1 { font-size: 34px; }
-  .formRow .btn { flex: 1 1 100%; }
+  .authCard h1 {
+    font-size: 34px;
+  }
+  .formRow .btn {
+    flex: 1 1 100%;
+  }
 }
