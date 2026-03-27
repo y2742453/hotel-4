@@ -1,0 +1,299 @@
+/* PAGE */
+.invites-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* CARD */
+.invites-page .main-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* TITLE */
+.invites-page h2 {
+  margin-bottom: 20px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* BUTTONS */
+.invites-page .btn {
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  height: 33px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.invites-page .btnPrimary {
+  background-color: #2563eb;
+  color: white;
+}
+.invites-page .btnPrimary:hover {
+  background-color: #1d4ed8;
+}
+
+.invites-page .btnSecondary {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+.invites-page .btnSecondary:hover {
+  background-color: #e5e7eb;
+}
+
+.invites-page .btnDanger {
+  background-color: #dc2626;
+  color: white;
+}
+.invites-page .btnDanger:hover {
+  background-color: #991b1b;
+}
+
+.invites-page .btn:disabled {
+  background-color: #9ca3af;
+  color: #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.invites-page .btn:disabled:hover {
+  background-color: #9ca3af;
+}
+
+/* SELECT EVENT */
+.invites-page > select {
+  display: block;
+  margin: 0 auto 24px auto;
+  max-width: 360px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ACTION BAR */
+.invites-page .actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.invites-page .actions-left,
+.invites-page .actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* INPUTS */
+.invites-page input,
+.invites-page select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* SEARCH */
+.invites-page input[type="text"] {
+  width: 240px;
+}
+
+/* FILE INPUT */
+.invites-page input[type="file"] {
+  display: none;
+}
+
+.invites-page .custom-file-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #f9fafb;
+}
+
+/* STATS */
+.invites-page .stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.invites-page .stats div {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 110px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* COLORS */
+.invites-page .stats div:nth-child(1) {
+  background: #fef3c7;
+  color: #92400e;
+}
+.invites-page .stats div:nth-child(2) {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.invites-page .stats div:nth-child(3) {
+  background: #dcfce7;
+  color: #166534;
+}
+.invites-page .stats div:nth-child(4) {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* TABLE */
+.invites-page .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invites-page .table th,
+.invites-page .table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.invites-page .table th {
+  font-weight: 600;
+  color: #374151;
+}
+
+.invites-page .table td:last-child {
+  text-align: right;
+}
+
+/* ACTION BUTTONS IN TABLE */
+.invites-page .table td:last-child {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* STATUS SELECT */
+.invites-page .table select {
+  border-radius: 999px;
+  font-size: 13px;
+  padding: 6px 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* STATUS COLORS */
+.invites-page .table select[value="en_attente"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.invites-page .table select[value="invite"] {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.invites-page .table select[value="confirme"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.invites-page .table select[value="refuse"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background-color: #111827;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 24px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .invites-page .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .invites-page .actions-left,
+  .invites-page .actions-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

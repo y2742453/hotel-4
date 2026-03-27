@@ -8,6 +8,8 @@ USE HotelDB;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS invites;
+
 DROP TABLE IF EXISTS paiements;
 
 DROP TABLE IF EXISTS factures;
@@ -33,7 +35,7 @@ CREATE TABLE roles (
     nom_role VARCHAR(50) NOT NULL UNIQUE
 );
 
-INSERT INTO
+INSERT IGNORE INTO
     roles (nom_role)
 VALUES ('Administrateur'),
     ('Organisateur'),
@@ -159,4 +161,20 @@ CREATE TABLE devis (
     date_envoi DATETIME,
     FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
     FOREIGN KEY (id_service) REFERENCES services (id_service)
+
+CREATE TABLE invites (
+    id_invite INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    statut ENUM(
+        'invite',
+        'confirme',
+        'refuse',
+        'en_attente'
+    ) DEFAULT 'en_attente',
+    date_invitation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
+    UNIQUE KEY unique_email_event (email, id_evenement)
 );

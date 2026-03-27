@@ -36,8 +36,6 @@ jobs:
           until mysql -h 127.0.0.1 -u root -padmin -e "SHOW DATABASES;"; do 
               sleep 5 
           done
-      - run: |
-          mysql -h 127.0.0.1 -u root -padmin < Backend/tests/dbTest.sql
       - run: npm test
         working-directory: Backend
         env:

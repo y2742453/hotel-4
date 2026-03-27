@@ -34,15 +34,10 @@ export async function createEvenement(data) {
   } = data;
 
   // Statut par défaut
-  const statutFinal =
-    !statut || statut === "Brouillon" ? "Prévu" : statut;
+  const statutFinal = !statut || statut === "Brouillon" ? "Prévu" : statut;
 
   // 🔥 1. Vérifier conflit
-  const conflict = await hasReservationConflict(
-    id_salle,
-    date_debut,
-    date_fin
-  );
+  const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
 
   if (conflict) {
     throw new Error("RESERVATION_CONFLICT");
@@ -92,7 +87,7 @@ export async function createEvenement(data) {
           INSERT INTO evenement_services (id_evenement, id_service, statut)
           VALUES (?, ?, 'Demande')
           `,
-          [id_evenement, id_service]
+          [id_evenement, id_service],
         );
       }
     }
@@ -101,7 +96,6 @@ export async function createEvenement(data) {
     await conn.commit();
 
     return id_evenement;
-
   } catch (e) {
     await conn.rollback();
     throw e;
@@ -116,4 +110,13 @@ export async function createEvenement(data) {
 export async function getAllEvenements() {
   const [rows] = await pool.query("SELECT * FROM evenements");
   return rows;
+}
+
+export async function getEvenementById(id_evenement) {
+  const [rows] = await pool.execute(
+    "SELECT * FROM evenements WHERE id_evenement = ?",
+    [id_evenement],
+  );
+
+  return rows[0] || null;
 }

@@ -4,6 +4,7 @@ import "../../styles/dashboard.css";
 
 import {
   FaUsers,
+  FaEnvelopeOpenText,
   FaDoorOpen,
   FaConciergeBell,
   FaTags,
@@ -17,13 +18,6 @@ export default function OrganisateurHome() {
 
   const actions = [
     {
-      title: "Mes clients",
-      desc: "Liste & gestion des clients",
-      icon: <FaUsers />,
-      to: "/organisateur/clients",
-      enabled: false,
-    },
-    {
       title: "Événements",
       desc: "Créer un evenement",
       icon: <FaCalendarAlt />,
@@ -35,6 +29,13 @@ export default function OrganisateurHome() {
       desc: "Gestion des réservations",
       icon: <FaCalendar />,
       to: "/organisateur/reservations",
+      enabled: true,
+    },
+    {
+      title: "Invités",
+      desc: "Gestion des invités",
+      icon: <FaEnvelopeOpenText />,
+      to: "/organisateur/invites",
       enabled: true,
     },
   ];

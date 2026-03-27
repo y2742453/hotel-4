@@ -13,6 +13,7 @@ import {
   FaCalendar,
   FaDoorOpen,
   FaConciergeBell,
+  FaEnvelopeOpenText,
 } from "react-icons/fa";
 
 function roleLabel(id_role) {
@@ -80,13 +81,6 @@ export default function AppShell() {
                 Événements
               </NavLink>
 
-              <NavLink to="/admin/reservations" className={linkClass}>
-                <span className="ico">
-                  <FaCalendar />
-                </span>
-                Reservations
-              </NavLink>
-
               <NavLink to="/admin/facturation" className={linkClass}>
                 <span className="ico">
                   <FaFileInvoiceDollar />
@@ -115,6 +109,12 @@ export default function AppShell() {
                   <FaCalendar />
                 </span>
                 Réservations
+              </NavLink>
+              <NavLink to="/organisateur/invites" className={linkClass}>
+                <span className="ico">
+                  <FaEnvelopeOpenText />
+                </span>
+                Invités
               </NavLink>
             </>
           )}

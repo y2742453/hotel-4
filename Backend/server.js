@@ -45,6 +45,7 @@ import {
   deleteService,
 } from "./modele/service.js";
 import { createEvenement, getAllEvenements } from "./modele/evenement.js";
+import inviteRoutes from "./routes/invite.js";
 
 // Import middlewares
 import {
@@ -96,6 +97,7 @@ app.use(
     credentials: true,
   }),
 );
+
 // Configuration des sessions
 app.use(
   session({
@@ -115,6 +117,9 @@ app.use(passport.session());
 
 // Fichiers statiques
 app.use(express.static("public"));
+
+// Route pour import de fichier CSV/Excel des invités
+app.use("/api/invites", allowRoles(2), inviteRoutes);
 
 // ROUTES AUTHENTIFICATION
 
@@ -297,7 +302,9 @@ app.delete(
   },
 );
 
-// ROUTE DE RESERVATION
+// =====================
+// API - RESERVATIONS
+// =====================
 
 // Route pour créer une réservation
 app.post(

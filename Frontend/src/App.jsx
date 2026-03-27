@@ -27,6 +27,7 @@ import CreerEvenement from "./pages/Organisateur/CreerEvenement.jsx";
 import EvenementServices from "./pages/Organisateur/EvenementServices.jsx";
 import ListeEvenements from "./pages/Organisateur/ListeEvenements.jsx";
 import MesDemandesServices from "./pages/Organisateur/demandes-services.jsx";
+import Invites from "./pages/Organisateur/Invites.jsx";
 
 import CoordonnateurHome from "./pages/Coordonnateur/CoordonnateurHome.jsx";
 import DemandesValidation from "./pages/Coordonnateur/DemandesValidation.jsx";
@@ -95,15 +96,6 @@ export default function App() {
                   </RoleGate>
                 }
               />
-              <Route
-                path="admin/reservations"
-                element={
-                  <RoleGate allowedRoles={[1]}>
-                    <Calendar />
-                  </RoleGate>
-                }
-              />
-
               <Route
                 path="admin/salles"
                 element={
@@ -200,34 +192,41 @@ export default function App() {
                 }
               />
 
-              {/* Coordinateur */}
               <Route
-                path="coordonnateur"
+                path="organisateur/invites"
                 element={
-                  <RoleGate allowedRoles={[3]}>
-                    <CoordonnateurHome />
+                  <RoleGate allowedRoles={[2]}>
+                    <Invites />
                   </RoleGate>
                 }
               />
-              <Route
-                path="coordonnateur/demandes"
-                element={
-                  <RoleGate allowedRoles={[3]}>
-                    <DemandesValidation />
-                  </RoleGate>
-                }
-              />
-              <Route
-                path="coordonnateur/Devis"
-                element={
-                  <RoleGate allowedRoles={[3]}>
-                    <Devis />
-                  </RoleGate>
-                }
-              />
-
-              <Route path="*" element={<Notfound />} />
             </Route>
+
+            {/* Coordinateur */}
+            <Route
+              path="coordonnateur"
+              element={
+                <RoleGate allowedRoles={[3]}>
+                  <CoordonnateurHome />
+                </RoleGate>
+              }
+            />
+            <Route
+              path="coordonnateur/demandes"
+              element={
+                <RoleGate allowedRoles={[3]}>
+                  <DemandesValidation />
+                </RoleGate>
+              }
+            />
+            <Route
+              path="coordonnateur/Devis"
+              element={
+                <RoleGate allowedRoles={[3]}>
+                  <Devis />
+                </RoleGate>
+              }
+            />
 
             {/* 404 */}
             <Route path="*" element={<Notfound />} />
