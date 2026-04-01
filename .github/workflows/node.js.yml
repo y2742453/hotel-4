@@ -4,11 +4,13 @@ on:
   pull_request:
   workflow_dispatch:
   push:
-    branches: [Reservation-salle]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     services:
       mysql:
@@ -19,9 +21,9 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping --silent" 
-          --health-interval=10s 
-          --health-timeout=5s 
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
           --health-retries=5
 
     steps:
@@ -29,13 +31,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+
       - run: npm install
         working-directory: Backend
+
       - run: sudo apt-get install -y mysql-client
+
       - run: |
           until mysql -h 127.0.0.1 -u root -padmin -e "SHOW DATABASES;"; do 
               sleep 5 
           done
+
       - run: npm test
         working-directory: Backend
         env:
