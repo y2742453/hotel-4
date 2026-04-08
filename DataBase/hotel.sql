@@ -177,9 +177,16 @@ CREATE TABLE evenement_documents (
 CREATE TABLE factures (
     id_facture INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL UNIQUE,
-    montant_total DECIMAL(10, 2) DEFAULT NULL,
-    taxes DECIMAL(10, 2) DEFAULT NULL,
-    statut VARCHAR(20) DEFAULT 'En attente',
+    montant_total DECIMAL(10, 2) NOT NULL,
+    taxes DECIMAL(10, 2) DEFAULT 0,
+    statut ENUM(
+        'paye',
+        'en_retard',
+        'en_attente'
+    ) DEFAULT 'en_attente',
+    stripe_session_id VARCHAR(255),
+    stripe_payment_intent VARCHAR(255),
+    pdf_path VARCHAR(255),
     date_facture DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_factures_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
@@ -191,7 +198,9 @@ CREATE TABLE paiements (
     id_paiement INT AUTO_INCREMENT PRIMARY KEY,
     id_facture INT NOT NULL,
     montant DECIMAL(10, 2) NOT NULL,
-    mode_paiement VARCHAR(50) DEFAULT NULL,
+    mode_paiement VARCHAR(50) DEFAULT 'stripe',
+    statut ENUM('success', 'failed') DEFAULT 'success',
+    stripe_payment_intent VARCHAR(255),
     date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_paiements_factures FOREIGN KEY (id_facture) REFERENCES factures (id_facture)
 );

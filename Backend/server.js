@@ -46,6 +46,7 @@ import {
 } from "./modele/service.js";
 import { createEvenement, getAllEvenements } from "./modele/evenement.js";
 import inviteRoutes from "./routes/invite.js";
+import factureRoutes from "./routes/facture.js";
 
 // Import middlewares
 import {
@@ -78,11 +79,15 @@ import {
   updateDevisDateEnvoi,
   deleteDevis,
 } from "./modele/devis.js";
+
 // Création du serveur  `
 const app = express();
 
 // Initialisation du store de session
 const MemoryStore = memorystore(session);
+
+// Stripe webhook
+app.use("/api/factures/webhook", express.raw({ type: "application/json" }));
 
 // Middlewares globaux
 app.use(helmet());
@@ -120,6 +125,9 @@ app.use(express.static("public"));
 
 // Route pour import de fichier CSV/Excel des invités
 app.use("/api/invites", allowRoles(2), inviteRoutes);
+
+// Routes pour factures
+app.use("/api/factures", factureRoutes);
 
 // ROUTES AUTHENTIFICATION
 
