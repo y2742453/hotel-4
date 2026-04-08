@@ -29,6 +29,10 @@ Dans `Backend/.env`, ajouter :
 - DB_PASSWORD
 - DB_NAME
 - SESSION_SECRET
+- MAIL_HOST
+- MAIL_PORT
+- MAIL_USER
+- MAIL_PASS
 
 Par exemple :
 
@@ -39,6 +43,10 @@ DB_USER=admin
 DB_PASSWORD=admin
 DB_NAME=HotelDB
 SESSION_SECRET="hkjdshfkjnhfkjdnhfjdhfkjdfdfdn"
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USER=6a3af3ba3016dd
+MAIL_PASS=85c5d8a2e6ff3f
 ```
 
 Vous pouvez modifier le fichier `.env` selon vos besoins pour qu'il corresponde à votre configuration MySQL locale.

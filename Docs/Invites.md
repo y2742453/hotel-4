@@ -525,8 +525,10 @@ DB_USER="A inserer ici"
 DB_PASSWORD="A inserer ici"
 DB_NAME="A inserer ici"
 SESSION_SECRET="A inserer ici"
-MAILTRAP_USER="A inserer ici"
-MAILTRAP_PASS="A inserer ici"
+MAIL_HOST="A inserer ici"
+MAIL_PORT="A inserer ici"
+MAIL_USER="A inserer ici"
+MAIL_PASS="A inserer ici"
 ```
 
 ### Template Email
@@ -539,6 +541,45 @@ L'email envoyé contient :
 - Bouton "Confirmer" (vert)
 - Bouton "Refuser" (rouge)
 - Footer
+
+## Changer de fournisseur d’email
+
+Le système d’envoi d’email est configurable via les variables d’environnement, ce qui permet de changer facilement de fournisseur (Mailtrap, Gmail, SendGrid, etc.) sans modifier le code.
+
+### Configuration générale
+
+Le backend utilise nodemailer avec une configuration dynamique :
+
+```javascript
+const transporter = nodemailer.createTransport({
+  host: process.env.MAIL_HOST,
+  port: Number(process.env.MAIL_PORT),
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
+```
+
+### Exemple avec mailtrap (dev)
+
+```env
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USER=xxxx
+MAIL_PASS=xxxx
+```
+
+### Exemple avec gmail
+
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=ton-email@gmail.com
+MAIL_PASS=mot-de-passe-app
+```
+
+⚠️ Attention: Gmail nécessite un mot de passe d’application
 
 ## Technologies utilisées
 
