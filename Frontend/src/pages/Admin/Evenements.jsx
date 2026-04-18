@@ -154,7 +154,8 @@ export default function EvenementsPage() {
         <div>
           <h2>Gestion des événements</h2>
           <p className="muted">
-            L’administrateur peut consulter, modifier, confirmer ou annuler les événements.
+            L’administrateur peut consulter, modifier, confirmer ou annuler les
+            événements.
           </p>
         </div>
       </div>
@@ -287,7 +288,9 @@ export default function EvenementsPage() {
                       </td>
 
                       <td>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <div
+                          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                        >
                           <button
                             className="btn btnSecondary"
                             onClick={() => {

@@ -208,7 +208,7 @@ Supprime une réservation existante.
 
 #### 5. Obtenir toutes les salles
 
-**GET** `/api/salles`
+**GET** `/api/reservation/salles`
 
 Retourne la liste de toutes les salles avec leurs informations.
 
@@ -249,7 +249,7 @@ Retourne la liste de toutes les salles avec leurs informations.
 
 #### 6. Obtenir tous les événements
 
-**GET** `/api/evenements`
+**GET** `/api/reservation/evenements`
 
 Retourne la liste de tous les événements.
 

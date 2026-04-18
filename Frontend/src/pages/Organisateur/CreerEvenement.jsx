@@ -1,9 +1,7 @@
-
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import { useToast } from "../../Components/Toast.jsx";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-
 
 import "../../styles/forms.css";
 import "../../styles/table.css";
@@ -18,8 +16,6 @@ export default function CreerEvenement() {
   const isAdmin = location.pathname.includes("admin");
 
   const [salles, setSalles] = useState([]);
-  const [services, setServices] = useState([]);
-  const [servicesEvent, setServicesEvent] = useState([]);
 
   const [form, setForm] = useState({
     nom_evenement: "",
@@ -28,7 +24,6 @@ export default function CreerEvenement() {
     id_salle: "",
     date_debut: "",
     date_fin: "",
-    services: [],
   });
 
   const [documents, setDocuments] = useState([]);
@@ -39,10 +34,8 @@ export default function CreerEvenement() {
   // =====================
   async function loadData() {
     const sallesRes = await apiFetch("/api/salles");
-    const servicesRes = await apiFetch("/api/services");
 
     if (sallesRes.res.ok) setSalles(sallesRes.data || []);
-    if (servicesRes.res.ok) setServices(servicesRes.data || []);
   }
 
   // =====================
@@ -60,29 +53,10 @@ export default function CreerEvenement() {
           type_evenement: ev.type_evenement || "",
           description: ev.description || "",
           id_salle: ev.id_salle || "",
-          date_debut: ev.date_debut?.slice(0, 16) || "",
-          date_fin: ev.date_fin?.slice(0, 16) || "",
-          services: [],
+          date_debut: toLocalDatetimeInput(ev.date_debut) || "",
+          date_fin: toLocalDatetimeInput(ev.date_fin) || "",
         });
       }
-    }
-  }
-
-  // =====================
-  // LOAD SERVICES CHECKED
-  // =====================
-  async function loadServicesChecked() {
-    const { res, data } = await apiFetch(
-      `/api/evenements/${id}/services`
-    );
-
-    if (res.ok) {
-      const ids = data.map((s) => Number(s.id_service));
-
-      setForm((prev) => ({
-        ...prev,
-        services: ids,
-      }));
     }
   }
 
@@ -91,7 +65,7 @@ export default function CreerEvenement() {
   // =====================
   async function loadDocuments(eventId) {
     const { res, data } = await apiFetch(
-      `/api/evenements/${eventId}/documents`
+      `/api/evenements/${eventId}/documents`,
     );
     if (res.ok) setDocuments(data || []);
   }
@@ -104,41 +78,8 @@ export default function CreerEvenement() {
 
     if (isEdit) {
       loadEvenement();
-      loadServicesChecked();
       loadDocuments(id);
     }
-  }, [id, isEdit]);
-
-  // =====================
-  // SERVICES TOGGLE
-  // =====================
-  function handleServiceToggle(idService) {
-    idService = Number(idService);
-
-    if (form.services.includes(idService)) {
-      setForm({
-        ...form,
-        services: form.services.filter((s) => s !== idService),
-      });
-    } else {
-      setForm({
-        ...form,
-        services: [...form.services, idService],
-      });
-    }
-  }
-
-  // =====================
-  // LOAD SERVICES LIST
-  // =====================
-  useEffect(() => {
-    async function loadServices() {
-      if (!isEdit) return;
-      const res = await apiFetch(`/api/evenements/${id}/services`);
-      setServicesEvent(res.data);
-    }
-
-    if (isEdit) loadServices();
   }, [id, isEdit]);
 
   // =====================
@@ -180,9 +121,6 @@ export default function CreerEvenement() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    console.log("SUBMIT OK");
-    console.log("FORM:", form);
-
     if (
       !form.nom_evenement ||
       !form.id_salle ||
@@ -197,10 +135,7 @@ export default function CreerEvenement() {
       ...form,
       id_salle: Number(form.id_salle),
       id_organisateur: 1,
-      services: form.services.map(Number),
     };
-
-    console.log("PAYLOAD ENVOYÉ:", payload);
 
     const url = isEdit ? `/api/evenements/${id}` : "/api/evenements";
     const method = isEdit ? "PUT" : "POST";
@@ -209,8 +144,6 @@ export default function CreerEvenement() {
       method,
       body: JSON.stringify(payload),
     });
-
-    console.log("REPONSE API:", res.status, data);
 
     if (res.ok || res.status === 201) {
       const eventId = isEdit ? id : data.id_evenement;
@@ -222,6 +155,14 @@ export default function CreerEvenement() {
     } else {
       toast.error(data?.message || "Erreur");
     }
+  }
+
+  function toLocalDatetimeInput(dateString) {
+    const d = new Date(dateString);
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   // =====================
@@ -267,9 +208,7 @@ export default function CreerEvenement() {
             <label>Salle</label>
             <select
               value={form.id_salle}
-              onChange={(e) =>
-                setForm({ ...form, id_salle: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, id_salle: e.target.value })}
             >
               <option value="">Choisir une salle</option>
               {salles.map((s) => (
@@ -297,43 +236,10 @@ export default function CreerEvenement() {
               <input
                 type="datetime-local"
                 value={form.date_fin}
-                onChange={(e) =>
-                  setForm({ ...form, date_fin: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, date_fin: e.target.value })}
               />
             </div>
           </div>
-
-          {/* SERVICES */}
-          <div className="field">
-            <label>Services</label>
-
-            <div className="servicesGrid">
-              {services.map((srv) => (
-                <div
-                  key={srv.id_service}
-                  className={`serviceCard ${
-                    form.services.includes(Number(srv.id_service))
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    handleServiceToggle(Number(srv.id_service))
-                  }
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.services.includes(
-                      Number(srv.id_service)
-                    )}
-                    readOnly
-                  />
-                  <span>{srv.nom_service}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
 
           {/* UPLOAD DOCUMENT - visible uniquement pour non-admin */}
           {!isAdmin && (
@@ -341,9 +247,13 @@ export default function CreerEvenement() {
               <label>Ajouter un document</label>
               <input
                 type="file"
-                onChange={e => setFile(e.target.files[0] || null)}
+                onChange={(e) => setFile(e.target.files[0] || null)}
               />
-              {file && <div style={{marginTop:4, fontSize:'0.95em'}}>Fichier sélectionné : <b>{file.name}</b></div>}
+              {file && (
+                <div style={{ marginTop: 4, fontSize: "0.95em" }}>
+                  Fichier sélectionné : <b>{file.name}</b>
+                </div>
+              )}
             </div>
           )}
 

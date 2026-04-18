@@ -47,7 +47,7 @@ export default function EvenementServices() {
 
   async function chargerDemandes() {
     const { res, data } = await apiFetch(
-      `/api/evenementservices/evenement/${id_evenement}`
+      `/api/evenementservices/evenement/${id_evenement}`,
     );
 
     if (!res.ok) {
@@ -189,21 +189,6 @@ export default function EvenementServices() {
                   }
                 />
               </div>
-
-              <div style={{ flex: 1 }}>
-                <label>Montant estimé</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.montant_estime}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      montant_estime: e.target.value,
-                    }))
-                  }
-                />
-              </div>
             </div>
 
             <div style={{ marginTop: 12 }}>
@@ -226,7 +211,11 @@ export default function EvenementServices() {
             </div>
 
             <div className="formRow" style={{ marginTop: 12 }}>
-              <button className="btn btnPrimary" type="submit" disabled={saving}>
+              <button
+                className="btn btnPrimary"
+                type="submit"
+                disabled={saving}
+              >
                 {saving ? "Enregistrement..." : "Ajouter"}
               </button>
             </div>

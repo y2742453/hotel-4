@@ -1,5 +1,7 @@
 import express from "express";
 
+import { pool } from "../db/db.js";
+
 import {
   createFacture,
   getFactureById,
@@ -7,6 +9,7 @@ import {
   saveStripeSession,
   markFacturePaid,
   createPaiement,
+  calculateEventTotal,
   getFactureByStripeSession,
 } from "../modele/facture.js";
 
@@ -25,18 +28,12 @@ router.post("/create/:id_evenement", async (req, res) => {
       return res.status(404).json({ error: "Événement introuvable" });
     }
 
-    const montant = event.budget;
-
-    if (!montant) {
-      return res.status(400).json({
-        error: "Le budget de l'événement est requis pour générer une facture",
-      });
-    }
+    const total = await calculateEventTotal(id);
 
     const id_facture = await createFacture({
       id_evenement: id,
-      montant_total: montant,
-      taxes: montant * 0.15,
+      montant_total: total,
+      taxes: total * 0.13,
     });
 
     res.status(201).json({ id_facture });
@@ -46,9 +43,58 @@ router.post("/create/:id_evenement", async (req, res) => {
   }
 });
 
-/* GET ALL */
+// Route pour filtrer par evenement et/ou par periode
+router.get("/search", async (req, res) => {
+  try {
+    const { id_evenement, date_debut, date_fin, statut } = req.query;
+
+    let query = `
+      SELECT f.*, e.nom_evenement
+      FROM factures f
+      JOIN evenements e ON f.id_evenement = e.id_evenement
+      WHERE 1=1
+    `;
+
+    const params = [];
+
+    if (id_evenement) {
+      query += ` AND f.id_evenement = ?`;
+      params.push(id_evenement);
+    }
+
+    if (date_debut) {
+      query += ` AND f.date_facture >= ?`;
+      params.push(date_debut);
+    }
+
+    if (date_fin) {
+      query += ` AND f.date_facture <= ?`;
+      params.push(date_fin);
+    }
+    if (statut) {
+      query += ` AND f.statut = ?`;
+      params.push(statut);
+    }
+
+    const [rows] = await pool.execute(query, params);
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+/* GET ALL et Mise a jour du statut */
 router.get("/", async (req, res) => {
   try {
+    await pool.execute(`
+      UPDATE factures
+      SET statut = 'en_retard'
+      WHERE statut = 'en_attente'
+      AND date_facture < NOW() - INTERVAL 30 DAY
+    `);
+
     const factures = await getAllFactures();
     res.json(factures);
   } catch (err) {
@@ -72,7 +118,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/* 💳 PAYER FACTURE */
+/* PAYER FACTURE */
 router.post("/payer/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -93,10 +139,9 @@ router.post("/payer/:id", async (req, res) => {
   }
 });
 
-/* 🔐 WEBHOOK STRIPE */
+/* WEBHOOK STRIPE */
 router.post("/webhook", async (req, res) => {
   const sig = req.headers["stripe-signature"];
-
   let event;
 
   try {
@@ -115,6 +160,10 @@ router.post("/webhook", async (req, res) => {
 
     const facture = await getFactureByStripeSession(session.id);
     if (!facture) return res.sendStatus(200);
+
+    if (facture.statut === "paye") {
+      return res.sendStatus(200);
+    }
 
     await markFacturePaid(facture.id_facture, session.payment_intent);
 

@@ -6,7 +6,7 @@ import { pool } from "../db/db.js";
  */
 export async function getSalles() {
   const [rows] = await pool.query(`
-    SELECT id_salle, nom_salle, type, capacite, equipements, statut
+    SELECT id_salle, nom_salle, cout, type, capacite, equipements, statut
     FROM salles
   `);
 
@@ -17,7 +17,7 @@ export async function getSalles() {
  * Récupère toutes les salles enregistrées dans la base de données.
  * @returns {Promise<Array>} Liste des salles.
  */
-export async function getAllSalles() {
+export async function getAllFromSalles() {
   const [rows] = await pool.query("SELECT * FROM salles");
   return rows;
 }
@@ -30,7 +30,7 @@ export async function getAllSalles() {
 export async function getSalleById(id_salle) {
   const [rows] = await pool.query(
     `
-    SELECT id_salle, nom_salle, capacite, equipements, statut
+    SELECT id_salle, nom_salle, cout, type, capacite, equipements, statut
     FROM salles
     WHERE id_salle = ?
   `,
@@ -50,6 +50,7 @@ export async function getSalleById(id_salle) {
  */
 export async function createSalle(
   nom_salle,
+  cout,
   type,
   capacite,
   equipements,
@@ -57,10 +58,10 @@ export async function createSalle(
 ) {
   const [result] = await pool.query(
     `
-    INSERT INTO salles (nom_salle, type, capacite, equipements, statut)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO salles (nom_salle, cout, type, capacite, equipements, statut)
+    VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [nom_salle, type, capacite, equipements, statut]
+    [nom_salle, cout, type, capacite, equipements, statut],
   );
 
   return result.insertId;
@@ -78,6 +79,7 @@ export async function createSalle(
 export async function updateSalle(
   id_salle,
   nom_salle,
+  cout,
   type,
   capacite,
   equipements,
@@ -86,10 +88,10 @@ export async function updateSalle(
   const [result] = await pool.query(
     `
     UPDATE salles
-    SET nom_salle = ?, type = ?, capacite = ?, equipements = ?, statut = ?
+    SET nom_salle = ?, cout = ?, type = ?, capacite = ?, equipements = ?, statut = ?
     WHERE id_salle = ?
     `,
-    [nom_salle, type, capacite, equipements ?? null, statut, id_salle]
+    [nom_salle, cout, type, capacite, equipements ?? null, statut, id_salle],
   );
 
   return result.affectedRows > 0;

@@ -70,6 +70,7 @@ CREATE TABLE users (
 CREATE TABLE salles (
     id_salle INT AUTO_INCREMENT PRIMARY KEY,
     nom_salle VARCHAR(100) NOT NULL,
+    cout DECIMAL(10, 2) NOT NULL,
     capacite INT NOT NULL,
     equipements TEXT,
     statut VARCHAR(20) DEFAULT 'Disponible',
@@ -95,17 +96,17 @@ INSERT INTO
 VALUES (
         'Traiteur',
         'Service de restauration pour les événements',
-        0.00
+        300.00
     ),
     (
         'Audiovisuel',
         'Équipements audiovisuels et assistance technique',
-        0.00
+        200.00
     ),
     (
         'Sécurité',
         'Service de sécurité pour événements',
-        0.00
+        100.00
     );
 
 -- =========================
@@ -186,7 +187,6 @@ CREATE TABLE factures (
     ) DEFAULT 'en_attente',
     stripe_session_id VARCHAR(255),
     stripe_payment_intent VARCHAR(255),
-    pdf_path VARCHAR(255),
     date_facture DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_factures_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );

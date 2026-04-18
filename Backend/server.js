@@ -35,7 +35,7 @@ import {
   createSalle,
   updateSalle,
   deleteSalle,
-  getAllSalles,
+  getAllFromSalles,
 } from "./modele/salle.js";
 import {
   getServices,
@@ -44,7 +44,7 @@ import {
   updateService,
   deleteService,
 } from "./modele/service.js";
-import { createEvenement, getAllEvenements } from "./modele/evenement.js";
+import { createEvenement, getAllFromEvenements } from "./modele/evenement.js";
 import inviteRoutes from "./routes/invite.js";
 import factureRoutes from "./routes/facture.js";
 
@@ -79,6 +79,12 @@ import {
   updateDevisDateEnvoi,
   deleteDevis,
 } from "./modele/devis.js";
+
+import {
+  calculateEventTotal,
+  createFacture,
+  getFactureById,
+} from "./modele/facture.js";
 
 // Création du serveur  `
 const app = express();
@@ -358,9 +364,9 @@ app.delete(
 );
 
 // Route pour obtenir la liste des salles
-app.get("/api/salles", async (request, response) => {
+app.get("/api/reservation/salles", async (request, response) => {
   try {
-    const salles = await getAllSalles();
+    const salles = await getAllFromSalles();
     response.status(200).json(salles);
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
@@ -368,9 +374,9 @@ app.get("/api/salles", async (request, response) => {
 });
 
 // Route pour obtenir la liste des evenements
-app.get("/api/evenements", async (request, response) => {
+app.get("/api/reservation/evenements", async (request, response) => {
   try {
-    const evenements = await getAllEvenements();
+    const evenements = await getAllFromEvenements();
     response.status(200).json(evenements);
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
@@ -422,6 +428,7 @@ app.post("/api/salles", async (req, res) => {
   try {
     const id = await createSalle(
       req.body.nom_salle,
+      req.body.cout,
       req.body.type,
       req.body.capacite,
       req.body.equipements,
@@ -440,6 +447,7 @@ app.put("/api/salles/:id", async (req, res) => {
   const ok = await updateSalle(
     req.params.id,
     req.body.nom_salle,
+    req.body.cout,
     req.body.type,
     req.body.capacite,
     req.body.equipements,
@@ -531,19 +539,20 @@ app.put("/api/services/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur" });
   }
-  // supprimer anciens services
-  await pool.query("DELETE FROM evenement_services WHERE id_evenement = ?", [
-    id,
-  ]);
 
-  // ajouter nouveaux
-  for (const idService of req.body.services) {
-    await pool.query(
-      `INSERT INTO evenement_services (id_evenement, id_service, statut)
-     VALUES (?, ?, 'Demande')`,
-      [id, idService],
-    );
-  }
+  // // supprimer anciens services
+  // await pool.query("DELETE FROM evenement_services WHERE id_evenement = ?", [
+  //   id,
+  // ]);
+
+  // // ajouter nouveaux
+  // for (const idService of req.body.services) {
+  //   await pool.query(
+  //     `INSERT INTO evenement_services (id_evenement, id_service, statut)
+  //    VALUES (?, ?, 'Demande')`,
+  //     [id, idService],
+  //   );
+  // }
 });
 
 // DELETE supprimer un service
@@ -661,6 +670,18 @@ app.post("/api/evenements", async (req, res) => {
   } catch (err) {
     console.error("EVENT ERROR:", err.code, err.message, err.sql);
 
+    if (err.message === "INVALID_DATES") {
+      return res.status(400).json({
+        message: "La date de fin doit être après la date de début",
+      });
+    }
+
+    if (err.message === "HOURS_OUT_OF_RANGE") {
+      return res.status(400).json({
+        message: "Les événements doivent être entre 07:00 et 22:00",
+      });
+    }
+
     if (err.message === "RESERVATION_CONFLICT") {
       return res
         .status(409)
@@ -673,6 +694,7 @@ app.post("/api/evenements", async (req, res) => {
     });
   }
 });
+
 //Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
   const id = req.params.id;
@@ -716,18 +738,72 @@ app.put("/api/evenements/:id", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 // Confirmer evenement
 app.put("/api/evenements/:id/confirmer", async (req, res) => {
   const id = req.params.id;
   try {
+    const [[event]] = await pool.query(
+      "SELECT statut FROM evenements WHERE id_evenement = ?",
+      [id],
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    if (event.statut === "Annulé") {
+      return res.status(400).json({
+        message: "Impossible de confirmer un événement annulé",
+      });
+    }
+
+    if (event.statut === "Confirmé") {
+      return res.status(400).json({
+        message: "Événement déjà confirmé",
+      });
+    }
+
+    const [services] = await pool.query(
+      `SELECT statut FROM evenement_services WHERE id_evenement = ?`,
+      [id],
+    );
+    if (services.length > 0) {
+      const hasPending = services.some((s) => s.statut === "Demande");
+
+      if (hasPending) {
+        return res.status(400).json({
+          message:
+            "Impossible de confirmer : certaines demandes sont encore en attente",
+        });
+      }
+    }
+
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
       [id],
     );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
+
+    const total = await calculateEventTotal(id);
+
+    const [[existingFacture]] = await pool.query(
+      "SELECT id_facture FROM factures WHERE id_evenement = ?",
+      [id],
+    );
+
+    if (existingFacture) {
+      return res.status(400).json({
+        message: "Une facture existe déjà pour cet événement",
+      });
     }
-    res.json({ message: "Événement confirmé avec succès" });
+
+    await createFacture({
+      id_evenement: id,
+      montant_total: total,
+      taxes: total * 0.13,
+    });
+
+    res.json({ message: "Événement confirmé + facture créée" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -751,6 +827,38 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+// Restaurer evenement (Annulé à Prévu)
+app.put("/api/evenements/:id/restaurer", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const [[event]] = await pool.query(
+      "SELECT statut FROM evenements WHERE id_evenement = ?",
+      [id],
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    if (event.statut !== "Annulé") {
+      return res.status(400).json({
+        message: "Seuls les événements annulés peuvent être restaurés",
+      });
+    }
+
+    await pool.query(
+      "UPDATE evenements SET statut='Prévu', updated_at=NOW() WHERE id_evenement=?",
+      [id],
+    );
+
+    res.json({ message: "Événement restauré" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 // Route pour uploader un document lié à un événement
 app.post(
   "/api/evenements/:id/documents",
@@ -835,8 +943,7 @@ app.post(
   allowRoles(1, 2),
   async (req, res) => {
     try {
-      const { id_evenement, id_service, details, quantite, montant_estime } =
-        req.body;
+      const { id_evenement, id_service, details, quantite } = req.body;
 
       if (!id_evenement || !id_service) {
         return res.status(400).json({
@@ -844,7 +951,21 @@ app.post(
         });
       }
 
+      const [serviceRows] = await pool.query(
+        "SELECT tarif FROM services WHERE id_service = ?",
+        [id_service],
+      );
+
+      if (serviceRows.length === 0) {
+        return res.status(404).json({ message: "Service introuvable" });
+      }
+
+      const tarif = Number(serviceRows[0].tarif);
+      const qte = Number(quantite) || 1;
+
       const exists = await serviceRequestExists(id_evenement, id_service);
+
+      const montant_estime = tarif * qte;
 
       if (exists) {
         return res.status(409).json({
@@ -974,7 +1095,17 @@ app.put(
   async (req, res) => {
     try {
       const { id_evenement, id_service } = req.params;
-      const { details, quantite, montant_estime } = req.body;
+      const { details, quantite } = req.body;
+
+      const [serviceRows] = await pool.query(
+        "SELECT tarif FROM services WHERE id_service = ?",
+        [id_service],
+      );
+
+      const tarif = Number(serviceRows[0].tarif);
+      const qte = Number(quantite) || 1;
+
+      const montant_estime = tarif * qte;
 
       const exists = await serviceRequestExists(id_evenement, id_service);
 
@@ -1196,6 +1327,15 @@ app.delete(
     }
   },
 );
+
+// Route de paiement succes et annulé
+app.get("/success", (req, res) => {
+  res.send("Paiement réussi");
+});
+
+app.get("/cancel", (req, res) => {
+  res.send("Paiement annulé");
+});
 
 // ROUTE DE TEST PROTÉGÉE
 

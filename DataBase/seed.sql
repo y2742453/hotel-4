@@ -172,24 +172,28 @@ VALUES (
 INSERT INTO
     `salles` (
         `nom_salle`,
+        `cout`,
         `capacite`,
         `equipements`,
         `statut`
     )
 VALUES (
         'Salle Versailles',
+        2000,
         100,
         'Projecteur',
         'Disponible'
     ),
     (
         'Salle Champs-Élysées',
+        750,
         50,
         'Caméra vidéo, Pupitre (lutrin), Table de mixage, Ordinateur portable, Éclairage LED, Générateur électrique, Climatiseur portable, Barrière de sécurité, Scanner de billets, Photobooth',
         'Disponible'
     ),
     (
         'Salle Montmartre',
+        400,
         30,
         NULL,
         'Disponible'
@@ -210,8 +214,8 @@ VALUES (
         'Événement Test',
         'Réunion',
         'Pour tester les réservations : Cette section permet de simuler des réservations afin de vérifier le fonctionnement du système. On peut créer, modifier ou annuler des réservations fictives pour voir comment le calendrier et les notifications réagissent, sans affecter les données réelles.',
-        '2026-01-01 00:00:00',
-        '2026-12-31 23:59:59',
+        '2026-01-01 12:00:00',
+        '2026-01-01 14:00:00',
         'Prévu',
         1,
         1
@@ -265,4 +269,20 @@ VALUES (
         'Prévu',
         2,
         1
+    );
+
+INSERT INTO
+    `factures` (
+        `id_evenement`,
+        `montant_total`,
+        `taxes`,
+        `statut`,
+        `date_facture`
+    )
+VALUES (
+        1,
+        100,
+        13,
+        'en_attente',
+        NOW() - INTERVAL 40 DAY
     );

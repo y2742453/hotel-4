@@ -30,11 +30,21 @@ export async function createEvenement(data) {
     statut,
     id_salle,
     id_organisateur,
-    services = [],
   } = data;
 
   // Statut par défaut
   const statutFinal = !statut || statut === "Brouillon" ? "Prévu" : statut;
+
+  if (new Date(date_fin) <= new Date(date_debut)) {
+    throw new Error("INVALID_DATES");
+  }
+
+  const start = new Date(date_debut);
+  const end = new Date(date_fin);
+
+  if (start.getHours() < 7 || end.getHours() > 22) {
+    throw new Error("HOURS_OUT_OF_RANGE");
+  }
 
   // 🔥 1. Vérifier conflit
   const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
@@ -79,19 +89,6 @@ export async function createEvenement(data) {
       [id_salle, id_evenement, date_debut, date_fin],
     );
 
-    // 🔥 5. Ajouter services
-    if (services && services.length > 0) {
-      for (const id_service of services) {
-        await conn.query(
-          `
-          INSERT INTO evenement_services (id_evenement, id_service, statut)
-          VALUES (?, ?, 'Demande')
-          `,
-          [id_evenement, id_service],
-        );
-      }
-    }
-
     // 🔥 6. Commit
     await conn.commit();
 
@@ -107,7 +104,7 @@ export async function createEvenement(data) {
 /**
  * Récupérer tous les événements
  */
-export async function getAllEvenements() {
+export async function getAllFromEvenements() {
   const [rows] = await pool.query("SELECT * FROM evenements");
   return rows;
 }
