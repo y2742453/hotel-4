@@ -31,6 +31,8 @@ import Invites from "./pages/Organisateur/Invites.jsx";
 import CoordonnateurHome from "./pages/Coordonnateur/CoordonnateurHome.jsx";
 import DemandesValidation from "./pages/Coordonnateur/DemandesValidation.jsx";
 import Devis from "./pages/Coordonnateur/Devis.jsx";
+import HistoriqueModifications from "./pages/Coordonnateur/HistoriqueModifications";
+import HistoriqueEvenements from "./pages/Organisateur/HistoriqueEvenement.jsx";
 
 import "./styles/global.css";
 
@@ -202,6 +204,14 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route
+                path="organisateur/historique"
+                element={
+                  <RoleGate allowedRoles={[2]}>
+                    <HistoriqueEvenements />
+                  </RoleGate>
+                }
+              />
 
               {/* COORDONNATEUR */}
               <Route
@@ -225,6 +235,22 @@ export default function App() {
                 element={
                   <RoleGate allowedRoles={[3]}>
                     <Devis />
+                  </RoleGate>
+                }
+              />
+              <Route
+                path="coordonnateur/audit"
+                element={
+                  <RoleGate allowedRoles={[3]}>
+                    <HistoriqueModifications />
+                  </RoleGate>
+                }
+              />
+              <Route
+                path="coordonnateur/historique"
+                element={
+                  <RoleGate allowedRoles={[3]}>
+                    <HistoriqueEvenements />
                   </RoleGate>
                 }
               />

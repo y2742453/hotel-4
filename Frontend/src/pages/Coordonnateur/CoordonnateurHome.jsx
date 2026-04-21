@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import "../../styles/dashboard.css";
 import "../../styles/global.css";
+import { useNavigate } from "react-router-dom";
 
 import {
   FaClipboardList,
@@ -22,6 +23,7 @@ export default function CoordonnateurHome() {
   useEffect(() => {
     chargerStats();
   }, []);
+  const navigate = useNavigate();
 
   async function chargerStats() {
     const { res, data } = await apiFetch("/api/evenementservices");
@@ -30,18 +32,18 @@ export default function CoordonnateurHome() {
 
     const demandes = Array.isArray(data) ? data : [];
 
-    setStats({
-      total: demandes.length,
-      attente: demandes.filter(
-        (d) => (d.statut || "").toLowerCase() === "demande"
-      ).length,
-      validees: demandes.filter(
-        (d) => (d.statut || "").toLowerCase() === "valide"
-      ).length,
-      refusees: demandes.filter(
-        (d) => (d.statut || "").toLowerCase() === "refuse"
-      ).length,
-    });
+   setStats({
+  total: demandes.length,
+  attente: demandes.filter(
+    (d) => (d.statut || "").toLowerCase() === "demande"
+  ).length,
+  validees: demandes.filter(
+    (d) => (d.statut || "").toLowerCase() === "valide"
+  ).length,
+  refusees: demandes.filter(
+    (d) => (d.statut || "").toLowerCase() === "refuse"
+  ).length,
+});
   }
 
   const cards = [
@@ -74,7 +76,6 @@ export default function CoordonnateurHome() {
       icon: <FaTimesCircle />,
     },
   ];
-
   return (
     <div className="page">
       <div className="pageHeader">
@@ -84,6 +85,7 @@ export default function CoordonnateurHome() {
         </p>
       </div>
 
+      {/* 🔥 STATS */}
       <div
         style={{
           display: "grid",
@@ -102,14 +104,6 @@ export default function CoordonnateurHome() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              cursor: "default",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
             }}
           >
             <div
@@ -153,6 +147,40 @@ export default function CoordonnateurHome() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 🔥 AJOUT ICI (IMPORTANT) */}
+      <div style={{ marginTop: "30px" }}>
+        <h3 style={{ marginBottom: "15px" }}>Actions rapides</h3>
+
+        <div className="dashGrid">
+          <button
+            className="dashCard"
+            onClick={() => navigate("/coordonnateur/audit")}
+          >
+            <div className="dashIcon">📊</div>
+
+            <div className="dashText">
+              <div className="dashTitle">Audit</div>
+              <div className="dashDesc">Historique des modifications</div>
+            </div>
+
+            <div className="dashBadge">Ouvrir</div>
+          </button>
+          <button
+            className="dashCard"
+            onClick={() => navigate("/coordonnateur/historique")}
+          >
+            <div className="dashIcon">📜</div>
+
+            <div className="dashText">
+              <div className="dashTitle">Historique</div>
+              <div className="dashDesc">Voir les événements passés</div>
+            </div>
+
+            <div className="dashBadge">Ouvrir</div>
+          </button>
+        </div>
       </div>
     </div>
   );

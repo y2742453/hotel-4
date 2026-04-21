@@ -2,18 +2,22 @@ import "dotenv/config";
 import mysql from "mysql2/promise";
 
 export const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST || "127.0.0.1",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "1234",
+  database: process.env.DB_NAME || "HotelDB",
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
 });
 
-try {
-  const conn = await pool.getConnection();
-  console.log("Connecté à la base de données MySQL");
-  conn.release();
-} catch (err) {
-  console.error("Erreur de connexion MySQL :", err.message);
-}
+// 🔥 Test connexion (important)
+(async () => {
+  try {
+    const conn = await pool.getConnection();
+    console.log("✅ Connecté à MariaDB !");
+    conn.release();
+  } catch (err) {
+    console.error("❌ Erreur DB :", err.message);
+  }
+})();

@@ -54,6 +54,73 @@
   color: #64748b;
 }
 
+/* ===== STATS ===== */
+.statsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.statCard {
+  width: 200px;
+  background: #fff;
+  border: 1px solid #e7eef8;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+
+.statCard h3 {
+  margin: 8px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.statCard p {
+  font-size: 13px;
+  color: #475569;
+}
 @media (max-width: 700px) {
   .dashCard { width: 100%; }
+}
+.exportBtn {
+  background: #1f4db8;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.exportBtn:hover {
+  background: #163a8a;
+}
+/* ===== HISTORIQUE / AUDIT ===== */
+
+select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background: #1f4db8;
+  color: white;
+}
+
+td, th {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+tr:hover {
+  background: #f7fbff;
 }
