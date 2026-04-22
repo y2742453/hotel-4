@@ -106,3 +106,25 @@ export async function updateUser(id_user, { nom, prenom, email, id_role }) {
 export async function deleteUser(id_user) {
   await pool.execute(`DELETE FROM users WHERE id_user=?`, [id_user]);
 }
+
+export async function getUsersByRole(id_role) {
+  const [rows] = await pool.execute(
+    `
+    SELECT id_user, nom, prenom, email, id_role
+    FROM users
+    WHERE id_role = ? AND actif = 1
+    ORDER BY id_user ASC
+    `,
+    [id_role],
+  );
+
+  return rows;
+}
+
+export async function getAdminsActifs() {
+  return getUsersByRole(1);
+}
+
+export async function getCoordonnateursActifs() {
+  return getUsersByRole(3);
+}
