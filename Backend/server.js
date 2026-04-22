@@ -22,6 +22,8 @@ import {
   updateUser,
   updateUserActif,
   deleteUser,
+  getAdminsActifs,
+  getCoordonnateursActifs,
 } from "./modele/user.js";
 import {
   addReservation,
@@ -44,7 +46,12 @@ import {
   updateService,
   deleteService,
 } from "./modele/service.js";
-import { createEvenement, getAllEvenements } from "./modele/evenement.js";
+import {
+  createEvenement,
+  getAllEvenements,
+  getEvenementInfoForNotification,
+  getEvenementServiceInfoForNotification,
+} from "./modele/evenement.js";
 import inviteRoutes from "./routes/invite.js";
 
 // Import middlewares
@@ -78,6 +85,22 @@ import {
   updateDevisDateEnvoi,
   deleteDevis,
 } from "./modele/devis.js";
+
+import {
+  createNotification,
+  getNotificationsByUser,
+  getUnreadNotificationsCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from "./modele/notification.js";
+
+import {
+  ensureNotificationPreferences,
+  getNotificationPreferencesByUser,
+  updateNotificationPreferences,
+} from "./modele/notificationPreference.js";
+
+import { sendNotificationEmail } from "./services/notificationEmailService.js";
 // Création du serveur  `
 const app = express();
 
@@ -602,8 +625,10 @@ app.get("/api/evenements", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
-
-app.post("/api/evenements", async (req, res) => {
+/**
+ * Route pour créer un événement
+ */
+app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
   try {
     const {
       nom_evenement,
@@ -613,11 +638,9 @@ app.post("/api/evenements", async (req, res) => {
       date_fin,
       statut,
       id_salle,
-      id_organisateur,
       services,
     } = req.body;
-
-    // Validation minimale
+     
     if (!nom_evenement || nom_evenement.trim().length < 2) {
       return res.status(400).json({ message: "nom_evenement est requis" });
     }
@@ -629,13 +652,14 @@ app.post("/api/evenements", async (req, res) => {
     }
 
     const idSalle = Number(id_salle);
-    const idOrg = Number(id_organisateur);
+    const idOrg = Number(req.user.id_user);
 
     if (!Number.isInteger(idSalle) || idSalle < 1) {
       return res.status(400).json({ message: "id_salle invalide" });
     }
+
     if (!Number.isInteger(idOrg) || idOrg < 1) {
-      return res.status(400).json({ message: "id_organisateur invalide" });
+      return res.status(400).json({ message: "Utilisateur invalide" });
     }
 
     const id_evenement = await createEvenement({
@@ -649,6 +673,35 @@ app.post("/api/evenements", async (req, res) => {
       id_organisateur: idOrg,
       services: Array.isArray(services) ? services.map(Number) : [],
     });
+
+const admins = await getAdminsActifs();
+
+for (const admin of admins) {
+  const prefs = await ensureNotificationPreferences(admin.id_user);
+
+  if (prefs.canal_interne) {
+    await createNotification({
+      id_user: admin.id_user,
+      type_notification: "evenement",
+      titre: "Nouvel événement créé",
+      message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
+      lien: "/admin/evenements",
+    });
+  }
+
+ if (prefs.canal_email && admin.email) {
+  await sendNotificationEmail({
+    to: admin.email,
+    subject: "Nouvel événement créé",
+    title: "Nouvel événement créé",
+    message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
+    actionUrl: "http://localhost:5173/admin/evenements",
+  });
+}
+  if (prefs.canal_sms) {
+    console.log(`SMS admin ${admin.id_user} : nouvel événement créé`);
+  }
+}
     res.status(201).json({ id_evenement });
   } catch (err) {
     console.error("EVENT ERROR:", err.code, err.message, err.sql);
@@ -711,17 +764,53 @@ app.put("/api/evenements/:id", async (req, res) => {
 // Confirmer evenement
 app.put("/api/evenements/:id/confirmer", async (req, res) => {
   const id = req.params.id;
+
   try {
+    const evenement = await getEvenementInfoForNotification(id);
+
+    if (!evenement) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
       [id],
     );
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
     }
+
+    const prefs = await ensureNotificationPreferences(evenement.id_organisateur);
+
+if (prefs.canal_interne) {
+  await createNotification({
+    id_user: evenement.id_organisateur,
+    type_notification: "evenement",
+    titre: "Événement confirmé",
+    message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
+    lien: "/organisateur/evenements",
+  });
+}
+
+if (prefs.canal_email && evenement.email) {
+  await sendNotificationEmail({
+    to: evenement.email,
+    subject: "Événement confirmé",
+    title: "Événement confirmé",
+    message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
+    actionUrl: "http://localhost:5173/organisateur/evenements",
+  });
+}
+
+if (prefs.canal_sms) {
+  console.log(
+    `SMS user ${evenement.id_organisateur} : événement confirmé`,
+  );
+}
     res.json({ message: "Événement confirmé avec succès" });
   } catch (error) {
-    console.error(error);
+    console.error("Erreur confirmation événement :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -729,17 +818,53 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
 //Annuler evenement
 app.put("/api/evenements/:id/annuler", async (req, res) => {
   const id = req.params.id;
+
   try {
+    const evenement = await getEvenementInfoForNotification(id);
+
+    if (!evenement) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
     const [result] = await pool.query(
       "UPDATE evenements SET statut='Annulé', updated_at=NOW() WHERE id_evenement=?",
       [id],
     );
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
     }
+const prefs = await ensureNotificationPreferences(evenement.id_organisateur);
+
+if (prefs.canal_interne) {
+  await createNotification({
+    id_user: evenement.id_organisateur,
+    type_notification: "evenement",
+    titre: "Événement annulé",
+    message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
+    lien: "/organisateur/evenements",
+  });
+}
+
+if (prefs.canal_email && evenement.email) {
+  await sendNotificationEmail({
+    to: evenement.email,
+    subject: "Événement annulé",
+    title: "Événement annulé",
+    message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
+    actionUrl: "http://localhost:5173/organisateur/evenements",
+  });
+}
+
+if (prefs.canal_sms) {
+  console.log(
+    `SMS user ${evenement.id_organisateur} : événement annulé`,
+  );
+}
+
     res.json({ message: "Événement annulé avec succès" });
   } catch (error) {
-    console.error(error);
+    console.error("Erreur annulation événement :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -858,11 +983,52 @@ app.post(
         });
       }
 
+      const info = await getEvenementServiceInfoForNotification(
+        id_evenement,
+        id_service,
+      );
+
+    const coordonnateurs = await getCoordonnateursActifs();
+
+for (const coordonnateur of coordonnateurs) {
+  const prefs = await ensureNotificationPreferences(coordonnateur.id_user);
+
+  if (prefs.canal_interne) {
+    await createNotification({
+      id_user: coordonnateur.id_user,
+      type_notification: "service",
+      titre: "Nouvelle demande de service",
+      message: info
+        ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
+        : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
+      lien: "/coordonnateur/demandes",
+    });
+  }
+
+  if (prefs.canal_email && coordonnateur.email) {
+  await sendNotificationEmail({
+    to: coordonnateur.email,
+    subject: "Nouvelle demande de service",
+    title: "Nouvelle demande de service",
+    message: info
+      ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
+      : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
+    actionUrl: "http://localhost:5173/coordonnateur/demandes",
+  });
+}
+
+  if (prefs.canal_sms) {
+    console.log(
+      `SMS coordonnateur ${coordonnateur.id_user} : nouvelle demande de service`,
+    );
+  }
+}
+
       return res.status(201).json({
         message: "Demande de service créée avec succès",
       });
     } catch (error) {
-      console.error("Erreur POST /api/services :", error);
+      console.error("Erreur POST /api/evenementservices :", error);
       return res.status(500).json({
         message: "Erreur serveur",
         error: error.message,
@@ -1037,6 +1203,49 @@ app.put(
         });
       }
 
+      const info = await getEvenementServiceInfoForNotification(
+        id_evenement,
+        id_service,
+      );
+
+     if (info) {
+  const prefs = await ensureNotificationPreferences(info.id_organisateur);
+
+  if (prefs.canal_interne) {
+    await createNotification({
+      id_user: info.id_organisateur,
+      type_notification: "service",
+      titre: statut === "Valide" ? "Service validé" : "Service refusé",
+      message:
+        statut === "Valide"
+          ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
+          : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
+      lien: "/organisateur/demandes-services",
+    });
+  }
+
+  if (prefs.canal_email && info.email) {
+  await sendNotificationEmail({
+    to: info.email,
+    subject: statut === "Valide" ? "Service validé" : "Service refusé",
+    title: statut === "Valide" ? "Service validé" : "Service refusé",
+    message:
+      statut === "Valide"
+        ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
+        : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
+    actionUrl: "http://localhost:5173/organisateur/demandes-services",
+  });
+  }
+
+  if (prefs.canal_sms) {
+    console.log(
+      `SMS user ${info.id_organisateur} : ${
+        statut === "Valide" ? "service validé" : "service refusé"
+      }`,
+    );
+  }
+}
+
       return res.status(200).json({
         message: "Statut mis à jour avec succès",
       });
@@ -1053,7 +1262,6 @@ app.put(
     }
   },
 );
-
 // Voir les demandes validées prêtes pour devis
 app.get(
   "/api/devis/demandes-validees",
@@ -1104,6 +1312,39 @@ app.post("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
       montant_ttc,
       statut: "Brouillon",
     });
+
+    const info = await getEvenementServiceInfoForNotification(
+      id_evenement,
+      id_service,
+    );
+
+  if (info) {
+  const prefs = await ensureNotificationPreferences(info.id_organisateur);
+
+  if (prefs.canal_interne) {
+    await createNotification({
+      id_user: info.id_organisateur,
+      type_notification: "devis",
+      titre: "Devis créé",
+      message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
+      lien: "/organisateur/demandes-services",
+    });
+  }
+
+ if (prefs.canal_email && info.email) {
+  await sendNotificationEmail({
+    to: info.email,
+    subject: "Devis créé",
+    title: "Devis créé",
+    message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
+    actionUrl: "http://localhost:5173/organisateur/demandes-services",
+  });
+}
+
+  if (prefs.canal_sms) {
+    console.log(`SMS user ${info.id_organisateur} : devis créé`);
+  }
+}
 
     return res.status(201).json({
       message: "Devis créé avec succès",
@@ -1189,6 +1430,125 @@ app.delete(
   },
 );
 
+// =====================
+// API - NOTIFICATIONS
+// =====================
+
+// Voir mes notifications
+app.get("/api/notifications", userAuth, async (req, res) => {
+  try {
+    const notifications = await getNotificationsByUser(req.user.id_user);
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Erreur GET /api/notifications :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Nombre de notifications non lues
+app.get("/api/notifications/unread-count", userAuth, async (req, res) => {
+  try {
+    const total = await getUnreadNotificationsCount(req.user.id_user);
+    res.status(200).json({ total });
+  } catch (error) {
+    console.error("Erreur GET /api/notifications/unread-count :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Marquer une notification comme lue
+app.patch("/api/notifications/:id/read", userAuth, async (req, res) => {
+  try {
+    const id_notification = Number(req.params.id);
+
+    const updated = await markNotificationAsRead(
+      id_notification,
+      req.user.id_user,
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Notification introuvable" });
+    }
+
+    res.status(200).json({ message: "Notification marquée comme lue" });
+  } catch (error) {
+    console.error("Erreur PATCH /api/notifications/:id/read :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Marquer toutes les notifications comme lues
+app.patch("/api/notifications/read-all", userAuth, async (req, res) => {
+  try {
+    const total = await markAllNotificationsAsRead(req.user.id_user);
+    res.status(200).json({
+      message: "Toutes les notifications ont été marquées comme lues",
+      total,
+    });
+  } catch (error) {
+    console.error("Erreur PATCH /api/notifications/read-all :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// ===================== preferences
+// =====================
+// API - PREFERENCES NOTIFICATIONS
+// =====================
+
+// Voir mes préférences
+app.get("/api/notification-preferences", userAuth, async (req, res) => {
+  try {
+    const prefs = await ensureNotificationPreferences(req.user.id_user);
+    return res.status(200).json(prefs);
+  } catch (error) {
+    console.error("Erreur GET /api/notification-preferences :", error);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Modifier mes préférences
+app.put("/api/notification-preferences", userAuth, async (req, res) => {
+  try {
+    const { canal_interne, canal_email, canal_sms } = req.body;
+
+    const values = {
+      canal_interne: canal_interne ? 1 : 0,
+      canal_email: canal_email ? 1 : 0,
+      canal_sms: canal_sms ? 1 : 0,
+    };
+
+    if (
+      values.canal_interne === 0 &&
+      values.canal_email === 0 &&
+      values.canal_sms === 0
+    ) {
+      return res.status(400).json({
+        message: "Veuillez sélectionner au moins un canal de notification.",
+      });
+    }
+
+    await ensureNotificationPreferences(req.user.id_user);
+
+    const updated = await updateNotificationPreferences(
+      req.user.id_user,
+      values,
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        message: "Préférences introuvables",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Préférences mises à jour avec succès",
+    });
+  } catch (error) {
+    console.error("Erreur PUT /api/notification-preferences :", error);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {

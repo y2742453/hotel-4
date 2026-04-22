@@ -33,23 +33,19 @@ export async function createEvenement(data) {
     services = [],
   } = data;
 
-  // Statut par défaut
   const statutFinal = !statut || statut === "Brouillon" ? "Prévu" : statut;
 
-  // 🔥 1. Vérifier conflit
   const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
 
   if (conflict) {
     throw new Error("RESERVATION_CONFLICT");
   }
 
-  // 🔥 2. Transaction
   const conn = await pool.getConnection();
 
   try {
     await conn.beginTransaction();
 
-    // 🔥 3. Créer événement
     const [evResult] = await conn.query(
       `
       INSERT INTO evenements
@@ -70,7 +66,6 @@ export async function createEvenement(data) {
 
     const id_evenement = evResult.insertId;
 
-    // 🔥 4. Créer réservation
     await conn.query(
       `
       INSERT INTO reservations (id_salle, id_evenement, date_debut, date_fin)
@@ -79,7 +74,6 @@ export async function createEvenement(data) {
       [id_salle, id_evenement, date_debut, date_fin],
     );
 
-    // 🔥 5. Ajouter services
     if (services && services.length > 0) {
       for (const id_service of services) {
         await conn.query(
@@ -92,7 +86,6 @@ export async function createEvenement(data) {
       }
     }
 
-    // 🔥 6. Commit
     await conn.commit();
 
     return id_evenement;
@@ -116,6 +109,57 @@ export async function getEvenementById(id_evenement) {
   const [rows] = await pool.execute(
     "SELECT * FROM evenements WHERE id_evenement = ?",
     [id_evenement],
+  );
+
+  return rows[0] || null;
+}
+
+/**
+ * Infos organisateur + nom événement + email
+ */
+export async function getEvenementInfoForNotification(id_evenement) {
+  const [rows] = await pool.execute(
+    `
+    SELECT 
+      e.id_evenement,
+      e.id_organisateur,
+      e.nom_evenement,
+      e.statut,
+      u.email
+    FROM evenements e
+    JOIN users u ON u.id_user = e.id_organisateur
+    WHERE e.id_evenement = ?
+    LIMIT 1
+    `,
+    [id_evenement],
+  );
+
+  return rows[0] || null;
+}
+
+/**
+ * Infos organisateur + nom événement + nom service + email
+ */
+export async function getEvenementServiceInfoForNotification(
+  id_evenement,
+  id_service,
+) {
+  const [rows] = await pool.execute(
+    `
+    SELECT 
+      e.id_evenement,
+      e.id_organisateur,
+      e.nom_evenement,
+      s.id_service,
+      s.nom_service,
+      u.email
+    FROM evenements e
+    JOIN users u ON u.id_user = e.id_organisateur
+    JOIN services s ON s.id_service = ?
+    WHERE e.id_evenement = ?
+    LIMIT 1
+    `,
+    [id_service, id_evenement],
   );
 
   return rows[0] || null;

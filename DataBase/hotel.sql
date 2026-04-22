@@ -234,3 +234,19 @@ CREATE TABLE invites (
     CONSTRAINT fk_invites_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
     UNIQUE KEY unique_email_event (email, id_evenement)
 );
+
+-- =========================
+-- TABLE NOTIFICATIONS
+-- =========================
+CREATE TABLE notifications (
+    id_notification INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    type_notification VARCHAR(50) NOT NULL,
+    titre VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    lien VARCHAR(255) DEFAULT NULL,
+    lu BOOLEAN DEFAULT FALSE,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+);
