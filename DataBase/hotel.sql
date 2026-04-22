@@ -10,6 +10,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS evenement_documents;
 
+DROP TABLE IF EXISTS notification_preferences;
+
+DROP TABLE IF EXISTS notifications;
+
 DROP TABLE IF EXISTS devis;
 
 DROP TABLE IF EXISTS invites;
@@ -247,6 +251,18 @@ CREATE TABLE notifications (
     lien VARCHAR(255) DEFAULT NULL,
     lu BOOLEAN DEFAULT FALSE,
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_notifications_user
-        FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+    CONSTRAINT fk_notifications_user FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
+);
+
+-- =========================
+-- TABLE NOTIFICATIONS Preferences
+-- =========================
+CREATE TABLE notification_preferences (
+    id_preference INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL UNIQUE,
+    canal_interne BOOLEAN DEFAULT TRUE,
+    canal_email BOOLEAN DEFAULT FALSE,
+    canal_sms BOOLEAN DEFAULT FALSE,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_preferences_user FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
 );
