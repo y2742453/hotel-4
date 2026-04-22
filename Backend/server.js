@@ -11,6 +11,8 @@ import memorystore from "memorystore";
 import passport from "passport";
 import { pool } from "./db/db.js";
 import { upload } from "./Midlewares/upload.js";
+import ExcelJS from "exceljs";
+import PDFDocument from "pdfkit";
 
 // Import configuration Passport
 import "./auth.js";
@@ -141,7 +143,7 @@ app.use(
     rolling: true,
     resave: false,
     saveUninitialized: false,
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "fallback_secret",
   }),
 );
 
@@ -642,6 +644,7 @@ app.get("/api/evenements", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 /**
  * Route pour créer un événement
  */
@@ -693,6 +696,8 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
 
     const admins = await getAdminsActifs();
 
+    const coordonateurs = await getCoordonnateursActifs();
+
     for (const admin of admins) {
       const prefs = await ensureNotificationPreferences(admin.id_user);
 
@@ -717,6 +722,36 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       }
       if (prefs.canal_sms) {
         console.log(`SMS admin ${admin.id_user} : nouvel événement créé`);
+      }
+    }
+
+    for (const coord of coordonateurs) {
+      const prefs = await ensureNotificationPreferences(coord.id_user);
+
+      if (prefs.canal_interne) {
+        await createNotification({
+          id_user: coord.id_user,
+          type_notification: "evenement",
+          titre: "Nouvel événement à valider",
+          message: `Un nouvel événement "${nom_evenement}" nécessite votre validation.`,
+          lien: "/coordonateur/evenements",
+        });
+      }
+
+      if (prefs.canal_email && coord.email) {
+        await sendNotificationEmail({
+          to: coord.email,
+          subject: "Nouvel événement à valider",
+          title: "Nouvel événement à valider",
+          message: `Un nouvel événement "${nom_evenement}" attend votre validation.`,
+          actionUrl: "http://localhost:5173/coordonateur/evenements",
+        });
+      }
+
+      if (prefs.canal_sms) {
+        console.log(
+          `SMS coordonateur ${coord.id_user} : nouvel événement à valider`,
+        );
       }
     }
     res.status(201).json({ id_evenement });
@@ -751,6 +786,7 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
 //Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
   const id = req.params.id;
+  const userId = req.user?.id_user || 1; // utilisateur connecté
 
   const {
     nom_evenement,
@@ -764,7 +800,20 @@ app.put("/api/evenements/:id", async (req, res) => {
   } = req.body;
 
   try {
-    const [result] = await pool.query(
+    // 1. récupérer ancienne version
+    const [oldRows] = await pool.query(
+      "SELECT * FROM evenements WHERE id_evenement = ?",
+      [id],
+    );
+
+    if (oldRows.length === 0) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    const oldEvent = oldRows[0];
+
+    // 2. mise à jour
+    await pool.query(
       `UPDATE evenements
        SET nom_evenement=?, type_evenement=?, description=?, date_debut=?, date_fin=?, id_salle=?, nb_participants=?, budget=?, updated_at=NOW()
        WHERE id_evenement=?`,
@@ -781,13 +830,64 @@ app.put("/api/evenements/:id", async (req, res) => {
       ],
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
+    // 3. comparer et enregistrer les changements
+    const fields = {
+      nom_evenement,
+      type_evenement,
+      description,
+      date_debut,
+      date_fin,
+      id_salle,
+      nb_participants,
+      budget,
+    };
+
+    for (const key in fields) {
+      if (oldEvent[key] != fields[key]) {
+        await pool.query(
+          `
+          INSERT INTO historique_modifications 
+          (id_evenement, id_user, champ_modifie, ancienne_valeur, nouvelle_valeur)
+          VALUES (?, ?, ?, ?, ?)
+          `,
+          [id, userId, key, oldEvent[key], fields[key]],
+        );
+      }
     }
 
-    res.json({ message: "Événement modifié avec succès" });
+    res.json({ message: "Événement modifié + historique enregistré" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Route pour récupérer l'historique des modifications d'un événement
+app.get("/api/evenements/:id/historique", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        h.id,
+        h.champ_modifie,
+        h.ancienne_valeur,
+        h.nouvelle_valeur,
+        h.date_modification,
+        u.nom,
+        u.prenom
+      FROM historique_modifications h
+      JOIN users u ON h.id_user = u.id_user
+      WHERE h.id_evenement = ?
+      ORDER BY h.date_modification DESC
+      `,
+      [id],
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -1706,6 +1806,296 @@ app.put("/api/notification-preferences", userAuth, async (req, res) => {
     return res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+//tableau de bord
+app.get("/api/dashboard", async (req, res) => {
+  try {
+    const { date_debut, date_fin, id_salle, statut, type_evenement } =
+      req.query;
+
+    // =========================
+    // CONSTRUCTION FILTRES SQL
+    // =========================
+    let conditions = [];
+    let values = [];
+
+    if (date_debut && date_fin) {
+      conditions.push("e.date_debut BETWEEN ? AND ?");
+      values.push(date_debut, date_fin);
+    }
+
+    if (id_salle) {
+      conditions.push("e.id_salle = ?");
+      values.push(id_salle);
+    }
+
+    if (statut) {
+      conditions.push("e.statut = ?");
+      values.push(statut);
+    }
+
+    if (type_evenement) {
+      conditions.push("e.type_evenement = ?");
+      values.push(type_evenement);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+    console.log("QUERY PARAMS:", req.query);
+    console.log("WHERE:", whereClause);
+    console.log("VALUES:", values);
+    // =========================
+    // 1. TOTAL INVITÉS
+    // =========================
+    const [totalGuests] = await pool.query(
+      `
+      SELECT COUNT(*) as total
+      FROM invites i
+      JOIN evenements e ON i.id_evenement = e.id_evenement
+      ${whereClause}
+      `,
+      values,
+    );
+
+    // =========================
+    // 2. INVITÉS CONFIRMÉS
+    // =========================
+    const [confirmedGuests] = await pool.query(
+      `
+      SELECT COUNT(*) as total
+      FROM invites i
+      JOIN evenements e ON i.id_evenement = e.id_evenement
+      ${whereClause} ${whereClause ? "AND" : "WHERE"} i.statut = 'confirme'
+      `,
+      values,
+    );
+
+    // =========================
+    // 3. COÛT TOTAL
+    // =========================
+    const [cost] = await pool.query(
+      `
+      SELECT SUM(f.montant_total) as total
+      FROM factures f
+      JOIN evenements e ON f.id_evenement = e.id_evenement
+      ${whereClause}
+      `,
+      values,
+    );
+
+    // =========================
+    // 4. NOMBRE ÉVÉNEMENTS
+    // =========================
+    const [events] = await pool.query(
+      `
+      SELECT COUNT(*) as total
+      FROM evenements e
+      ${whereClause}
+      `,
+      values,
+    );
+
+    // =========================
+    // CALCULS
+    // =========================
+    const total = totalGuests[0].total;
+    const confirmed = confirmedGuests[0].total;
+
+    const participationRate =
+      total > 0 ? ((confirmed / total) * 100).toFixed(2) : 0;
+
+    res.json({
+      totalGuests: total,
+      confirmedGuests: confirmed,
+      participationRate,
+      totalCost: cost[0].total || 0,
+      totalEvents: events[0].total,
+    });
+  } catch (err) {
+    console.error("FILTER DASHBOARD ERROR:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Export Excel
+app.get("/api/dashboard/export/excel", async (req, res) => {
+  try {
+    const { date_debut, date_fin } = req.query;
+
+    let conditions = [];
+    let values = [];
+
+    if (date_debut && date_fin) {
+      conditions.push("date_debut BETWEEN ? AND ?");
+      values.push(date_debut, date_fin);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        e.nom_evenement,
+        e.type_evenement,
+        e.date_debut,
+        e.date_fin,
+        e.statut,
+        f.montant_total
+      FROM evenements e
+      LEFT JOIN factures f ON e.id_evenement = f.id_evenement
+      ${whereClause}
+    `,
+      values,
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Rapport");
+
+    sheet.columns = [
+      { header: "Nom", key: "nom_evenement", width: 25 },
+      { header: "Type", key: "type_evenement", width: 20 },
+      { header: "Début", key: "date_debut", width: 20 },
+      { header: "Fin", key: "date_fin", width: 20 },
+      { header: "Statut", key: "statut", width: 15 },
+      { header: "Coût", key: "montant_total", width: 15 },
+    ];
+
+    rows.forEach((row) => sheet.addRow(row));
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    res.setHeader("Content-Disposition", "attachment; filename=rapport.xlsx");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur export Excel" });
+  }
+});
+
+// Export PDF
+
+app.get("/api/dashboard/export/pdf", async (req, res) => {
+  try {
+    const { date_debut, date_fin } = req.query;
+
+    let conditions = [];
+    let values = [];
+
+    if (date_debut && date_fin) {
+      conditions.push("date_debut BETWEEN ? AND ?");
+      values.push(date_debut, date_fin);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        e.nom_evenement,
+        e.type_evenement,
+        e.date_debut,
+        e.statut,
+        f.montant_total
+      FROM evenements e
+      LEFT JOIN factures f ON e.id_evenement = f.id_evenement
+      ${whereClause}
+    `,
+      values,
+    );
+
+    const doc = new PDFDocument();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=rapport.pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(18).text("Rapport des événements", { align: "center" });
+    doc.moveDown();
+
+    rows.forEach((row, index) => {
+      doc
+        .fontSize(12)
+        .text(
+          `${index + 1}. ${row.nom_evenement} - ${row.type_evenement} - ${row.statut} - ${row.montant_total || 0} $`,
+        );
+    });
+
+    doc.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur export PDF" });
+  }
+});
+
+// Historique des événements avec filtres
+app.get("/api/historique", async (req, res) => {
+  try {
+    const { date_debut, date_fin, statut, id_salle } = req.query;
+
+    let conditions = [];
+    let values = [];
+
+    // filtres
+    if (date_debut && date_fin) {
+      conditions.push("e.date_debut BETWEEN ? AND ?");
+      values.push(date_debut, date_fin);
+    }
+
+    if (statut) {
+      conditions.push("e.statut = ?");
+      values.push(statut);
+    }
+
+    if (id_salle) {
+      conditions.push("e.id_salle = ?");
+      values.push(id_salle);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+    // requête principale
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        e.id_evenement,
+        e.nom_evenement,
+        e.type_evenement,
+        e.date_debut,
+        e.date_fin,
+        e.statut,
+        e.nb_participants,
+        e.budget,
+        s.nom_salle,
+        u.nom AS organisateur_nom,
+        u.prenom AS organisateur_prenom
+      FROM evenements e
+      JOIN salles s ON e.id_salle = s.id_salle
+      JOIN users u ON e.id_organisateur = u.id_user
+       LEFT JOIN invites i ON e.id_evenement = i.id_evenement
+       LEFT JOIN factures f ON e.id_evenement = f.id_evenement
+      ${whereClause}
+      GROUP BY e.id_evenement
+
+      ORDER BY e.date_debut DESC
+      `,
+      values,
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("HISTORIQUE ERROR:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {
@@ -1722,7 +2112,6 @@ app.get("/cancel", (req, res) => {
 });
 
 // DÉMARRAGE DU SERVEUR
-
 app.listen(process.env.PORT, () => {
   console.log("Serveur démarré :");
   console.log(`http://localhost:${process.env.PORT}`);

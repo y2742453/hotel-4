@@ -1,53 +1,99 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useAuth from '../auth/UseAuth.jsx';
-import { useToast } from '../Components/Toast.jsx';
-import '../styles/forms.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../auth/UseAuth.jsx";
+import { useToast } from "../Components/Toast.jsx";
+import "../styles/forms.css";
+
+import logo from "../assets/Logo.png";
 
 export default function Login() {
   const { login } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [motDePasse, setMotDePasse] = useState('');
+  const [email, setEmail] = useState("");
+  const [motDePasse, setMotDePasse] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // Validation FRONT = juste confort utilisateur (le BACK reste la vraie sécurité)
-    if (!email.includes('@') || motDePasse.length < 8) {
-      toast.error("Email invalide ou mot de passe < 8 caractères");
+    if (!email.includes("@") || motDePasse.length < 8) {
+      toast.error(
+        "Veuillez entrer un email valide et un mot de passe d’au moins 8 caractères.",
+      );
       return;
     }
 
-    const result = await login(email, motDePasse);
+    try {
+      setLoading(true);
 
-    if (!result.ok) {
-      toast.error(result.error || "Connexion échouée");
-      return;
+      const result = await login(email, motDePasse);
+
+      if (!result.ok) {
+        toast.error(result.error || "Échec de la connexion.");
+        return;
+      }
+
+      toast.success("Connexion réussie.");
+      navigate("/", { replace: true });
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Connexion réussie");
-    navigate('/', { replace: true });
   }
 
   return (
-    <div className="authPage">
-      <div className="authCard">
-        <h1>Connexion</h1>
-        <p className="muted">Accès employés — Hôtel La Promenade</p>
+    <div className="landingPage">
+      {/* LEFT SIDE */}
+      <div className="landingLeft">
+        <img src={logo} alt="Hôtel La Promenade" className="logo" />
 
-        <form onSubmit={handleSubmit} className="form">
-          <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+        <h1>Hôtel La Promenade</h1>
 
-          <label>Mot de passe</label>
-          <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} />
+        <p className="subtitle">
+          Plateforme interne de gestion des opérations hôtelières.
+        </p>
 
-          <button className="btn btnPrimary" type="submit">Se connecter</button>
-        </form>
+        <ul className="features">
+          <li>Gestion des événements et salles</li>
+          <li>Réservations et planification centralisées</li>
+          <li>Suivi et statistiques en temps réel</li>
+        </ul>
+      </div>
+
+      {/* RIGHT SIDE */}
+      <div className="landingRight">
+        <div className="loginCard">
+          <h2>Connexion</h2>
+          <p className="muted">Accès réservé au personnel autorisé</p>
+
+          <form onSubmit={handleSubmit} className="form">
+            <label htmlFor="email">Adresse email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ex: admin@hotel.com"
+              required
+            />
+
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              id="password"
+              type="password"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+
+            <button className="btn btnPrimary" type="submit" disabled={loading}>
+              {loading ? "Connexion..." : "Se connecter"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
