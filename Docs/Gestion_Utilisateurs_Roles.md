@@ -94,6 +94,7 @@ Permet à un **Administrateur (id_role = 1)** de :
 Retourner la liste complète des utilisateurs avec leurs informations principales.
 
 **Réponse 200 (exemple) :**
+
 ```json
 [
   {
@@ -110,6 +111,7 @@ Retourner la liste complète des utilisateurs avec leurs informations principale
 ```
 
 **Réponses :**
+
 - 200 OK
 - 401 Unauthorized
 - 403 Forbidden
@@ -125,6 +127,7 @@ Retourner la liste complète des utilisateurs avec leurs informations principale
 Créer un nouvel utilisateur (compte employé).
 
 **Body JSON (exemple) :**
+
 ```json
 {
   "nom": "Roger",
@@ -136,6 +139,7 @@ Créer un nouvel utilisateur (compte employé).
 ```
 
 **Règles :**
+
 - `nom`, `prenom` requis
 - `email` valide
 - `motDePasse` >= 8 caractères
@@ -143,6 +147,7 @@ Créer un nouvel utilisateur (compte employé).
   - si non fourni → par défaut **Organisateur (2)**
 
 **Réponses :**
+
 - 201 Created → utilisateur créé
 - 400 Bad Request → données invalides
 - 409 Conflict → email déjà utilisé
@@ -160,6 +165,7 @@ Créer un nouvel utilisateur (compte employé).
 Modifier les champs d’identité de l’utilisateur (et éventuellement le rôle si vous le permettez dans la même route).
 
 **Body JSON (exemple) :**
+
 ```json
 {
   "nom": "Roger",
@@ -170,6 +176,7 @@ Modifier les champs d’identité de l’utilisateur (et éventuellement le rôl
 ```
 
 **Réponses :**
+
 - 200 OK
 - 400 Bad Request
 - 409 Conflict → email déjà utilisé
@@ -189,6 +196,7 @@ Deux options possibles (choisir une seule stratégie) :
 **PATCH** `/api/admin/users/:id_user/role`
 
 **Body JSON :**
+
 ```json
 { "id_role": 4 }
 ```
@@ -198,6 +206,7 @@ Deux options possibles (choisir une seule stratégie) :
 **PATCH** `/api/admin/users/:id_user` avec `id_role`
 
 **Réponses :**
+
 - 200 OK
 - 400 Bad Request
 - 401 Unauthorized
@@ -212,15 +221,18 @@ Deux options possibles (choisir une seule stratégie) :
 **PATCH** `/api/admin/users/:id_user/actif`
 
 **Body JSON (exemple) :**
+
 ```json
 { "actif": 0 }
 ```
 
 **But :**
+
 - `actif = 0` → désactivation
 - `actif = 1` → réactivation
 
 **Réponses :**
+
 - 200 OK
 - 400 Bad Request
 - 401 Unauthorized
@@ -238,6 +250,7 @@ Deux options possibles (choisir une seule stratégie) :
 Supprimer un compte utilisateur.
 
 **Réponses :**
+
 - 200 OK (ou 204 No Content)
 - 401 Unauthorized
 - 403 Forbidden
@@ -251,6 +264,7 @@ Supprimer un compte utilisateur.
 ## Page : Admin > Utilisateurs
 
 Fonctions attendues :
+
 - Formulaire de création d’utilisateur (nom, prénom, email, mot de passe, rôle)
 - Tableau listant :
   - nom, prénom, email
@@ -266,6 +280,4 @@ Fonctions attendues :
 
 ## Diagramme de séquence (gestion utilisateur — exemple “Désactiver”)
 
-
-
-![Diagramme de séquence - Désactiver un utilisateur](/Docs/diagramme_sequence_users_actif.png)
+![Diagramme de séquence - Désactiver un utilisateur](/Docs/assets/diagramme_sequence_users_actif.png)

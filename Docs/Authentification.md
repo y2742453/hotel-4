@@ -33,6 +33,7 @@
 ### Objectif du module
 
 Permet de :
+
 1. Ajouter (créer) un utilisateur (seulemrnt ceux qui ont le roles (1) Admin)
 2. Connecter un utilisateur (création de session)
 3. Connaître l’utilisateur connecté (route /me)
@@ -61,6 +62,7 @@ Permet de :
 Créer un utilisateur dans la base.
 
 **Body JSON (exemple) :**
+
 ```json
 {
   "nom": "roger",
@@ -68,8 +70,9 @@ Créer un utilisateur dans la base.
   "email": "roger@test.com",
   "motDePasse": "12345678",
   "role": "Organisateur"
-} 
+}
 ```
+
 **Règles :**
 
 - email valide
@@ -98,6 +101,7 @@ Créer un utilisateur dans la base.
 Vérifier identifiants et créer une session.
 
 **Body JSON (exemple) :**
+
 ```json
 {
   "email": "franck@test.com",
@@ -116,14 +120,16 @@ Vérifier identifiants et créer une session.
 - 500 Internal Server Error → erreur serveur
 
 ### 3) Deconnexion
+
 **POST** `/api/deconnexion`
 **But :**
 Terminer la session de l’utilisateur connecté.
 **Réponses :**
+
 - 200 OK → déconnexion réussie
 - 401 Unauthorized → pas d’utilisateur connecté
 - 500 Internal Server Error → erreur serveur
 
 ### 4) diagramme de séquence (connexion)
 
-![Diagramme de séquence pour la connexion](/Docs/diagramme_sequence_authentification.png)
+![Diagramme de séquence pour la connexion](/Docs/assets/diagramme_sequence_authentification.png)

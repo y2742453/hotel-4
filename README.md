@@ -33,6 +33,9 @@ Dans `Backend/.env`, ajouter :
 - MAIL_PORT
 - MAIL_USER
 - MAIL_PASS
+- STRIPE_SECRET_KEY
+- STRIPE_PUBLISHABLE_KEY
+- STRIPE_WEBHOOK_SECRET
 
 Par exemple :
 
@@ -47,6 +50,9 @@ MAIL_HOST=sandbox.smtp.mailtrap.io
 MAIL_PORT=2525
 MAIL_USER=6a3af3ba3016dd
 MAIL_PASS=85c5d8a2e6ff3f
+STRIPE_SECRET_KEY=sk_test_51TJle69...
+STRIPE_PUBLISHABLE_KEY=pk_test_51TJle69...
+STRIPE_WEBHOOK_SECRET=whsec_fc545c...
 ```
 
 Vous pouvez modifier le fichier `.env` selon vos besoins pour qu'il corresponde à votre configuration MySQL locale.
@@ -62,9 +68,15 @@ GRANT ALL PRIVILEGES ON HotelDB.* TO 'admin'@'%';
 FLUSH PRIVILEGES;
 ```
 
+La commande ci-dessous permet de donner les permissions apartir du root sur Command Prompt(Windows) ou zsh(Mac):
+
+```bash
+mysql -u root -p -e "GRANT ALL PRIVILEGES ON HotelDB.* TO 'admin'@'%'; FLUSH PRIVILEGES;"
+```
+
 Depuis workbench ou un query sql copiez, coller et executer le contenu de `hotel.sql`
 
-Ou importer le schéma avec cette commande:
+Ou importer le schéma avec cette commande sur Command Prompt(Windows) ou zsh(Mac):
 
 ```bash
 mysql -u admin -p < Database/hotel.sql
@@ -76,7 +88,7 @@ Données pour la démonstration et les tests :
 
 Depuis workbench ou un query sql copiez, coller et executer le contenu de `seed.sql`
 
-Ou:
+Ou sur Command Prompt(Windows) ou zsh(Mac):
 
 ```bash
 mysql -u admin -p HotelDB < Database/seed.sql

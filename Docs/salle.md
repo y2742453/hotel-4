@@ -10,7 +10,7 @@
 
 ## Diagramme de classe pour ce module
 
-![Diagramme de classe: Gestion des salles](salle.png)
+![Diagramme de classe: Gestion des salles](/Docs/assets/salle.png)
 
 ---
 
@@ -66,10 +66,10 @@ Body (JSON) :
 
 ```json
 {
-  "nom_salle":"Nom",
-  "capacite":50,
-  "equipements":"Projecteur",
-  "statut":"Disponible"
+  "nom_salle": "Nom",
+  "capacite": 50,
+  "equipements": "Projecteur",
+  "statut": "Disponible"
 }
 ```
 
@@ -103,11 +103,11 @@ Réponses :
 ## Exemple (JS)
 
 ```js
-import { getSalles, createSalle } from '../model/salle.js'
+import { getSalles, createSalle } from "../model/salle.js";
 
-const salles = await getSalles()
-console.log(salles)
+const salles = await getSalles();
+console.log(salles);
 
-const id = await createSalle('Salle A', 50, 'Projecteur, Sono', 'Disponible')
-console.log('Nouvelle salle id:', id)
+const id = await createSalle("Salle A", 50, "Projecteur, Sono", "Disponible");
+console.log("Nouvelle salle id:", id);
 ```

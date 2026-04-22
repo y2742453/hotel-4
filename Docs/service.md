@@ -10,7 +10,7 @@
 
 ## Diagramme de classe pour ce module
 
-![Diagramme de classe: Gestion des services](service.png)
+![Diagramme de classe: Gestion des services](/Docs/assets/service.png)
 
 ---
 
@@ -63,9 +63,9 @@ Body (JSON) :
 
 ```json
 {
-  "nom_service":"Traiteur",
-  "description":"Buffet",
-  "tarif":500
+  "nom_service": "Traiteur",
+  "description": "Buffet",
+  "tarif": 500
 }
 ```
 
@@ -99,11 +99,11 @@ Réponses :
 ## Exemple (JS)
 
 ```js
-import { getServices, createService } from '../model/service.js'
+import { getServices, createService } from "../model/service.js";
 
-const services = await getServices()
-console.log(services)
+const services = await getServices();
+console.log(services);
 
-const id = await createService('Traiteur', 'Service traiteur complet', 500)
-console.log('Nouveau service id:', id)
+const id = await createService("Traiteur", "Service traiteur complet", 500);
+console.log("Nouveau service id:", id);
 ```

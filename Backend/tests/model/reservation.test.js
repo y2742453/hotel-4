@@ -11,77 +11,7 @@ let testEvenement;
 let testUser;
 
 beforeAll(async () => {
-  await pool.query("CREATE DATABASE IF NOT EXISTS HotelDB_Test");
   await pool.query("USE HotelDB_Test");
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS roles (
-      id_role INT AUTO_INCREMENT PRIMARY KEY,
-      nom_role VARCHAR(50) NOT NULL UNIQUE
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id_user INT AUTO_INCREMENT PRIMARY KEY,
-      nom VARCHAR(100) NOT NULL,
-      prenom VARCHAR(100) NOT NULL,
-      email VARCHAR(150) NOT NULL UNIQUE,
-      mot_de_passe VARCHAR(255) NOT NULL,
-      actif BOOLEAN DEFAULT TRUE,
-      id_role INT NOT NULL,
-      date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (id_role) REFERENCES roles(id_role)
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS salles (
-      id_salle INT AUTO_INCREMENT PRIMARY KEY,
-      nom_salle VARCHAR(100) NOT NULL,
-      capacite INT NOT NULL,
-      equipements TEXT,
-      statut VARCHAR(20) DEFAULT 'Disponible'
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS evenements (
-      id_evenement INT AUTO_INCREMENT PRIMARY KEY,
-      nom_evenement VARCHAR(150) NOT NULL,
-      type_evenement VARCHAR(50),
-      description TEXT,
-      date_debut DATETIME NOT NULL,
-      date_fin DATETIME NOT NULL,
-      statut VARCHAR(20) DEFAULT 'Brouillon',
-      id_salle INT NOT NULL,
-      id_organisateur INT NOT NULL,
-      FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
-      FOREIGN KEY (id_organisateur) REFERENCES users(id_user)
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS reservations (
-      id_reservation INT AUTO_INCREMENT PRIMARY KEY,
-      id_salle INT NOT NULL,
-      id_evenement INT NOT NULL,
-      date_debut DATETIME NOT NULL,
-      date_fin DATETIME NOT NULL,
-      FOREIGN KEY (id_salle) REFERENCES salles(id_salle),
-      FOREIGN KEY (id_evenement) REFERENCES evenements(id_evenement)
-    )
-  `);
-
-  const [roles] = await pool.query(
-    "SELECT * FROM roles WHERE nom_role = 'Organisateur'",
-  );
-  if (roles.length === 0) {
-    await pool.query(`
-      INSERT INTO roles (nom_role) VALUES
-      ('Administrateur'), ('Organisateur'), ('Coordonnateur'), ('Comptabilite')
-    `);
-  }
 
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   await pool.execute("TRUNCATE TABLE reservations");
@@ -90,32 +20,32 @@ beforeAll(async () => {
   await pool.execute("TRUNCATE TABLE users");
   await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 
-  const [roleResult] = await pool.execute(
-    "SELECT id_role FROM roles WHERE nom_role = ?",
-    ["Organisateur"],
+  const [role] = await pool.execute(
+    "SELECT id_role FROM roles WHERE nom_role = 'Organisateur'",
   );
-  const roleId = roleResult[0].id_role;
 
-  const [userResult] = await pool.execute(
-    "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
-    ["Test", "User", "test@jest.com", "password123", roleId],
+  const [user] = await pool.execute(
+    `INSERT INTO users (nom, prenom, email, mot_de_passe, id_role)
+     VALUES (?, ?, ?, ?, ?)`,
+    ["Test", "User", "test@jest.com", "pass", role[0].id_role],
   );
-  testUser = userResult.insertId;
+  testUser = user.insertId;
 
-  const [salleResult] = await pool.execute(
-    "INSERT INTO salles (nom_salle, capacite, equipements, statut) VALUES (?, ?, ?, ?)",
-    ["Salle Jest", 50, "Projecteur, Wifi", "Disponible"],
+  const [salle] = await pool.execute(
+    `INSERT INTO salles (nom_salle, cout, capacite, equipements, statut)
+     VALUES (?, ?, ?, ?, ?)`,
+    ["Salle Jest", 1000, 50, "Projecteur", "Disponible"],
   );
-  testSalle = salleResult.insertId;
+  testSalle = salle.insertId;
 
-  const [eventResult] = await pool.execute(
+  const [event] = await pool.execute(
     `INSERT INTO evenements 
-      (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      "Événement Jest",
+      "Event",
       "Test",
-      "Événement pour les tests",
+      "desc",
       "2026-03-01 10:00:00",
       "2026-03-01 12:00:00",
       "Confirme",
@@ -123,13 +53,11 @@ beforeAll(async () => {
       testUser,
     ],
   );
-  testEvenement = eventResult.insertId;
+  testEvenement = event.insertId;
 });
 
 afterEach(async () => {
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   await pool.execute("TRUNCATE TABLE reservations");
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 });
 
 afterAll(async () => {
@@ -230,11 +158,11 @@ test("Créer deux réservations sans conflit", async () => {
   expect(id1).not.toBe(id2);
 
   const [rows] = await pool.execute(
-  "SELECT * FROM reservations WHERE id_salle = ?",
-  [testSalle]
-);
+    "SELECT * FROM reservations WHERE id_salle = ?",
+    [testSalle],
+  );
 
-expect(rows.length).toBe(2);
+  expect(rows.length).toBe(2);
 });
 
 test("Vérifier hasConflict() sans conflit", async () => {

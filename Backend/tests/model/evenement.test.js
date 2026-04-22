@@ -1,6 +1,9 @@
 import { test, expect, beforeAll, afterEach, afterAll } from "@jest/globals";
 import { pool } from "../../db/db.js";
-import { createEvenement, getAllEvenements } from "../../modele/evenement.js";
+import {
+  createEvenement,
+  getAllFromEvenements,
+} from "../../modele/evenement.js";
 
 let testSalle;
 let testUser;
@@ -20,14 +23,15 @@ beforeAll(async () => {
   // user
   const [user] = await pool.execute(
     "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
-    ["Test", "User", "test@test.com", "pass", 1]
+    ["Test", "User", "test@test.com", "pass", 1],
   );
   testUser = user.insertId;
 
   // salle
   const [salle] = await pool.execute(
-    "INSERT INTO salles (nom_salle, capacite, equipements, statut) VALUES (?, ?, ?, ?)",
-    ["Salle Test", 100, "Projecteur", "Disponible"]
+    `INSERT INTO salles (nom_salle, cout, capacite, equipements, statut)
+   VALUES (?, ?, ?, ?, ?)`,
+    ["Salle Test", 1000, 100, "Projecteur", "Disponible"],
   );
   testSalle = salle.insertId;
 });
@@ -44,7 +48,6 @@ afterAll(async () => {
   await pool.end();
 });
 
-
 // ✅ TEST CREATE
 test("Créer un événement avec réservation", async () => {
   const id = await createEvenement({
@@ -55,19 +58,18 @@ test("Créer un événement avec réservation", async () => {
     date_fin: "2026-04-01 12:00:00",
     id_salle: testSalle,
     id_organisateur: testUser,
-    services: []
+    services: [],
   });
 
   expect(id).toBeGreaterThan(0);
 
   const [rows] = await pool.execute(
     "SELECT * FROM evenements WHERE id_evenement = ?",
-    [id]
+    [id],
   );
 
   expect(rows.length).toBe(1);
 });
-
 
 // ✅ TEST GET ALL
 test("Récupérer tous les événements", async () => {
@@ -79,14 +81,13 @@ test("Récupérer tous les événements", async () => {
     date_fin: "2026-04-01 12:00:00",
     id_salle: testSalle,
     id_organisateur: testUser,
-    services: []
+    services: [],
   });
 
-  const events = await getAllEvenements();
+  const events = await getAllFromEvenements();
 
   expect(events.length).toBeGreaterThan(0);
 });
-
 
 // ✅ TEST CONFLIT
 test("Refuser un événement avec conflit", async () => {
@@ -109,6 +110,6 @@ test("Refuser un événement avec conflit", async () => {
       date_fin: "2026-04-01 13:00:00",
       id_salle: testSalle,
       id_organisateur: testUser,
-    })
+    }),
   ).rejects.toThrow("RESERVATION_CONFLICT");
 });
