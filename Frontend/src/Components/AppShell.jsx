@@ -85,13 +85,6 @@ export default function AppShell() {
                 </span>
                 Événements
               </NavLink>
-
-              <NavLink to="/admin/facturation" className={linkClass}>
-                <span className="ico">
-                  <FaFileInvoiceDollar />
-                </span>
-                Facturation
-              </NavLink>
             </>
           )}
 
@@ -154,7 +147,7 @@ export default function AppShell() {
 
           {isCompta && (
             <>
-              <NavLink to="/comptabilite" className={linkClass}>
+              <NavLink to="/comptabilite" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
                 </span>

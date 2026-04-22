@@ -101,12 +101,11 @@ export default function EvenementsPage() {
   }
 
   async function handleConfirm(id) {
-    const ok = window.confirm("Confirmer cet événement ?");
-    if (!ok) return;
-
     const { res, data } = await apiFetch(`/api/evenements/${id}/confirmer`, {
       method: "PUT",
     });
+
+    console.log("CONFIRM RESPONSE:", res.status, data); // 👈 ADD THIS
 
     if (res.ok) {
       toast.success("Événement confirmé");
@@ -117,9 +116,6 @@ export default function EvenementsPage() {
   }
 
   async function handleAnnuler(id) {
-    const ok = window.confirm("Annuler cet événement ?");
-    if (!ok) return;
-
     const { res, data } = await apiFetch(`/api/evenements/${id}/annuler`, {
       method: "PUT",
     });
@@ -154,7 +150,8 @@ export default function EvenementsPage() {
         <div>
           <h2>Gestion des événements</h2>
           <p className="muted">
-            L’administrateur peut consulter, modifier, confirmer ou annuler les événements.
+            L’administrateur peut consulter, modifier, confirmer ou annuler les
+            événements.
           </p>
         </div>
       </div>
@@ -287,7 +284,9 @@ export default function EvenementsPage() {
                       </td>
 
                       <td>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <div
+                          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                        >
                           <button
                             className="btn btnSecondary"
                             onClick={() => {

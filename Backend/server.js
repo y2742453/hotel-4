@@ -37,7 +37,7 @@ import {
   createSalle,
   updateSalle,
   deleteSalle,
-  getAllSalles,
+  getAllFromSalles,
 } from "./modele/salle.js";
 import {
   getServices,
@@ -48,11 +48,12 @@ import {
 } from "./modele/service.js";
 import {
   createEvenement,
-  getAllEvenements,
+  getAllFromEvenements,
   getEvenementInfoForNotification,
   getEvenementServiceInfoForNotification,
 } from "./modele/evenement.js";
 import inviteRoutes from "./routes/invite.js";
+import factureRoutes from "./routes/facture.js";
 
 // Import middlewares
 import {
@@ -101,11 +102,21 @@ import {
 } from "./modele/notificationPreference.js";
 
 import { sendNotificationEmail } from "./services/notificationEmailService.js";
+
+import {
+  calculateEventTotal,
+  createFacture,
+  getFactureById,
+} from "./modele/facture.js";
+
 // Création du serveur  `
 const app = express();
 
 // Initialisation du store de session
 const MemoryStore = memorystore(session);
+
+// Stripe webhook
+app.use("/api/factures/webhook", express.raw({ type: "application/json" }));
 
 // Middlewares globaux
 app.use(helmet());
@@ -142,7 +153,10 @@ app.use(passport.session());
 app.use(express.static("public"));
 
 // Route pour import de fichier CSV/Excel des invités
-app.use("/api/invites", allowRoles(2), inviteRoutes);
+app.use("/api/invites", userAuth, allowRoles(2), inviteRoutes);
+
+// Routes pour factures
+app.use("/api/factures", factureRoutes);
 
 // ROUTES AUTHENTIFICATION
 
@@ -373,9 +387,9 @@ app.delete(
 );
 
 // Route pour obtenir la liste des salles
-app.get("/api/salles", async (request, response) => {
+app.get("/api/reservation/salles", async (request, response) => {
   try {
-    const salles = await getAllSalles();
+    const salles = await getAllFromSalles();
     response.status(200).json(salles);
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
@@ -383,9 +397,9 @@ app.get("/api/salles", async (request, response) => {
 });
 
 // Route pour obtenir la liste des evenements
-app.get("/api/evenements", async (request, response) => {
+app.get("/api/reservation/evenements", async (request, response) => {
   try {
-    const evenements = await getAllEvenements();
+    const evenements = await getAllFromEvenements();
     response.status(200).json(evenements);
   } catch (error) {
     response.status(500).json({ error: "Erreur serveur" });
@@ -437,6 +451,7 @@ app.post("/api/salles", async (req, res) => {
   try {
     const id = await createSalle(
       req.body.nom_salle,
+      req.body.cout,
       req.body.type,
       req.body.capacite,
       req.body.equipements,
@@ -455,6 +470,7 @@ app.put("/api/salles/:id", async (req, res) => {
   const ok = await updateSalle(
     req.params.id,
     req.body.nom_salle,
+    req.body.cout,
     req.body.type,
     req.body.capacite,
     req.body.equipements,
@@ -546,19 +562,20 @@ app.put("/api/services/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur" });
   }
-  // supprimer anciens services
-  await pool.query("DELETE FROM evenement_services WHERE id_evenement = ?", [
-    id,
-  ]);
 
-  // ajouter nouveaux
-  for (const idService of req.body.services) {
-    await pool.query(
-      `INSERT INTO evenement_services (id_evenement, id_service, statut)
-     VALUES (?, ?, 'Demande')`,
-      [id, idService],
-    );
-  }
+  // // supprimer anciens services
+  // await pool.query("DELETE FROM evenement_services WHERE id_evenement = ?", [
+  //   id,
+  // ]);
+
+  // // ajouter nouveaux
+  // for (const idService of req.body.services) {
+  //   await pool.query(
+  //     `INSERT INTO evenement_services (id_evenement, id_service, statut)
+  //    VALUES (?, ?, 'Demande')`,
+  //     [id, idService],
+  //   );
+  // }
 });
 
 // DELETE supprimer un service
@@ -640,7 +657,7 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       id_salle,
       services,
     } = req.body;
-     
+
     if (!nom_evenement || nom_evenement.trim().length < 2) {
       return res.status(400).json({ message: "nom_evenement est requis" });
     }
@@ -674,37 +691,49 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       services: Array.isArray(services) ? services.map(Number) : [],
     });
 
-const admins = await getAdminsActifs();
+    const admins = await getAdminsActifs();
 
-for (const admin of admins) {
-  const prefs = await ensureNotificationPreferences(admin.id_user);
+    for (const admin of admins) {
+      const prefs = await ensureNotificationPreferences(admin.id_user);
 
-  if (prefs.canal_interne) {
-    await createNotification({
-      id_user: admin.id_user,
-      type_notification: "evenement",
-      titre: "Nouvel événement créé",
-      message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
-      lien: "/admin/evenements",
-    });
-  }
+      if (prefs.canal_interne) {
+        await createNotification({
+          id_user: admin.id_user,
+          type_notification: "evenement",
+          titre: "Nouvel événement créé",
+          message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
+          lien: "/admin/evenements",
+        });
+      }
 
- if (prefs.canal_email && admin.email) {
-  await sendNotificationEmail({
-    to: admin.email,
-    subject: "Nouvel événement créé",
-    title: "Nouvel événement créé",
-    message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
-    actionUrl: "http://localhost:5173/admin/evenements",
-  });
-}
-  if (prefs.canal_sms) {
-    console.log(`SMS admin ${admin.id_user} : nouvel événement créé`);
-  }
-}
+      if (prefs.canal_email && admin.email) {
+        await sendNotificationEmail({
+          to: admin.email,
+          subject: "Nouvel événement créé",
+          title: "Nouvel événement créé",
+          message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
+          actionUrl: "http://localhost:5173/admin/evenements",
+        });
+      }
+      if (prefs.canal_sms) {
+        console.log(`SMS admin ${admin.id_user} : nouvel événement créé`);
+      }
+    }
     res.status(201).json({ id_evenement });
   } catch (err) {
     console.error("EVENT ERROR:", err.code, err.message, err.sql);
+
+    if (err.message === "INVALID_DATES") {
+      return res.status(400).json({
+        message: "La date de fin doit être après la date de début",
+      });
+    }
+
+    if (err.message === "HOURS_OUT_OF_RANGE") {
+      return res.status(400).json({
+        message: "Les événements doivent être entre 07:00 et 22:00",
+      });
+    }
 
     if (err.message === "RESERVATION_CONFLICT") {
       return res
@@ -718,6 +747,7 @@ for (const admin of admins) {
     });
   }
 });
+
 //Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
   const id = req.params.id;
@@ -761,57 +791,125 @@ app.put("/api/evenements/:id", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 // Confirmer evenement
 app.put("/api/evenements/:id/confirmer", async (req, res) => {
-  const id = req.params.id;
+  const id = Number(req.params.id);
+  const conn = await pool.getConnection();
 
   try {
-    const evenement = await getEvenementInfoForNotification(id);
+    await conn.beginTransaction();
 
+    // 1. Get event
+    const evenement = await getEvenementInfoForNotification(id);
     if (!evenement) {
+      await conn.rollback();
       return res.status(404).json({ message: "Événement introuvable" });
     }
 
-    const [result] = await pool.query(
+    // 2. Check current status
+    if (evenement.statut === "Annulé") {
+      await conn.rollback();
+      return res.status(400).json({
+        message: "Impossible de confirmer un événement annulé",
+      });
+    }
+
+    if (evenement.statut === "Confirmé") {
+      await conn.rollback();
+      return res.status(400).json({
+        message: "Événement déjà confirmé",
+      });
+    }
+
+    // 3. Check services
+    const [services] = await conn.query(
+      `SELECT statut FROM evenement_services WHERE id_evenement = ?`,
+      [id],
+    );
+
+    const hasPending = services.some(
+      (s) => (s.statut || "").toLowerCase() === "demande",
+    );
+
+    if (hasPending) {
+      await conn.rollback();
+      return res.status(400).json({
+        message:
+          "Impossible de confirmer : certaines demandes sont encore en attente",
+      });
+    }
+
+    // 4. Check facture BEFORE confirming
+    const [[existingFacture]] = await conn.query(
+      "SELECT id_facture FROM factures WHERE id_evenement = ?",
+      [id],
+    );
+
+    // 5. Calculate total
+    const total = await calculateEventTotal(id);
+
+    if (existingFacture) {
+      await conn.query(
+        `UPDATE factures 
+     SET montant_total = ?, taxes = ?, updated_at = NOW()
+     WHERE id_facture = ?`,
+        [total, total * 0.13, existingFacture.id_facture],
+      );
+    } else {
+      await createFacture({
+        id_evenement: id,
+        montant_total: total,
+        taxes: total * 0.13,
+      });
+    }
+
+    // 6. Update event
+    await conn.query(
       "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
       [id],
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Événement introuvable" });
+    // 8. Commit transaction
+    await conn.commit();
+
+    // 9. Notifications (outside critical logic is OK)
+    const prefs = await ensureNotificationPreferences(
+      evenement.id_organisateur,
+    );
+
+    if (prefs.canal_interne) {
+      await createNotification({
+        id_user: evenement.id_organisateur,
+        type_notification: "evenement",
+        titre: "Événement confirmé",
+        message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
+        lien: "/organisateur/evenements",
+      });
     }
 
-    const prefs = await ensureNotificationPreferences(evenement.id_organisateur);
+    if (prefs.canal_email && evenement.email) {
+      await sendNotificationEmail({
+        to: evenement.email,
+        subject: "Événement confirmé",
+        title: "Événement confirmé",
+        message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
+        actionUrl: "http://localhost:5173/organisateur/evenements",
+      });
+    }
 
-if (prefs.canal_interne) {
-  await createNotification({
-    id_user: evenement.id_organisateur,
-    type_notification: "evenement",
-    titre: "Événement confirmé",
-    message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
-    lien: "/organisateur/evenements",
-  });
-}
+    if (prefs.canal_sms) {
+      console.log(`SMS user ${evenement.id_organisateur} : événement confirmé`);
+    }
 
-if (prefs.canal_email && evenement.email) {
-  await sendNotificationEmail({
-    to: evenement.email,
-    subject: "Événement confirmé",
-    title: "Événement confirmé",
-    message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
-    actionUrl: "http://localhost:5173/organisateur/evenements",
-  });
-}
-
-if (prefs.canal_sms) {
-  console.log(
-    `SMS user ${evenement.id_organisateur} : événement confirmé`,
-  );
-}
     res.json({ message: "Événement confirmé avec succès" });
   } catch (error) {
+    await conn.rollback();
     console.error("Erreur confirmation événement :", error);
+
     res.status(500).json({ message: "Erreur serveur" });
+  } finally {
+    conn.release();
   }
 });
 
@@ -834,33 +932,33 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Événement introuvable" });
     }
-const prefs = await ensureNotificationPreferences(evenement.id_organisateur);
+    const prefs = await ensureNotificationPreferences(
+      evenement.id_organisateur,
+    );
 
-if (prefs.canal_interne) {
-  await createNotification({
-    id_user: evenement.id_organisateur,
-    type_notification: "evenement",
-    titre: "Événement annulé",
-    message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
-    lien: "/organisateur/evenements",
-  });
-}
+    if (prefs.canal_interne) {
+      await createNotification({
+        id_user: evenement.id_organisateur,
+        type_notification: "evenement",
+        titre: "Événement annulé",
+        message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
+        lien: "/organisateur/evenements",
+      });
+    }
 
-if (prefs.canal_email && evenement.email) {
-  await sendNotificationEmail({
-    to: evenement.email,
-    subject: "Événement annulé",
-    title: "Événement annulé",
-    message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
-    actionUrl: "http://localhost:5173/organisateur/evenements",
-  });
-}
+    if (prefs.canal_email && evenement.email) {
+      await sendNotificationEmail({
+        to: evenement.email,
+        subject: "Événement annulé",
+        title: "Événement annulé",
+        message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
+        actionUrl: "http://localhost:5173/organisateur/evenements",
+      });
+    }
 
-if (prefs.canal_sms) {
-  console.log(
-    `SMS user ${evenement.id_organisateur} : événement annulé`,
-  );
-}
+    if (prefs.canal_sms) {
+      console.log(`SMS user ${evenement.id_organisateur} : événement annulé`);
+    }
 
     res.json({ message: "Événement annulé avec succès" });
   } catch (error) {
@@ -868,6 +966,38 @@ if (prefs.canal_sms) {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+// Restaurer evenement (Annulé à Prévu)
+app.put("/api/evenements/:id/restaurer", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const [[event]] = await pool.query(
+      "SELECT statut FROM evenements WHERE id_evenement = ?",
+      [id],
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    if (event.statut !== "Annulé") {
+      return res.status(400).json({
+        message: "Seuls les événements annulés peuvent être restaurés",
+      });
+    }
+
+    await pool.query(
+      "UPDATE evenements SET statut='Prévu', updated_at=NOW() WHERE id_evenement=?",
+      [id],
+    );
+
+    res.json({ message: "Événement restauré" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 // Route pour uploader un document lié à un événement
 app.post(
   "/api/evenements/:id/documents",
@@ -907,6 +1037,7 @@ app.get("/api/evenements/:id/documents", async (req, res) => {
 
   res.json(rows);
 });
+
 // Route pour supprimer un document lié à un événement
 import fs from "fs";
 
@@ -952,8 +1083,7 @@ app.post(
   allowRoles(1, 2),
   async (req, res) => {
     try {
-      const { id_evenement, id_service, details, quantite, montant_estime } =
-        req.body;
+      const { id_evenement, id_service, details, quantite } = req.body;
 
       if (!id_evenement || !id_service) {
         return res.status(400).json({
@@ -961,7 +1091,21 @@ app.post(
         });
       }
 
+      const [serviceRows] = await pool.query(
+        "SELECT tarif FROM services WHERE id_service = ?",
+        [id_service],
+      );
+
+      if (serviceRows.length === 0) {
+        return res.status(404).json({ message: "Service introuvable" });
+      }
+
+      const tarif = Number(serviceRows[0].tarif);
+      const qte = Number(quantite) || 1;
+
       const exists = await serviceRequestExists(id_evenement, id_service);
+
+      const montant_estime = tarif * qte;
 
       if (exists) {
         return res.status(409).json({
@@ -988,41 +1132,43 @@ app.post(
         id_service,
       );
 
-    const coordonnateurs = await getCoordonnateursActifs();
+      const coordonnateurs = await getCoordonnateursActifs();
 
-for (const coordonnateur of coordonnateurs) {
-  const prefs = await ensureNotificationPreferences(coordonnateur.id_user);
+      for (const coordonnateur of coordonnateurs) {
+        const prefs = await ensureNotificationPreferences(
+          coordonnateur.id_user,
+        );
 
-  if (prefs.canal_interne) {
-    await createNotification({
-      id_user: coordonnateur.id_user,
-      type_notification: "service",
-      titre: "Nouvelle demande de service",
-      message: info
-        ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
-        : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
-      lien: "/coordonnateur/demandes",
-    });
-  }
+        if (prefs.canal_interne) {
+          await createNotification({
+            id_user: coordonnateur.id_user,
+            type_notification: "service",
+            titre: "Nouvelle demande de service",
+            message: info
+              ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
+              : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
+            lien: "/coordonnateur/demandes",
+          });
+        }
 
-  if (prefs.canal_email && coordonnateur.email) {
-  await sendNotificationEmail({
-    to: coordonnateur.email,
-    subject: "Nouvelle demande de service",
-    title: "Nouvelle demande de service",
-    message: info
-      ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
-      : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
-    actionUrl: "http://localhost:5173/coordonnateur/demandes",
-  });
-}
+        if (prefs.canal_email && coordonnateur.email) {
+          await sendNotificationEmail({
+            to: coordonnateur.email,
+            subject: "Nouvelle demande de service",
+            title: "Nouvelle demande de service",
+            message: info
+              ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
+              : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
+            actionUrl: "http://localhost:5173/coordonnateur/demandes",
+          });
+        }
 
-  if (prefs.canal_sms) {
-    console.log(
-      `SMS coordonnateur ${coordonnateur.id_user} : nouvelle demande de service`,
-    );
-  }
-}
+        if (prefs.canal_sms) {
+          console.log(
+            `SMS coordonnateur ${coordonnateur.id_user} : nouvelle demande de service`,
+          );
+        }
+      }
 
       return res.status(201).json({
         message: "Demande de service créée avec succès",
@@ -1036,6 +1182,7 @@ for (const coordonnateur of coordonnateurs) {
     }
   },
 );
+
 /**
  * Voir toutes les demandes de services
  * GET /api/evenementservices
@@ -1132,7 +1279,17 @@ app.put(
   async (req, res) => {
     try {
       const { id_evenement, id_service } = req.params;
-      const { details, quantite, montant_estime } = req.body;
+      const { details, quantite } = req.body;
+
+      const [serviceRows] = await pool.query(
+        "SELECT tarif FROM services WHERE id_service = ?",
+        [id_service],
+      );
+
+      const tarif = Number(serviceRows[0].tarif);
+      const qte = Number(quantite) || 1;
+
+      const montant_estime = tarif * qte;
 
       const exists = await serviceRequestExists(id_evenement, id_service);
 
@@ -1208,43 +1365,43 @@ app.put(
         id_service,
       );
 
-     if (info) {
-  const prefs = await ensureNotificationPreferences(info.id_organisateur);
+      if (info) {
+        const prefs = await ensureNotificationPreferences(info.id_organisateur);
 
-  if (prefs.canal_interne) {
-    await createNotification({
-      id_user: info.id_organisateur,
-      type_notification: "service",
-      titre: statut === "Valide" ? "Service validé" : "Service refusé",
-      message:
-        statut === "Valide"
-          ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
-          : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
-      lien: "/organisateur/demandes-services",
-    });
-  }
+        if (prefs.canal_interne) {
+          await createNotification({
+            id_user: info.id_organisateur,
+            type_notification: "service",
+            titre: statut === "Valide" ? "Service validé" : "Service refusé",
+            message:
+              statut === "Valide"
+                ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
+                : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
+            lien: "/organisateur/demandes-services",
+          });
+        }
 
-  if (prefs.canal_email && info.email) {
-  await sendNotificationEmail({
-    to: info.email,
-    subject: statut === "Valide" ? "Service validé" : "Service refusé",
-    title: statut === "Valide" ? "Service validé" : "Service refusé",
-    message:
-      statut === "Valide"
-        ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
-        : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
-    actionUrl: "http://localhost:5173/organisateur/demandes-services",
-  });
-  }
+        if (prefs.canal_email && info.email) {
+          await sendNotificationEmail({
+            to: info.email,
+            subject: statut === "Valide" ? "Service validé" : "Service refusé",
+            title: statut === "Valide" ? "Service validé" : "Service refusé",
+            message:
+              statut === "Valide"
+                ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
+                : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
+            actionUrl: "http://localhost:5173/organisateur/demandes-services",
+          });
+        }
 
-  if (prefs.canal_sms) {
-    console.log(
-      `SMS user ${info.id_organisateur} : ${
-        statut === "Valide" ? "service validé" : "service refusé"
-      }`,
-    );
-  }
-}
+        if (prefs.canal_sms) {
+          console.log(
+            `SMS user ${info.id_organisateur} : ${
+              statut === "Valide" ? "service validé" : "service refusé"
+            }`,
+          );
+        }
+      }
 
       return res.status(200).json({
         message: "Statut mis à jour avec succès",
@@ -1318,33 +1475,33 @@ app.post("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
       id_service,
     );
 
-  if (info) {
-  const prefs = await ensureNotificationPreferences(info.id_organisateur);
+    if (info) {
+      const prefs = await ensureNotificationPreferences(info.id_organisateur);
 
-  if (prefs.canal_interne) {
-    await createNotification({
-      id_user: info.id_organisateur,
-      type_notification: "devis",
-      titre: "Devis créé",
-      message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
-      lien: "/organisateur/demandes-services",
-    });
-  }
+      if (prefs.canal_interne) {
+        await createNotification({
+          id_user: info.id_organisateur,
+          type_notification: "devis",
+          titre: "Devis créé",
+          message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
+          lien: "/organisateur/demandes-services",
+        });
+      }
 
- if (prefs.canal_email && info.email) {
-  await sendNotificationEmail({
-    to: info.email,
-    subject: "Devis créé",
-    title: "Devis créé",
-    message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
-    actionUrl: "http://localhost:5173/organisateur/demandes-services",
-  });
-}
+      if (prefs.canal_email && info.email) {
+        await sendNotificationEmail({
+          to: info.email,
+          subject: "Devis créé",
+          title: "Devis créé",
+          message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
+          actionUrl: "http://localhost:5173/organisateur/demandes-services",
+        });
+      }
 
-  if (prefs.canal_sms) {
-    console.log(`SMS user ${info.id_organisateur} : devis créé`);
-  }
-}
+      if (prefs.canal_sms) {
+        console.log(`SMS user ${info.id_organisateur} : devis créé`);
+      }
+    }
 
     return res.status(201).json({
       message: "Devis créé avec succès",
@@ -1553,6 +1710,15 @@ app.put("/api/notification-preferences", userAuth, async (req, res) => {
 
 app.get("/api/me", userAuth, (request, response) => {
   response.json(request.user);
+});
+
+// Route de paiement succes et annulé
+app.get("/success", (req, res) => {
+  res.send("Paiement réussi");
+});
+
+app.get("/cancel", (req, res) => {
+  res.send("Paiement annulé");
 });
 
 // DÉMARRAGE DU SERVEUR

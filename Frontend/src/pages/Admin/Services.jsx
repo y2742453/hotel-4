@@ -5,7 +5,6 @@ import "../../styles/table.css";
 import "../../styles/forms.css";
 
 export default function ServicesPage() {
-
   const toast = useToast();
 
   const [services, setServices] = useState([]);
@@ -15,19 +14,16 @@ export default function ServicesPage() {
   const [form, setForm] = useState({
     nom_service: "",
     description: "",
-    tarif: ""
+    tarif: "",
   });
 
   async function loadServices() {
-
     setLoading(true);
 
     const { res, data } = await apiFetch("/api/services");
 
-    if (res.ok)
-      setServices(data || []);
-    else
-      toast.error("Impossible de charger les services");
+    if (res.ok) setServices(data || []);
+    else toast.error("Impossible de charger les services");
 
     setLoading(false);
   }
@@ -37,18 +33,16 @@ export default function ServicesPage() {
   }, []);
 
   function editService(service) {
-
     setForm({
       nom_service: service.nom_service,
       description: service.description,
-      tarif: service.tarif
+      tarif: service.tarif,
     });
 
     setEditingId(service.id_service);
   }
 
   async function handleCreate(e) {
-
     e.preventDefault();
 
     if (!form.nom_service || !form.tarif) {
@@ -59,46 +53,41 @@ export default function ServicesPage() {
     let res;
 
     if (editingId) {
-
       ({ res } = await apiFetch(`/api/services/${editingId}`, {
         method: "PUT",
-        body: JSON.stringify(form)
+        body: JSON.stringify(form),
       }));
 
+      loadServices();
     } else {
-
       ({ res } = await apiFetch("/api/services", {
         method: "POST",
-        body: JSON.stringify(form)
+        body: JSON.stringify(form),
       }));
     }
 
     if (res.ok) {
-
       toast.success(editingId ? "Service modifié" : "Service ajouté");
 
       setForm({
         nom_service: "",
         description: "",
-        tarif: ""
+        tarif: "",
       });
 
       setEditingId(null);
 
       loadServices();
-
     } else {
       toast.error("Erreur");
     }
   }
 
   async function deleteService(id) {
-
-    if (!window.confirm("Supprimer ce service ?"))
-      return;
+    if (!window.confirm("Supprimer ce service ?")) return;
 
     const { res } = await apiFetch(`/api/services/${id}`, {
-      method: "DELETE"
+      method: "DELETE",
     });
 
     if (res.ok) {
@@ -110,9 +99,7 @@ export default function ServicesPage() {
   }
 
   return (
-
     <div className="page">
-
       <div className="pageHeader">
         <h2>Gestion des services</h2>
         <p className="muted">
@@ -121,13 +108,9 @@ export default function ServicesPage() {
       </div>
 
       <form className="card formGrid" onSubmit={handleCreate}>
-
-        <h3>
-          {editingId ? "Modifier un service" : "Ajouter un service"}
-        </h3>
+        <h3>{editingId ? "Modifier un service" : "Ajouter un service"}</h3>
 
         <div className="grid2">
-
           <div className="field">
             <label>Nom service</label>
             <input
@@ -143,26 +126,20 @@ export default function ServicesPage() {
             <input
               type="number"
               value={form.tarif}
-              onChange={(e) =>
-                setForm({ ...form, tarif: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, tarif: e.target.value })}
             />
           </div>
-
         </div>
 
         <div className="field">
           <label>Description</label>
           <input
             value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
         </div>
 
         <div className="field fieldEnd">
-
           <button className="btn btnPrimary" type="submit">
             {editingId ? "Modifier" : "Enregistrer"}
           </button>
@@ -171,11 +148,10 @@ export default function ServicesPage() {
             type="button"
             className="btn"
             onClick={() => {
-
               setForm({
                 nom_service: "",
                 description: "",
-                tarif: ""
+                tarif: "",
               });
 
               setEditingId(null);
@@ -183,27 +159,19 @@ export default function ServicesPage() {
           >
             Réinitialiser
           </button>
-
         </div>
-
       </form>
 
       <div className="card" style={{ marginTop: 16 }}>
-
         <h3>Liste des services</h3>
 
         <div className="tableWrap">
-
           {loading ? (
-
             <div className="muted" style={{ padding: 12 }}>
               Chargement...
             </div>
-
           ) : (
-
             <table className="table">
-
               <thead>
                 <tr>
                   <th>Nom</th>
@@ -214,21 +182,14 @@ export default function ServicesPage() {
               </thead>
 
               <tbody>
-
                 {services.map((s) => (
-
                   <tr key={s.id_service}>
-
                     <td>{s.nom_service}</td>
                     <td>{s.description}</td>
                     <td>{s.tarif} $</td>
 
                     <td className="actions">
-
-                      <button
-                        className="btn"
-                        onClick={() => editService(s)}
-                      >
+                      <button className="btn" onClick={() => editService(s)}>
                         Modifier
                       </button>
 
@@ -238,33 +199,22 @@ export default function ServicesPage() {
                       >
                         Supprimer
                       </button>
-
                     </td>
-
                   </tr>
-
                 ))}
 
                 {services.length === 0 && (
-
                   <tr>
                     <td colSpan="4" style={{ textAlign: "center" }}>
                       Aucun service
                     </td>
                   </tr>
-
                 )}
-
               </tbody>
-
             </table>
-
           )}
-
         </div>
-
       </div>
-
     </div>
   );
 }

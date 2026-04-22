@@ -50,13 +50,6 @@ export default function AdminHome() {
       enabled: true,
     },
     {
-      title: "Tarification",
-      desc: "Prix & promotions",
-      icon: <FaTags />,
-      to: "/admin/tarifs",
-      enabled: false,
-    },
-    {
       title: "Paramètres",
       desc: "Réglages de la plateforme",
       icon: <FaCogs />,
@@ -68,13 +61,6 @@ export default function AdminHome() {
       desc: "Connexions et alertes",
       icon: <FaListAlt />,
       to: "/admin/logs",
-      enabled: false,
-    },
-    {
-      title: "Statistiques",
-      desc: "Vue globale",
-      icon: <FaChartLine />,
-      to: "/admin/stats",
       enabled: false,
     },
   ];

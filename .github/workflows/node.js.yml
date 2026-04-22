@@ -3,8 +3,6 @@ name: Tests backend
 on:
   pull_request:
   workflow_dispatch:
-  push:
-    branches: [Reservation-salle]
 
 jobs:
   test:
@@ -25,10 +23,10 @@ jobs:
           --health-retries=5
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
       - run: npm install
         working-directory: Backend
       - run: sudo apt-get install -y mysql-client
@@ -36,6 +34,8 @@ jobs:
           until mysql -h 127.0.0.1 -u root -padmin -e "SHOW DATABASES;"; do 
               sleep 5 
           done
+      - run: |
+          mysql -h 127.0.0.1 -u root -padmin < Backend/tests/HotelDB_Test.sql
       - run: npm test
         working-directory: Backend
         env:

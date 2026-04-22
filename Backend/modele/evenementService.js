@@ -16,7 +16,7 @@ export async function createServiceRequest({
   id_service,
   details,
   quantite = 1,
-  montant_estime = 0,
+  montant_estime,
 }) {
   if (!id_evenement || !id_service) {
     throw new Error("id_evenement et id_service sont requis");
@@ -38,7 +38,7 @@ export async function createServiceRequest({
     )
     VALUES (?, ?, ?, ?, ?, 'Demande', NOW())
     `,
-    [id_evenement, id_service, detailsString, quantite, montant_estime]
+    [id_evenement, id_service, detailsString, quantite, montant_estime],
   );
 
   return result.affectedRows > 0;
@@ -66,7 +66,7 @@ export async function getServiceRequestByEvent(id_evenement, id_service) {
     JOIN services s ON s.id_service = es.id_service
     WHERE es.id_evenement = ? AND es.id_service = ?
     `,
-    [id_evenement, id_service]
+    [id_evenement, id_service],
   );
 
   if (!rows[0]) return null;
@@ -92,7 +92,7 @@ export async function getServiceRequestByEvent(id_evenement, id_service) {
 export async function updateServiceRequest(
   id_evenement,
   id_service,
-  { details, quantite = 1, montant_estime = 0 }
+  { details, quantite = 1, montant_estime = 0 },
 ) {
   const detailsString =
     typeof details === "string" ? details : JSON.stringify(details ?? {});
@@ -103,7 +103,7 @@ export async function updateServiceRequest(
     SET details = ?, quantite = ?, montant_estime = ?
     WHERE id_evenement = ? AND id_service = ?
     `,
-    [detailsString, quantite, montant_estime, id_evenement, id_service]
+    [detailsString, quantite, montant_estime, id_evenement, id_service],
   );
 
   return result.affectedRows > 0;
@@ -123,7 +123,7 @@ export async function serviceRequestExists(id_evenement, id_service) {
     WHERE id_evenement = ? AND id_service = ?
     LIMIT 1
     `,
-    [id_evenement, id_service]
+    [id_evenement, id_service],
   );
 
   return rows.length > 0;
@@ -143,7 +143,7 @@ function safeParseJSON(value) {
 }
 
 /**
- * 
+ *
  * @returns
  */
 export async function getAllServiceRequests() {
@@ -163,7 +163,7 @@ export async function getAllServiceRequests() {
     JOIN services s ON s.id_service = es.id_service
     JOIN evenements e ON e.id_evenement = es.id_evenement
     ORDER BY es.date_demande DESC
-    `
+    `,
   );
 
   return rows.map((row) => ({
@@ -171,8 +171,6 @@ export async function getAllServiceRequests() {
     details: row.details ? safeParseJSON(row.details) : null,
   }));
 }
-
-
 
 export async function getAllServiceRequestsByEvent(id_evenement) {
   const [rows] = await pool.query(
@@ -191,7 +189,8 @@ export async function getAllServiceRequestsByEvent(id_evenement) {
     WHERE es.id_evenement = ?
     ORDER BY es.date_demande DESC
     `,
-    [id_evenement]  );
+    [id_evenement],
+  );
 
   return rows.map((row) => ({
     ...row,
@@ -217,7 +216,7 @@ export async function getPendingServiceRequests() {
     JOIN evenements e ON e.id_evenement = es.id_evenement
     WHERE es.statut = 'Demande'
     ORDER BY es.date_demande DESC
-    `
+    `,
   );
 
   return rows.map((row) => ({
@@ -233,14 +232,18 @@ export async function getPendingServiceRequests() {
  * @param {string} statut
  * @returns {Promise<boolean>}
  */
-export async function updateServiceRequestStatus(id_evenement, id_service, statut) {
+export async function updateServiceRequestStatus(
+  id_evenement,
+  id_service,
+  statut,
+) {
   const [result] = await pool.query(
     `
       UPDATE evenement_services
       SET statut = ?
       WHERE id_evenement = ? AND id_service = ?
     `,
-    [statut, id_evenement, id_service]
+    [statut, id_evenement, id_service],
   );
 
   return result.affectedRows > 0;

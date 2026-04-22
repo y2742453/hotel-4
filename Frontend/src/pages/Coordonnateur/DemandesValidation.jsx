@@ -129,7 +129,7 @@ export default function DemandesValidation() {
       {
         method: "PUT",
         body: JSON.stringify({ statut }),
-      }
+      },
     );
 
     setSaving(false);
@@ -138,11 +138,14 @@ export default function DemandesValidation() {
       toast.success(
         statut === "Valide"
           ? "Demande validée avec succès"
-          : "Demande refusée avec succès"
+          : "Demande refusée avec succès",
       );
 
-      const updatedSelected = { ...demande, statut };
-      setSelected(updatedSelected);
+      // const updatedSelected = { ...demande, statut };
+      // setSelected(updatedSelected);
+
+      loadDemandes();
+      setSelected(null);
       await loadDemandes();
     } else {
       toast.error(data?.message || "Impossible de mettre à jour le statut");
@@ -248,7 +251,9 @@ export default function DemandesValidation() {
                         {d.nom_evenement || `Événement #${d.id_evenement}`}
                       </td>
 
-                      <td style={{ wordBreak: "break-word" }}>{d.nom_service}</td>
+                      <td style={{ wordBreak: "break-word" }}>
+                        {d.nom_service}
+                      </td>
 
                       <td>{d.quantite}</td>
 
@@ -325,8 +330,9 @@ export default function DemandesValidation() {
               <div>
                 <h3 style={{ margin: 0 }}>Détails de la demande</h3>
                 <p className="muted" style={{ marginTop: 8 }}>
-                  {selected.nom_evenement || `Événement #${selected.id_evenement}`} —{" "}
-                  {selected.nom_service}
+                  {selected.nom_evenement ||
+                    `Événement #${selected.id_evenement}`}{" "}
+                  — {selected.nom_service}
                 </p>
               </div>
 
@@ -347,7 +353,8 @@ export default function DemandesValidation() {
                   <tr>
                     <th>Événement</th>
                     <td>
-                      {selected.nom_evenement || `Événement #${selected.id_evenement}`}
+                      {selected.nom_evenement ||
+                        `Événement #${selected.id_evenement}`}
                     </td>
                   </tr>
                   <tr>
@@ -431,7 +438,9 @@ export default function DemandesValidation() {
                 onClick={() => changerStatut(selected, "Valide")}
                 disabled={
                   saving ||
-                  ["valide", "refuse"].includes((selected.statut || "").toLowerCase())
+                  ["valide", "refuse"].includes(
+                    (selected.statut || "").toLowerCase(),
+                  )
                 }
               >
                 Valider la demande
@@ -443,7 +452,9 @@ export default function DemandesValidation() {
                 onClick={() => changerStatut(selected, "Refuse")}
                 disabled={
                   saving ||
-                  ["valide", "refuse"].includes((selected.statut || "").toLowerCase())
+                  ["valide", "refuse"].includes(
+                    (selected.statut || "").toLowerCase(),
+                  )
                 }
                 style={{ color: "white" }}
               >

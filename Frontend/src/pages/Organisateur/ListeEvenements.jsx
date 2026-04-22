@@ -2,14 +2,17 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import "../../styles/evenement-table.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../../Components/Toast.jsx";
 
 export default function ListeEvenements() {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const isAdmin = location.pathname.includes("admin");
 
   const [evenements, setEvenements] = useState([]);
   const [filter, setFilter] = useState("tous");
+  const [modalConfirmId, setModalConfirmId] = useState(null);
 
   async function loadEvenements() {
     const { res, data } = await apiFetch("/api/evenements");
@@ -26,9 +29,7 @@ export default function ListeEvenements() {
   }
 
   async function handleCancel(id) {
-    if (!window.confirm("Annuler cet événement ?")) return;
-
-    const { res } = await apiFetch(`/api/evenements/${id}/annuler`, {
+    const { res, data } = await apiFetch(`/api/evenements/${id}/annuler`, {
       method: "PUT",
     });
 
@@ -38,15 +39,15 @@ export default function ListeEvenements() {
           e.id_evenement === id ? { ...e, statut: "annulé" } : e,
         ),
       );
+
+      toast.success("Événement annulé");
     } else {
-      alert("Erreur");
+      toast.error(data?.message || "Erreur lors de l’annulation");
     }
   }
 
   async function handleConfirm(id) {
-    if (!window.confirm("Confirmer cet événement ?")) return;
-
-    const { res } = await apiFetch(`/api/evenements/${id}/confirmer`, {
+    const { res, data } = await apiFetch(`/api/evenements/${id}/confirmer`, {
       method: "PUT",
     });
 
@@ -56,8 +57,30 @@ export default function ListeEvenements() {
           e.id_evenement === id ? { ...e, statut: "confirmé" } : e,
         ),
       );
+
+      toast.success("Événement confirmé");
+      return true;
     } else {
-      alert("Erreur confirmation");
+      toast.error(data?.message || "Impossible de confirmer cet événement");
+      return false;
+    }
+  }
+
+  async function handleRestore(id) {
+    const { res, data } = await apiFetch(`/api/evenements/${id}/restaurer`, {
+      method: "PUT",
+    });
+
+    if (res.ok) {
+      setEvenements((prev) =>
+        prev.map((e) =>
+          e.id_evenement === id ? { ...e, statut: "prévu" } : e,
+        ),
+      );
+
+      toast.success("Événement restauré");
+    } else {
+      toast.error(data?.message || "Impossible de restaurer");
     }
   }
 
@@ -169,20 +192,22 @@ export default function ListeEvenements() {
                       </td>
 
                       <td style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          className="btn btnSecondary"
-                          onClick={() => handleEdit(e.id_evenement)}
-                        >
-                          Modifier
-                        </button>
+                        {!isAdmin && (
+                          <button
+                            className="btn btnSecondary"
+                            onClick={() => handleEdit(e.id_evenement)}
+                          >
+                            Modifier
+                          </button>
+                        )}
 
                         {!isAdmin && (
                           <button
                             className="btn btnPrimary"
-                            disabled={!confirme}
+                            disabled={confirme}
                             style={{
-                              opacity: confirme ? 1 : 0.6,
-                              cursor: confirme ? "pointer" : "not-allowed",
+                              opacity: !confirme ? 1 : 0.6,
+                              cursor: !confirme ? "pointer" : "not-allowed",
                             }}
                             onClick={() =>
                               navigate(
@@ -196,7 +221,7 @@ export default function ListeEvenements() {
 
                         <button
                           className="btn btnDanger"
-                          disabled={annule}
+                          disabled={annule || confirme}
                           style={{
                             opacity: annule ? 0.6 : 1,
                             cursor: annule ? "not-allowed" : "pointer",
@@ -206,12 +231,21 @@ export default function ListeEvenements() {
                           Annuler
                         </button>
 
-                        {isAdmin && !confirme && (
+                        {isAdmin && !confirme && !annule && (
                           <button
                             className="btn btnPrimary"
-                            onClick={() => handleConfirm(e.id_evenement)}
+                            onClick={() => setModalConfirmId(e.id_evenement)}
                           >
                             Confirmer
+                          </button>
+                        )}
+
+                        {annule && (
+                          <button
+                            className="btn btnGhost"
+                            onClick={() => handleRestore(e.id_evenement)}
+                          >
+                            Restaurer
                           </button>
                         )}
                       </td>
@@ -230,6 +264,33 @@ export default function ListeEvenements() {
           </table>
         </div>
       </div>
+      {modalConfirmId && (
+        <div className="modalOverlay" onClick={() => setModalConfirmId(null)}>
+          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirmer l’événement</h3>
+            <p>Voulez-vous vraiment confirmer cet événement ?</p>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <button
+                className="btn btnPrimary"
+                onClick={async () => {
+                  const success = await handleConfirm(modalConfirmId);
+                  if (success) setModalConfirmId(null);
+                }}
+              >
+                Confirmer
+              </button>
+
+              <button
+                className="btn btnGhost"
+                onClick={() => setModalConfirmId(null)}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

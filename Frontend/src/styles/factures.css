@@ -1,0 +1,167 @@
+.invoicePage {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+}
+
+.invoiceContainer {
+  background: white;
+  max-width: 900px;
+  margin: auto;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* HEADER */
+.invoiceHeader {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 20px;
+}
+
+.invoiceMetaRight {
+  text-align: right;
+}
+
+/* GRID */
+.invoiceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+/* TABLE */
+.invoiceTable {
+  width: 100%;
+  margin-top: 30px;
+  border-collapse: collapse;
+}
+
+.invoiceTable th {
+  text-align: left;
+  background: #f1f5f9;
+  padding: 10px;
+}
+
+.invoiceTable td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* TOTAL */
+.invoiceTotal {
+  text-align: right;
+  margin-top: 20px;
+}
+
+/* FOOTER */
+.invoiceFooter {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.invoiceBottomActions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* STATUS BADGE */
+.status {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.status.paye {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.en_attente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.en_retard {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  margin-bottom: 20px;
+}
+
+.filters select,
+.filters input {
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.filters .actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.filters button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modalCard {
+  background: white;
+  width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* PRINT FIX */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .printArea,
+  .printArea * {
+    visibility: visible;
+  }
+
+  .printArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

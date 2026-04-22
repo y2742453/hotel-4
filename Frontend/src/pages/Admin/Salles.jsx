@@ -5,7 +5,6 @@ import { useToast } from "../../Components/Toast.jsx";
 import "../../styles/table.css";
 import "../../styles/forms.css";
 
-
 export default function SallesPage() {
   const toast = useToast();
 
@@ -14,6 +13,7 @@ export default function SallesPage() {
 
   const [form, setForm] = useState({
     nom_salle: "",
+    cout: "",
     type: "",
     capacite: "",
     equipements: "",
@@ -39,8 +39,13 @@ export default function SallesPage() {
   async function handleCreate(e) {
     e.preventDefault();
 
-    if (!form.nom_salle || !form.type || !form.capacite) {
-      toast.error("Les champs Nom, Type et Capacité sont requis");
+    if (!form.nom_salle || !form.type || !form.cout || !form.capacite) {
+      toast.error("Les champs Nom, Type, Cout et Capacité sont requis");
+      return;
+    }
+
+    if (!form.cout || Number(form.cout) < 0) {
+      toast.error("Le coût doit être valide");
       return;
     }
 
@@ -55,6 +60,7 @@ export default function SallesPage() {
         setEditId(null);
         setForm({
           nom_salle: "",
+          cout: "",
           type: "",
           capacite: "",
           equipements: "",
@@ -74,6 +80,7 @@ export default function SallesPage() {
         toast.success("Salle ajoutée");
         setForm({
           nom_salle: "",
+          cout: "",
           type: "",
           capacite: "",
           equipements: "",
@@ -102,7 +109,7 @@ export default function SallesPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page sallesPage">
       <div className="pageHeader">
         <h2>Gestion des salles</h2>
         <p className="muted">Ajouter et supprimer les salles disponibles.</p>
@@ -117,9 +124,16 @@ export default function SallesPage() {
             <label>Nom salle</label>
             <input
               value={form.nom_salle}
-              onChange={(e) =>
-                setForm({ ...form, nom_salle: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, nom_salle: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Coût ($)</label>
+            <input
+              type="number"
+              value={form.cout}
+              onChange={(e) => setForm({ ...form, cout: e.target.value })}
             />
           </div>
 
@@ -127,9 +141,7 @@ export default function SallesPage() {
             <label>Type</label>
             <input
               value={form.type}
-              onChange={(e) =>
-                setForm({ ...form, type: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
             />
           </div>
         </div>
@@ -140,9 +152,7 @@ export default function SallesPage() {
             <input
               type="number"
               value={form.capacite}
-              onChange={(e) =>
-                setForm({ ...form, capacite: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, capacite: e.target.value })}
             />
           </div>
 
@@ -164,9 +174,7 @@ export default function SallesPage() {
 
             <select
               value={form.statut}
-              onChange={(e) =>
-                setForm({ ...form, statut: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, statut: e.target.value })}
             >
               <option value="Disponible">Disponible</option>
               <option value="Réservée">Réservée</option>
@@ -186,6 +194,7 @@ export default function SallesPage() {
             onClick={() => {
               setForm({
                 nom_salle: "",
+                cout: "",
                 type: "",
                 capacite: "",
                 equipements: "",
@@ -213,6 +222,7 @@ export default function SallesPage() {
               <thead>
                 <tr>
                   <th>Nom</th>
+                  <th>Coût</th>
                   <th>Type</th>
                   <th>Capacité</th>
                   <th>Équipements</th>
@@ -225,6 +235,7 @@ export default function SallesPage() {
                 {salles.map((s) => (
                   <tr key={s.id_salle}>
                     <td>{s.nom_salle}</td>
+                    <td>{s.cout}</td>
                     <td>{s.type}</td>
                     <td>{s.capacite}</td>
                     <td>{s.equipements}</td>
@@ -238,6 +249,7 @@ export default function SallesPage() {
                           setEditId(s.id_salle);
                           setForm({
                             nom_salle: s.nom_salle,
+                            cout: s.cout,
                             type: s.type,
                             capacite: s.capacite,
                             equipements: s.equipements,
@@ -255,14 +267,12 @@ export default function SallesPage() {
                         Supprimer
                       </button>
                     </td>
-                    
                   </tr>
                 ))}
-                
 
                 {salles.length === 0 && (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: "center" }}>
+                    <td colSpan="7" style={{ textAlign: "center" }}>
                       Aucune salle
                     </td>
                   </tr>

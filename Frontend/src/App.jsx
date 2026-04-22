@@ -33,6 +33,11 @@ import DemandesValidation from "./pages/Coordonnateur/DemandesValidation.jsx";
 import Devis from "./pages/Coordonnateur/Devis.jsx";
 
 import "./styles/global.css";
+import ComptabiliteHome from "./pages/Comptabilite/ComptabiliteHome.jsx";
+import Factures from "./pages/Comptabilite/Factures.jsx";
+import FacturePDF from "./pages/Comptabilite/FacturePDF.jsx";
+import ComptabiliteCancel from "./pages/Comptabilite/PayCancel.jsx";
+import ComptabiliteSuccess from "./pages/Comptabilite/PaySuccess.jsx";
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -43,6 +48,7 @@ function HomeRedirect() {
   if (user.id_role === 1) return <Navigate to="/admin" replace />;
   if (user.id_role === 2) return <Navigate to="/organisateur" replace />;
   if (user.id_role === 3) return <Navigate to="/coordonnateur" replace />;
+  if (user.id_role === 4) return <Navigate to="/comptabilite" replace />;
 
   return <Navigate to="/app" replace />;
 }
@@ -225,6 +231,52 @@ export default function App() {
                 element={
                   <RoleGate allowedRoles={[3]}>
                     <Devis />
+                  </RoleGate>
+                }
+              />
+
+              {/* COMPTABILITE */}
+              <Route
+                path="comptabilite"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <ComptabiliteHome />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="comptabilite/factures"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <Factures />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="comptabilite/factures/:id/print"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <FacturePDF />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="comptabilite/success"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <ComptabiliteSuccess />
+                  </RoleGate>
+                }
+              />
+
+              <Route
+                path="comptabilite/cancel"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <ComptabiliteCancel />
                   </RoleGate>
                 }
               />

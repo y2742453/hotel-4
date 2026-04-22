@@ -30,11 +30,24 @@ export async function createEvenement(data) {
     statut,
     id_salle,
     id_organisateur,
-    services = [],
   } = data;
+
+  const services = data.services || [];
 
   const statutFinal = !statut || statut === "Brouillon" ? "Prévu" : statut;
 
+  if (new Date(date_fin) <= new Date(date_debut)) {
+    throw new Error("INVALID_DATES");
+  }
+
+  const start = new Date(date_debut);
+  const end = new Date(date_fin);
+
+  if (start.getHours() < 7 || end.getHours() > 22) {
+    throw new Error("HOURS_OUT_OF_RANGE");
+  }
+
+  // 🔥 1. Vérifier conflit
   const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
 
   if (conflict) {
@@ -100,7 +113,7 @@ export async function createEvenement(data) {
 /**
  * Récupérer tous les événements
  */
-export async function getAllEvenements() {
+export async function getAllFromEvenements() {
   const [rows] = await pool.query("SELECT * FROM evenements");
   return rows;
 }

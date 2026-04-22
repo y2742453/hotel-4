@@ -130,7 +130,7 @@ const Calendar = () => {
    */
   async function chargerSalles() {
     try {
-      const { res, data } = await apiFetch("/api/salles");
+      const { res, data } = await apiFetch("/api/reservation/salles");
       if (!res.ok) throw new Error("Erreur réseau");
       setSalles(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -144,7 +144,7 @@ const Calendar = () => {
    */
   async function chargerEvenements() {
     try {
-      const { res, data } = await apiFetch("/api/evenements");
+      const { res, data } = await apiFetch("/api/reservation/evenements");
 
       if (!res.ok) throw new Error("Erreur réseau");
 
@@ -257,8 +257,6 @@ const Calendar = () => {
       dateFin: formatDateForMySQL(newReservation.dateFin),
     };
 
-    console.log("Création réservation:", payload);
-
     try {
       const { res } = await apiFetch("/api/reservation", {
         method: "POST",
@@ -273,8 +271,6 @@ const Calendar = () => {
         }
         return;
       }
-
-      console.log("Réservation créée avec succès");
 
       setShowCreateModal(false);
       setShowConfirmModal(false);
@@ -311,7 +307,6 @@ const Calendar = () => {
         return;
       }
 
-      console.log("Réservation supprimée");
       setShowEventModal(false);
       toast.success("Réservation supprimée.");
       chargerReservations();
