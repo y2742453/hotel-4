@@ -61,7 +61,7 @@ CREATE TABLE users (
 );
 
 -- =========================
--- SALLES (FIX: cout REQUIRED)
+-- SALLES
 -- =========================
 CREATE TABLE salles (
     id_salle INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,7 +83,7 @@ CREATE TABLE services (
 );
 
 -- =========================
--- EVENEMENTS (FIX: required fields)
+-- EVENEMENTS
 -- =========================
 CREATE TABLE evenements (
     id_evenement INT AUTO_INCREMENT PRIMARY KEY,

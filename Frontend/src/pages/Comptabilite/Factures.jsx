@@ -270,6 +270,19 @@ export default function Factures() {
     }
   }
 
+  function getStatusLabel(status) {
+    switch ((status || "").toLowerCase()) {
+      case "paye":
+        return "Payée";
+      case "en_attente":
+        return "En attente";
+      case "en_retard":
+        return "En retard";
+      default:
+        return status;
+    }
+  }
+
   return (
     <div className="page">
       <div className="pageHeader">
@@ -353,7 +366,7 @@ export default function Factures() {
                             fontWeight: 700,
                           }}
                         >
-                          {f.statut}
+                          {getStatusLabel(f.statut)}
                         </span>
                       </td>
 

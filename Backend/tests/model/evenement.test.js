@@ -9,6 +9,8 @@ let testSalle;
 let testUser;
 
 beforeAll(async () => {
+  await pool.query("USE HotelDB_Test");
+
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   await pool.execute("TRUNCATE TABLE evenements");
   await pool.execute("TRUNCATE TABLE reservations");

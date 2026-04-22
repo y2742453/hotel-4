@@ -130,10 +130,10 @@ app.use(passport.session());
 app.use(express.static("public"));
 
 // Route pour import de fichier CSV/Excel des invités
-app.use("/api/invites", allowRoles(2), inviteRoutes);
+app.use("/api/invites", userAuth, allowRoles(2), inviteRoutes);
 
 // Routes pour factures
-app.use("/api/factures", factureRoutes);
+app.use("/api/factures", userAuth, allowRoles(2, 4), factureRoutes);
 
 // ROUTES AUTHENTIFICATION
 
@@ -898,6 +898,7 @@ app.get("/api/evenements/:id/documents", async (req, res) => {
 
   res.json(rows);
 });
+
 // Route pour supprimer un document lié à un événement
 import fs from "fs";
 
@@ -999,6 +1000,7 @@ app.post(
     }
   },
 );
+
 /**
  * Voir toutes les demandes de services
  * GET /api/evenementservices
