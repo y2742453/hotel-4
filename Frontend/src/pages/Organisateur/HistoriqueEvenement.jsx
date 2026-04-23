@@ -17,7 +17,7 @@ export default function HistoriqueEvenements() {
   return (
     <div className="page">
       <div className="pageHeader">
-        <h2> Historique des événements</h2>
+        <h2>Historique des événements</h2>
         <p className="muted">
           Consultez tous les événements passés et leurs informations
         </p>

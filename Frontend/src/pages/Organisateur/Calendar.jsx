@@ -204,6 +204,7 @@ const Calendar = () => {
 
     setModalMessage("");
     setSelectedEvenement(null);
+    setShowCreateModal(true);
 
     navigate("/organisateur/evenements/creer", {
       state: {

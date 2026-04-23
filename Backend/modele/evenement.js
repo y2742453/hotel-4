@@ -214,3 +214,19 @@ export async function getEvenementServiceInfoForNotification(
 
   return rows[0] || null;
 }
+
+export async function getAllEvenements() {
+  // Auto-update: marquer comme Terminé les événements dont la date_fin est passée
+  // et dont le statut n'est pas déjà Annulé ou Terminé
+  await pool.query(
+    `
+    UPDATE evenements
+    SET statut = 'Terminé'
+    WHERE date_fin < NOW()
+      AND statut NOT IN ('Annulé', 'Terminé')
+    `,
+  );
+
+  const [rows] = await pool.query("SELECT * FROM evenements");
+  return rows;
+}

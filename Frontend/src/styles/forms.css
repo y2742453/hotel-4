@@ -1,23 +1,46 @@
-/* src/styles/login.css */
+/* src/styles/forms.css */
+
+/* =========================
+   GLOBAL RESET + BASE
+   (uniquement pour la page login)
+========================= */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-.landingPage body {
-  background: #0f172a;
-  color: #e2e8f0;
+body {
+  overflow-x: hidden;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* =========================
+   BOUTONS GLOBAUX (pages internes)
+========================= */
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-label {
-  font-weight: 700;
+.btnPrimary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+.btnGhost {
+  background: transparent;
+  border: 1px solid #dbe4f0;
   color: #0f172a;
 }
 
@@ -35,13 +58,35 @@ select {
     box-shadow 120ms ease;
 }
 
-input:focus,
-select:focus {
-  border-color: #1e4db7;
-  box-shadow: 0 0 0 3px rgba(30, 77, 183, 0.15);
+.btnGhost:hover {
+  background: #f1f5f9;
 }
 
-/* Page login */
+/* =========================
+   FORM ROW (admin — création user)
+========================= */
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.formRow input,
+.formRow select {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.formRow .btn {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 10px 18px;
+}
+
+/* =========================
+   AUTH PAGES (autres que login)
+========================= */
 .authPage {
   min-height: 100vh;
   display: flex;
@@ -65,30 +110,62 @@ select:focus {
   margin-bottom: 6px;
 }
 
-/* Form row (création user admin) */
-.formRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-end;
+/* =========================
+   ANIMATIONS
+========================= */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.formRow input,
-.formRow select {
-  flex: 1 1 200px;
-  min-width: 190px;
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.formRow .btn {
-  flex: 0 0 120px;
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-/* Mobile */
+@keyframes floatGlow {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(40px, 25px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
 @media (max-width: 640px) {
   .authCard h1 {
     font-size: 34px;
   }
+
   .formRow .btn {
     flex: 1 1 100%;
+    width: 100%;
   }
 }

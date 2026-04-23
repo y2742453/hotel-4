@@ -1130,7 +1130,7 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
 
   try {
     const [[event]] = await pool.query(
-      "SELECT statut FROM evenements WHERE id_evenement = ?",
+      "SELECT statut, date_fin FROM evenements WHERE id_evenement = ?",
       [id],
     );
 
@@ -1138,9 +1138,20 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
       return res.status(404).json({ message: "Événement introuvable" });
     }
 
-    if (event.statut !== "Annulé") {
+    const statut = event.statut;
+
+    if (statut !== "Annulé" && statut !== "Terminé") {
       return res.status(400).json({
-        message: "Seuls les événements annulés peuvent être restaurés",
+        message:
+          "Seuls les événements annulés ou terminés peuvent être restaurés",
+      });
+    }
+
+    const isExpired = new Date(event.date_fin) < new Date();
+
+    if (isExpired) {
+      return res.status(400).json({
+        message: "Impossible de restaurer : la date de fin est déjà passée.",
       });
     }
 
@@ -1151,6 +1162,7 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
 
     res.json({ message: "Événement restauré" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -1225,6 +1237,22 @@ app.delete("/api/documents/:id", async (req, res) => {
     res.json({ message: "Document supprimé" });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Passer les événements expirés à "Terminé"
+app.post("/api/evenements/terminer-expires", async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE evenements
+       SET statut = 'Terminé', updated_at = NOW()
+       WHERE statut IN ('Confirmé', 'Prévu')
+         AND date_fin < NOW()`,
+    );
+    res.json({ updated: result.affectedRows });
+  } catch (error) {
+    console.error("Erreur terminer-expires :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });

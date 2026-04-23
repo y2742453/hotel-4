@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import useAuth from "../../auth/UseAuth.jsx";
 import "../../styles/dashboard.css";
 
 import {
@@ -8,6 +9,12 @@ import {
   FaCalendar,
   FaCalendarAlt,
   FaChartLine,
+  FaUsers,
+  FaCheckCircle,
+  FaDollarSign,
+  FaLayerGroup,
+  FaFileExcel,
+  FaFilePdf,
 } from "react-icons/fa";
 
 import "chart.js/auto";
@@ -15,27 +22,22 @@ import { Pie, Bar } from "react-chartjs-2";
 
 export default function OrganisateurHome() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [stats, setStats] = useState(null);
-  const [filters, setFilters] = useState({
-    date_debut: "",
-    date_fin: "",
-  });
+  const [filters, setFilters] = useState({ date_debut: "", date_fin: "" });
 
-  // 🔥 appel backend
   useEffect(() => {
     axios
       .get("http://localhost:5001/api/dashboard", {
         params: filters,
         withCredentials: true,
       })
-      .then((res) => {
-        console.log("DASHBOARD DATA:", res.data);
-        setStats(res.data);
-      })
+      .then((res) => setStats(res.data))
       .catch((err) => console.error(err));
   }, [filters]);
 
+  /* ── Graphiques ── */
   const pieData = stats
     ? {
         labels: ["Confirmés", "Autres"],
@@ -45,6 +47,8 @@ export default function OrganisateurHome() {
               stats.confirmedGuests,
               stats.totalGuests - stats.confirmedGuests,
             ],
+            backgroundColor: ["#1f4db8", "#ef4444"],
+            borderWidth: 0,
           },
         ],
       }
@@ -57,66 +61,112 @@ export default function OrganisateurHome() {
           {
             label: "Statistiques",
             data: [stats.totalGuests, stats.confirmedGuests],
+            backgroundColor: ["#1f4db8", "#22c55e"],
+            borderRadius: 8,
           },
         ],
       }
     : null;
 
+  /* ── Cartes d'accès rapide ── */
   const actions = [
     {
       title: "Événements",
-      desc: "Créer un evenement",
+      desc: "Créer un événement",
       icon: <FaCalendarAlt />,
       to: "/organisateur/evenements",
-      enabled: true,
     },
     {
-      title: "Reservations",
+      title: "Réservations",
       desc: "Gestion des réservations",
       icon: <FaCalendar />,
       to: "/organisateur/reservations",
-      enabled: true,
     },
     {
       title: "Invités",
       desc: "Gestion des invités",
       icon: <FaEnvelopeOpenText />,
       to: "/organisateur/invites",
-      enabled: true,
     },
     {
       title: "Historique",
       desc: "Voir les événements passés",
       icon: <FaChartLine />,
       to: "/organisateur/historique",
-      enabled: true,
     },
   ];
-  const exportExcel = () => {
-    window.open("http://localhost:5001/api/dashboard/export/excel", "_blank");
-  };
 
-  const exportPDF = () => {
+  /* ── Cartes de stats ── */
+  const statCards = stats
+    ? [
+        {
+          label: "Événements",
+          value: stats.totalEvents,
+          icon: <FaLayerGroup />,
+          color: "#1f4db8",
+          bg: "#eaf1ff",
+        },
+        {
+          label: "Invités au total",
+          value: stats.totalGuests,
+          icon: <FaUsers />,
+          color: "#7c3aed",
+          bg: "#f3eeff",
+        },
+        {
+          label: "Confirmés",
+          value: stats.confirmedGuests,
+          icon: <FaCheckCircle />,
+          color: "#15803d",
+          bg: "#dcfce7",
+        },
+        {
+          label: "Coût total",
+          value: Number(stats.totalCost || 0).toLocaleString("fr-CA", {
+            style: "currency",
+            currency: "CAD",
+            maximumFractionDigits: 0,
+          }),
+          icon: <FaDollarSign />,
+          color: "#b45309",
+          bg: "#fef3c7",
+        },
+      ]
+    : [];
+
+  const exportExcel = () =>
+    window.open("http://localhost:5001/api/dashboard/export/excel", "_blank");
+
+  const exportPDF = () =>
     window.open("http://localhost:5001/api/dashboard/export/pdf", "_blank");
-  };
 
   return (
     <div className="page">
-      <div className="pageHeader">
-        <h2>Dashboard Organisateur</h2>
-        {/* <p className="muted">Analyse rapide de vos événements</p> */}
+
+      {/* ══ BIENVENUE ══ */}
+      <div className="dashWelcome">
+        <div className="dashWelcomeText">
+          <h2>Bonjour{user?.prenom ? `, ${user.prenom}` : ""}</h2>
+          <p className="dashWelcomeSub">
+            Voici un aperçu de vos activités. Gérez vos événements, invités et
+            réservations depuis cette page.
+          </p>
+        </div>
       </div>
-      {/* 🔥 ACTIONS */}
+
+      {/* ══ ACCÈS RAPIDE ══ */}
+      <div className="dashSectionLabel">Accès rapide</div>
       <div className="dashGrid">
         {actions.map((a) => (
           <button
             key={a.title}
             type="button"
-            className={a.enabled ? "dashCard" : "dashCard dashCardDisabled"}
-            onClick={() => a.enabled && navigate(a.to)}
-            disabled={!a.enabled}
+            className="dashCard"
+            onClick={() => navigate(a.to)}
           >
-            <div className="dashIcon">{a.icon}</div>
+            <div className="dashIcon">
+              {a.icon}
+            </div>
             <div className="dashText">
               <div className="dashTitle">{a.title}</div>
               <div className="dashDesc">{a.desc}</div>
@@ -126,70 +176,104 @@ export default function OrganisateurHome() {
         ))}
       </div>
 
-      <p className="sousTitre">Analyse rapide de vos événements</p>
-      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <input
-          type="date"
-          value={filters.date_debut}
-          onChange={(e) =>
-            setFilters({ ...filters, date_debut: e.target.value })
-          }
-        />
-
-        <input
-          type="date"
-          value={filters.date_fin}
-          onChange={(e) => setFilters({ ...filters, date_fin: e.target.value })}
-        />
-      </div>
-      <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-        <button onClick={exportExcel} className="exportBtn">
-          📊 Export Excel
-        </button>
-
-        <button onClick={exportPDF} className="exportBtn">
-          📄 Export PDF
-        </button>
+      {/* ══ STATISTIQUES ══ */}
+      <div className="dashSectionLabel" style={{ marginTop: "32px" }}>
+        Statistiques générales
       </div>
 
-      {/* 🔥 STATS */}
-      {stats && (
-        <div className="statsGrid">
-          <div className="statCard">
-            <FaChartLine />
-            <h3>{stats.totalEvents}</h3>
-            <p>Événements</p>
-          </div>
-
-          <div className="statCard">
-            <h3>{stats.totalGuests}</h3>
-            <p>Invités</p>
-          </div>
-
-          <div className="statCard">
-            <h3>{stats.confirmedGuests}</h3>
-            <p>Confirmés</p>
-          </div>
-
-          <div className="statCard">
-            <h3>{stats.totalCost} $</h3>
-            <p>Coût total</p>
-          </div>
+      {/* Filtres + exports */}
+      <div className="dashControls">
+        <div className="dashFiltersGroup">
+          <span className="dashFilterLabel">Période :</span>
+          <input
+            type="date"
+            value={filters.date_debut}
+            onChange={(e) =>
+              setFilters({ ...filters, date_debut: e.target.value })
+            }
+          />
+          <span className="dashFilterSep">→</span>
+          <input
+            type="date"
+            value={filters.date_fin}
+            onChange={(e) =>
+              setFilters({ ...filters, date_fin: e.target.value })
+            }
+          />
         </div>
+        <div className="dashExports">
+          <button onClick={exportExcel} className="exportBtn exportBtnExcel">
+            <FaFileExcel />
+            Exporter en Excel
+          </button>
+          <button onClick={exportPDF} className="exportBtn exportBtnPDF">
+            <FaFilePdf />
+            Exporter en PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Cartes stats */}
+      {stats ? (
+        <div className="statsGrid">
+          {statCards.map((s) => (
+            <div className="statCard" key={s.label}>
+              <div
+                className="statCardIcon"
+                style={{ background: s.bg, color: s.color }}
+              >
+                {s.icon}
+              </div>
+              <div className="statCardBody">
+                <div className="statCardValue">{s.value}</div>
+                <div className="statCardLabel">{s.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="dashEmpty">Chargement des statistiques…</p>
       )}
 
+      {/* ══ GRAPHIQUES ══ */}
       {stats && (
-        <div style={{ display: "flex", gap: "30px", marginTop: "30px" }}>
-          <div style={{ width: "300px" }}>
-            <h3>Participation</h3>
-            <Pie data={pieData} />
+        <>
+          <div className="dashSectionLabel" style={{ marginTop: "32px" }}>
+            Visualisation
           </div>
+          <div className="chartsRow">
+            <div className="chartBox pie">
+              <div className="chartBoxHeader">
+                <span className="chartBoxTitle">Participation des invités</span>
+                <span className="chartBoxSub">
+                  {stats.confirmedGuests} confirmés sur {stats.totalGuests}
+                </span>
+              </div>
+              <Pie
+                data={pieData}
+                options={{
+                  plugins: { legend: { position: "bottom" } },
+                  maintainAspectRatio: true,
+                }}
+              />
+            </div>
 
-          <div style={{ width: "400px" }}>
-            <h3>Comparaison</h3>
-            <Bar data={barData} />
+            <div className="chartBox bar">
+              <div className="chartBoxHeader">
+                <span className="chartBoxTitle">Invités vs Confirmés</span>
+                <span className="chartBoxSub">Tous événements confondus</span>
+              </div>
+              <Bar
+                data={barData}
+                options={{
+                  plugins: { legend: { display: false } },
+                  scales: { y: { beginAtZero: true } },
+                  maintainAspectRatio: true,
+                }}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
