@@ -9,7 +9,6 @@ export async function getSalles() {
     SELECT id_salle, nom_salle, cout, type, capacite, equipements, statut
     FROM salles
   `);
-
   return rows;
 }
 
@@ -18,6 +17,10 @@ export async function getSalles() {
  * @returns {Promise<Array>} Liste des salles.
  */
 export async function getAllFromSalles() {
+  const [rows] = await pool.query("SELECT * FROM salles");
+  return rows;
+}
+export async function getAllSalles() {
   const [rows] = await pool.query("SELECT * FROM salles");
   return rows;
 }

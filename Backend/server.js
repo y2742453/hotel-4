@@ -1172,6 +1172,22 @@ app.delete("/api/documents/:id", async (req, res) => {
   }
 });
 
+// Passer les événements expirés à "Terminé"
+app.post("/api/evenements/terminer-expires", async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE evenements
+       SET statut = 'Terminé', updated_at = NOW()
+       WHERE statut IN ('Confirmé', 'Prévu')
+         AND date_fin < NOW()`
+    );
+    res.json({ updated: result.affectedRows });
+  } catch (error) {
+    console.error("Erreur terminer-expires :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 /**
  * Créer une demande de service
  * POST /api/services

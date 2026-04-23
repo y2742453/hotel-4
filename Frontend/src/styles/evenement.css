@@ -1,11 +1,64 @@
-/* GRID FORM */
+/* ============================================
+   CRÉER / MODIFIER UN ÉVÉNEMENT
+============================================ */
+
+.evenement-page {
+  padding: 24px;
+  background: #f4f6fb;
+  min-height: 100vh;
+}
+
+.main-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 760px;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
+}
+
+.main-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── Formulaire ── */
 .formGrid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* FIELD */
+/* ── Étiquette de section ── */
+.form-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.form-section-sub {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+/* Champ obligatoire */
+.required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* ── Champ ── */
 .field {
   display: flex;
   flex-direction: column;
@@ -13,116 +66,172 @@
 }
 
 .field label {
+  font-size: 13px;
   font-weight: 600;
   color: #374151;
-  font-size: 14px;
 }
 
-/* INPUT STYLE */
 .field input,
-.field select {
-  padding: 12px;
+.field select,
+.field textarea {
+  padding: 10px 14px;
   border-radius: 10px;
-  border: 1.5px solid #dbeafe;
-  background: #f9fafb;
-  transition: 0.2s;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* DATES GRID */
+.field textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.5;
+}
+
+.field select {
+  cursor: pointer;
+}
+
+/* ── 2 colonnes ── */
 .grid2 {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
-.grid2 .field {
-  flex: 1;
+/* ── Fichier ── */
+.field input[type="file"] {
+  padding: 8px 12px;
+  border: 1.5px dashed #c7d9f8;
+  background: #f8faff;
+  color: #475569;
+  cursor: pointer;
 }
-/* SERVICES GRID */
+
+.field input[type="file"]:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.file-info {
+  font-size: 13px;
+  color: #475569;
+}
+
+/* ── Services ── */
 .servicesGrid {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .serviceCard {
-  background: #eef2ff;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid #c7d2fe;
+  background: #f1f5f9;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
   cursor: pointer;
   display: flex;
-  gap: 8px;
   align-items: center;
-  transition: 0.2s;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .serviceCard:hover {
-  background: #dbeafe;
+  background: #e0eaff;
+  border-color: #93c5fd;
 }
 
 .serviceCard.active {
-  background: #2563eb;
-  color: white;
+  background: #1f4db8;
+  border-color: #1f4db8;
+  color: #fff;
 }
 
-/* SELECTED */
-.selectedBox {
-  background: #f1f5f9;
-  padding: 12px;
-  border-radius: 12px;
+.service-tarif {
+  font-size: 11px;
+  opacity: 0.75;
 }
 
-.selectedItem {
-  padding: 6px;
-}
-
-/* DOCUMENT */
+/* ── Documents ── */
 .documentsBox {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .docCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f9fafb;
-  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e7eef8;
+  padding: 10px 14px;
   border-radius: 10px;
+  font-size: 13px;
+  color: #0f172a;
 }
 
-/* DELETE BUTTON */
-.btnDanger {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
+/* ── Boutons d'action du formulaire ── */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 4px;
 }
 
-/* BUTTON */
-.btnPrimary {
-  /* margin-top: 20px; */
-  padding: 14px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #2563eb, #3b82f6);
-  color: white;
+.btn-submit {
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background 0.2s, transform 0.15s;
+  background: #1f4db8;
+  color: #fff;
 }
 
-.btnPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+.btn-submit:hover:not(:disabled) {
+  background: #163a8a;
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-submit.btn-ghost {
+  background: #fff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+}
+
+.btn-submit.btn-ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+  transform: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .main-card { padding: 20px 16px; }
+  .form-actions { flex-direction: column; }
+  .btn-submit { width: 100%; text-align: center; }
 }

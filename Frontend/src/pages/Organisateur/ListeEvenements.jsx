@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import "../../styles/evenement-table.css";
+import "../../styles/table.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "../../Components/Toast.jsx";
 
@@ -15,13 +16,13 @@ export default function ListeEvenements() {
   const [modalConfirmId, setModalConfirmId] = useState(null);
 
   async function loadEvenements() {
+    // Passer les événements expirés à "Terminé" avant de charger la liste
+    await apiFetch("/api/evenements/terminer-expires", { method: "POST" });
     const { res, data } = await apiFetch("/api/evenements");
     if (res.ok) setEvenements(data || []);
   }
 
-  useEffect(() => {
-    loadEvenements();
-  }, []);
+  useEffect(() => { loadEvenements(); }, []);
 
   function handleEdit(id) {
     const base = isAdmin ? "admin" : "organisateur";
@@ -29,35 +30,23 @@ export default function ListeEvenements() {
   }
 
   async function handleCancel(id) {
-    const { res, data } = await apiFetch(`/api/evenements/${id}/annuler`, {
-      method: "PUT",
-    });
-
+    const { res, data } = await apiFetch(`/api/evenements/${id}/annuler`, { method: "PUT" });
     if (res.ok) {
       setEvenements((prev) =>
-        prev.map((e) =>
-          e.id_evenement === id ? { ...e, statut: "annulé" } : e,
-        ),
+        prev.map((e) => e.id_evenement === id ? { ...e, statut: "Annulé" } : e)
       );
-
       toast.success("Événement annulé");
     } else {
-      toast.error(data?.message || "Erreur lors de l’annulation");
+      toast.error(data?.message || "Erreur lors de l'annulation");
     }
   }
 
   async function handleConfirm(id) {
-    const { res, data } = await apiFetch(`/api/evenements/${id}/confirmer`, {
-      method: "PUT",
-    });
-
+    const { res, data } = await apiFetch(`/api/evenements/${id}/confirmer`, { method: "PUT" });
     if (res.ok) {
       setEvenements((prev) =>
-        prev.map((e) =>
-          e.id_evenement === id ? { ...e, statut: "confirmé" } : e,
-        ),
+        prev.map((e) => e.id_evenement === id ? { ...e, statut: "Confirmé" } : e)
       );
-
       toast.success("Événement confirmé");
       return true;
     } else {
@@ -67,17 +56,11 @@ export default function ListeEvenements() {
   }
 
   async function handleRestore(id) {
-    const { res, data } = await apiFetch(`/api/evenements/${id}/restaurer`, {
-      method: "PUT",
-    });
-
+    const { res, data } = await apiFetch(`/api/evenements/${id}/restaurer`, { method: "PUT" });
     if (res.ok) {
       setEvenements((prev) =>
-        prev.map((e) =>
-          e.id_evenement === id ? { ...e, statut: "prévu" } : e,
-        ),
+        prev.map((e) => e.id_evenement === id ? { ...e, statut: "Prévu" } : e)
       );
-
       toast.success("Événement restauré");
     } else {
       toast.error(data?.message || "Impossible de restaurer");
@@ -85,39 +68,59 @@ export default function ListeEvenements() {
   }
 
   function getStatutStyle(statut) {
-    const value = (statut || "").toLowerCase();
-
-    if (value === "confirmé" || value === "confirme")
+    const v = (statut || "").toLowerCase();
+    if (v === "confirmé" || v === "confirme")
       return { background: "#dcfce7", color: "#166534" };
-
-    if (value === "annulé" || value === "annule")
+    if (v === "annulé" || v === "annule")
       return { background: "#fee2e2", color: "#b91c1c" };
-
-    return { background: "#fef3c7", color: "#92400e" };
+    if (v === "terminé" || v === "termine")
+      return { background: "#f1f5f9", color: "#475569" };
+    return { background: "#fef3c7", color: "#92400e" }; // Prévu / Brouillon
   }
 
   function isConfirme(statut) {
-    const value = (statut || "").toLowerCase();
-    return value === "confirmé" || value === "confirme";
+    const v = (statut || "").toLowerCase();
+    return v === "confirmé" || v === "confirme";
   }
+
+  function isAnnule(statut) {
+    const v = (statut || "").toLowerCase();
+    return v === "annulé" || v === "annule";
+  }
+
+  function isTermine(statut) {
+    const v = (statut || "").toLowerCase();
+    return v === "terminé" || v === "termine";
+  }
+
+  /* Format date : 03/05/2026 13h27 */
+  function formatDate(d) {
+    if (!d) return "—";
+    const dt = new Date(d);
+    return dt.toLocaleDateString("fr-CA") + " " +
+      dt.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  const filtered = evenements.filter(
+    (e) => filter === "tous" || (e.statut || "").toLowerCase() === filter
+  );
 
   return (
     <div className="events-dashboard">
       <div className="events-container">
-        {/* HEADER */}
+
+        {/* ── En-tête ── */}
         <div className="events-header">
           <h2>Événements</h2>
-
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="events-header-actions">
             {!isAdmin && (
               <button
-                className="btn-new"
+                className="btn btnGhost"
                 onClick={() => navigate("/organisateur/demandes-services")}
               >
                 Mes demandes de services
               </button>
             )}
-
             {!isAdmin && (
               <button
                 className="btn-new"
@@ -129,20 +132,20 @@ export default function ListeEvenements() {
           </div>
         </div>
 
-        {/* TABS */}
+        {/* ── Onglets ── */}
         <div className="events-tabs">
-          {["tous", "confirmé", "prévu", "annulé"].map((tab) => (
+          {["tous", "confirmé", "prévu", "terminé", "annulé"].map((tab) => (
             <button
               key={tab}
               className={`tab${filter === tab ? " active" : ""}`}
               onClick={() => setFilter(tab)}
             >
-              {tab}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* TABLE */}
+        {/* ── Tableau ── */}
         <div className="table-wrapper">
           <table className="events-table">
             <thead>
@@ -158,43 +161,39 @@ export default function ListeEvenements() {
             </thead>
 
             <tbody>
-              {evenements
-                .filter(
-                  (e) =>
-                    filter === "tous" ||
-                    (e.statut || "").toLowerCase() === filter,
-                )
-                .map((e) => {
-                  const confirme = isConfirme(e.statut);
-                  const annule =
-                    (e.statut || "").toLowerCase() === "annulé" ||
-                    (e.statut || "").toLowerCase() === "annule";
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="events-empty">
+                    Aucun événement trouvé
+                  </td>
+                </tr>
+              )}
 
-                  return (
-                    <tr key={e.id_evenement}>
-                      <td>{e.nom_evenement}</td>
-                      <td>{e.type_evenement}</td>
-                      <td>{e.id_salle}</td>
-                      <td>{new Date(e.date_debut).toLocaleString()}</td>
-                      <td>{new Date(e.date_fin).toLocaleString()}</td>
+              {filtered.map((e) => {
+                const confirme = isConfirme(e.statut);
+                const annule   = isAnnule(e.statut);
+                const termine  = isTermine(e.statut);
 
-                      <td>
-                        <span
-                          style={{
-                            ...getStatutStyle(e.statut),
-                            padding: "6px 12px",
-                            borderRadius: "999px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {e.statut}
-                        </span>
-                      </td>
+                return (
+                  <tr key={e.id_evenement}>
+                    <td><strong>{e.nom_evenement}</strong></td>
+                    <td>{e.type_evenement}</td>
+                    <td>{e.id_salle}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{formatDate(e.date_debut)}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{formatDate(e.date_fin)}</td>
 
-                      <td style={{ display: "flex", gap: "8px" }}>
+                    <td>
+                      <span className="statut-badge" style={getStatutStyle(e.statut)}>
+                        {e.statut}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="actions">
+
                         {!isAdmin && (
                           <button
-                            className="btn btnSecondary"
+                            className="btn btnGhost"
                             onClick={() => handleEdit(e.id_evenement)}
                           >
                             Modifier
@@ -204,34 +203,26 @@ export default function ListeEvenements() {
                         {!isAdmin && (
                           <button
                             className="btn btnPrimary"
-                            disabled={confirme}
-                            style={{
-                              opacity: !confirme ? 1 : 0.6,
-                              cursor: !confirme ? "pointer" : "not-allowed",
-                            }}
+                            disabled={confirme || termine}
+                            style={{ opacity: (confirme || termine) ? 0.45 : 1 }}
                             onClick={() =>
-                              navigate(
-                                `/organisateur/evenements/${e.id_evenement}/services`,
-                              )
+                              navigate(`/organisateur/evenements/${e.id_evenement}/services`)
                             }
                           >
                             Besoins
                           </button>
                         )}
 
-                        <button
-                          className="btn btnDanger"
-                          disabled={annule || confirme}
-                          style={{
-                            opacity: annule ? 0.6 : 1,
-                            cursor: annule ? "not-allowed" : "pointer",
-                          }}
-                          onClick={() => handleCancel(e.id_evenement)}
-                        >
-                          Annuler
-                        </button>
+                        {!annule && !confirme && !termine && (
+                          <button
+                            className="btn btnDanger"
+                            onClick={() => handleCancel(e.id_evenement)}
+                          >
+                            Annuler
+                          </button>
+                        )}
 
-                        {isAdmin && !confirme && !annule && (
+                        {isAdmin && !confirme && !annule && !termine && (
                           <button
                             className="btn btnPrimary"
                             onClick={() => setModalConfirmId(e.id_evenement)}
@@ -248,39 +239,37 @@ export default function ListeEvenements() {
                             Restaurer
                           </button>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
 
-              {evenements.length === 0 && (
-                <tr>
-                  <td colSpan="7" style={{ textAlign: "center" }}>
-                    Aucun événement trouvé
-                  </td>
-                </tr>
-              )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* ── Modal confirmation ── */}
       {modalConfirmId && (
         <div className="modalOverlay" onClick={() => setModalConfirmId(null)}>
-          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirmer l’événement</h3>
-            <p>Voulez-vous vraiment confirmer cet événement ?</p>
-
-            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <div className="modalCard" onClick={(ev) => ev.stopPropagation()}
+            style={{ background: "#fff", padding: "28px", borderRadius: "16px",
+              minWidth: "320px", boxShadow: "0 20px 50px rgba(15,23,42,0.18)" }}>
+            <h3 style={{ marginBottom: "10px" }}>Confirmer l'événement</h3>
+            <p style={{ color: "#475569", fontSize: "14px" }}>
+              Voulez-vous vraiment confirmer cet événement ?
+            </p>
+            <div className="actions" style={{ marginTop: "20px" }}>
               <button
                 className="btn btnPrimary"
                 onClick={async () => {
-                  const success = await handleConfirm(modalConfirmId);
-                  if (success) setModalConfirmId(null);
+                  const ok = await handleConfirm(modalConfirmId);
+                  if (ok) setModalConfirmId(null);
                 }}
               >
                 Confirmer
               </button>
-
               <button
                 className="btn btnGhost"
                 onClick={() => setModalConfirmId(null)}
