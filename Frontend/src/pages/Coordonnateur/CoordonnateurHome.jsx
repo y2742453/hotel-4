@@ -10,6 +10,8 @@ import {
   FaClock,
   FaCheckCircle,
   FaTimesCircle,
+  FaHistory,  
+  FaChartLine
 } from "react-icons/fa";
 
 export default function CoordonnateurHome() {
@@ -158,7 +160,7 @@ export default function CoordonnateurHome() {
             className="dashCard"
             onClick={() => navigate("/coordonnateur/audit")}
           >
-            <div className="dashIcon">📊</div>
+         <div className="dashIcon"><FaChartLine /></div>
 
             <div className="dashText">
               <div className="dashTitle">Audit</div>
@@ -171,7 +173,7 @@ export default function CoordonnateurHome() {
             className="dashCard"
             onClick={() => navigate("/coordonnateur/historique")}
           >
-            <div className="dashIcon">📜</div>
+        <div className="dashIcon"><FaHistory /></div>
 
             <div className="dashText">
               <div className="dashTitle">Historique</div>

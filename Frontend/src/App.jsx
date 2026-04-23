@@ -144,6 +144,14 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route
+                path="admin/historique"
+                element={
+                  <RoleGate allowedRoles={[1]}>
+                    <HistoriqueEvenements />
+                  </RoleGate>
+                }
+              />
 
               {/* ORGANISATEUR */}
               <Route
