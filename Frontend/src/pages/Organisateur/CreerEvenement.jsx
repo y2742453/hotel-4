@@ -24,6 +24,8 @@ export default function CreerEvenement() {
     id_salle: "",
     date_debut: "",
     date_fin: "",
+    budget: "",
+    nb_participants: "",
   });
 
   const [documents, setDocuments] = useState([]);
@@ -55,6 +57,8 @@ export default function CreerEvenement() {
           id_salle: ev.id_salle || "",
           date_debut: toLocalDatetimeInput(ev.date_debut) || "",
           date_fin: toLocalDatetimeInput(ev.date_fin) || "",
+          budget: ev.budget || "",
+          nb_participants: ev.nb_participants || "",
         });
       }
     }
@@ -81,6 +85,18 @@ export default function CreerEvenement() {
       loadDocuments(id);
     }
   }, [id, isEdit]);
+
+  // Route pour redirection vers Calendar.jsx
+  useEffect(() => {
+    if (location.state) {
+      setForm((prev) => ({
+        ...prev,
+        date_debut: location.state.date_debut || prev.date_debut,
+        date_fin: location.state.date_fin || prev.date_fin,
+        id_salle: location.state.id_salle || prev.id_salle,
+      }));
+    }
+  }, []);
 
   // =====================
   // UPLOAD DOCUMENT
@@ -134,6 +150,10 @@ export default function CreerEvenement() {
     const payload = {
       ...form,
       id_salle: Number(form.id_salle),
+      budget: form.budget ? Number(form.budget) : null,
+      nb_participants: form.nb_participants
+        ? Number(form.nb_participants)
+        : null,
       id_organisateur: 1,
     };
 
@@ -204,6 +224,28 @@ export default function CreerEvenement() {
             />
           </div>
 
+          <div className="grid2">
+            <div className="field">
+              <label>Budget ($)</label>
+              <input
+                type="number"
+                value={form.budget}
+                onChange={(e) => setForm({ ...form, budget: e.target.value })}
+              />
+            </div>
+
+            <div className="field">
+              <label>Nombre de participants</label>
+              <input
+                type="number"
+                value={form.nb_participants}
+                onChange={(e) =>
+                  setForm({ ...form, nb_participants: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
           <div className="field">
             <label>Salle</label>
             <select
@@ -247,6 +289,7 @@ export default function CreerEvenement() {
               <label>Ajouter un document</label>
               <input
                 type="file"
+                disabled={isAdmin}
                 onChange={(e) => setFile(e.target.files[0] || null)}
               />
               {file && (

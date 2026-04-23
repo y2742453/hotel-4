@@ -17,7 +17,7 @@ export default function HistoriqueEvenements() {
   return (
     <div className="page">
       <div className="pageHeader">
-        <h2>📜 Historique des événements</h2>
+        <h2> Historique des événements</h2>
         <p className="muted">
           Consultez tous les événements passés et leurs informations
         </p>
@@ -42,9 +42,7 @@ export default function HistoriqueEvenements() {
               <tr key={e.id_evenement}>
                 <td>{e.nom_evenement}</td>
                 <td>{e.type_evenement}</td>
-                <td>
-                  {new Date(e.date_debut).toLocaleDateString()}
-                </td>
+                <td>{new Date(e.date_debut).toLocaleDateString()}</td>
                 <td>{e.statut}</td>
                 <td>{e.nom_salle}</td>
                 <td>{e.nb_participants}</td>

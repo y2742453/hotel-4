@@ -204,7 +204,15 @@ const Calendar = () => {
 
     setModalMessage("");
     setSelectedEvenement(null);
-    setShowCreateModal(true);
+
+    navigate("/organisateur/evenements/creer", {
+      state: {
+        date_debut: formatDateForInput(info.start),
+        date_fin: formatDateForInput(info.end),
+        id_salle: selectedSalle,
+      },
+    });
+
     calendarRef.current?.getApi().unselect();
   };
 
