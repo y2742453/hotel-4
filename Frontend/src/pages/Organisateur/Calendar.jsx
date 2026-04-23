@@ -430,6 +430,9 @@ const Calendar = () => {
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
+        validRange={{
+          start: new Date().toISOString().split("T")[0],
+        }}
         selectable={!!selectedSalle}
         select={handleSelectSlot}
         eventClick={handleEventClick}

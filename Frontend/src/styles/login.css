@@ -1,0 +1,197 @@
+/* =========================
+   PAGE WRAPPER
+========================= */
+.landingPage {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #0f172a;
+}
+
+/* =========================
+   LEFT SIDE (BRAND)
+========================= */
+.landingLeft {
+  flex: 1;
+  background: linear-gradient(135deg, #0f2f6b, #123a85);
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* soft glow */
+.landingLeft::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  filter: blur(80px);
+  top: -100px;
+  left: -100px;
+}
+
+.logo {
+  width: 380px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+  border-radius: 12px;
+}
+
+.landingLeft h1 {
+  font-size: 44px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  max-width: 420px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* features */
+.features {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+  max-width: 420px;
+}
+
+.features li {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.features li::before {
+  content: "✓";
+  color: #a8c7ff;
+  font-weight: bold;
+}
+
+/* =========================
+   RIGHT SIDE (LOGIN)
+========================= */
+.landingRight {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+/* =========================
+   LOGIN CARD (MATCH DASHBOARD)
+========================= */
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+
+  background: #ffffff;
+  border: 1px solid #e6edf6;
+  border-radius: 16px;
+
+  padding: 30px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.loginCard h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f2f6b;
+  margin-bottom: 6px;
+}
+
+.muted {
+  font-size: 13px;
+  color: #6b7a90;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   FORM
+========================= */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d7e1ef;
+  background: #fff;
+
+  transition: 0.2s ease;
+  outline: none;
+}
+
+input:focus {
+  border-color: #0f2f6b;
+  box-shadow: 0 0 0 3px rgba(15, 47, 107, 0.15);
+}
+
+/* =========================
+   BUTTON (MATCH SIDEBAR COLOR)
+========================= */
+.btnPrimary {
+  background: #0f2f6b;
+  color: white;
+
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.btnPrimary:hover {
+  background: #123a85;
+  transform: translateY(-1px);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+  .landingLeft {
+    display: none;
+  }
+
+  .landingRight {
+    flex: 1;
+    width: 100%;
+  }
+}

@@ -105,8 +105,6 @@ export default function EvenementsPage() {
       method: "PUT",
     });
 
-    console.log("CONFIRM RESPONSE:", res.status, data); // 👈 ADD THIS
-
     if (res.ok) {
       toast.success("Événement confirmé");
       loadEvenements();

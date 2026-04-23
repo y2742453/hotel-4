@@ -219,17 +219,19 @@ export default function ListeEvenements() {
                           </button>
                         )}
 
-                        <button
-                          className="btn btnDanger"
-                          disabled={annule || confirme}
-                          style={{
-                            opacity: annule ? 0.6 : 1,
-                            cursor: annule ? "not-allowed" : "pointer",
-                          }}
-                          onClick={() => handleCancel(e.id_evenement)}
-                        >
-                          Annuler
-                        </button>
+                        {!annule && (
+                          <button
+                            className="btn btnDanger"
+                            disabled={annule || confirme}
+                            style={{
+                              opacity: annule ? 0.6 : 1,
+                              cursor: annule ? "not-allowed" : "pointer",
+                            }}
+                            onClick={() => handleCancel(e.id_evenement)}
+                          >
+                            Annuler
+                          </button>
+                        )}
 
                         {isAdmin && !confirme && !annule && (
                           <button

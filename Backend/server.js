@@ -786,7 +786,7 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
 //Modification d'un événement
 app.put("/api/evenements/:id", async (req, res) => {
   const id = req.params.id;
-  const userId = req.user?.id_user || 1; // utilisateur connecté
+  const userId = req.user?.id_user || 1;
 
   const {
     nom_evenement,
@@ -1841,9 +1841,7 @@ app.get("/api/dashboard", async (req, res) => {
 
     const whereClause =
       conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
-    console.log("QUERY PARAMS:", req.query);
-    console.log("WHERE:", whereClause);
-    console.log("VALUES:", values);
+
     // =========================
     // 1. TOTAL INVITÉS
     // =========================
