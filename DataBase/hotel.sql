@@ -8,6 +8,8 @@ USE HotelDB;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS historique_modifications;
+
 DROP TABLE IF EXISTS evenement_documents;
 
 DROP TABLE IF EXISTS notification_preferences;
@@ -276,3 +278,38 @@ CREATE TABLE notification_preferences (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_notification_preferences_user FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
 );
+
+-- =========================
+-- TABLE HISTORIQUE_MODIFICATIONS
+-- =========================
+CREATE TABLE historique_modifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    id_user INT NOT NULL,
+    champ_modifie VARCHAR(100),
+    ancienne_valeur TEXT,
+    nouvelle_valeur TEXT,
+    date_modification DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
+    CONSTRAINT FOREIGN KEY (id_user) REFERENCES users (id_user)
+);
+
+INSERT INTO
+    `users` (
+        `nom`,
+        `prenom`,
+        `email`,
+        `mot_de_passe`,
+        `actif`,
+        `id_role`,
+        `date_creation`
+    )
+VALUES (
+        'Admin',
+        'System',
+        'admin@hotel.com',
+        '$2b$10$GEjPDdjVrCXQtQXXr18GxeL5TYfcOTgEK8.KTxy8vrjZLwjYB1SBq',
+        1,
+        1,
+        NOW()
+    );

@@ -9,7 +9,6 @@ export async function getSalles() {
     SELECT id_salle, nom_salle, cout, type, capacite, equipements, statut
     FROM salles
   `);
-
   return rows;
 }
 

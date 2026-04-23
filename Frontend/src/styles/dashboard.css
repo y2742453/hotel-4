@@ -1,33 +1,76 @@
+/* ============================================
+   DASHBOARD — styles partagés tous rôles
+============================================ */
+
+/* ── Bienvenue ── */
+.dashWelcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #1f4db8 0%, #0f2f6b 100%);
+  border-radius: 16px;
+  color: #fff;
+}
+
+.dashWelcome h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.dashWelcomeSub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 500px;
+}
+
+/* ── Étiquettes de section ── */
+.dashSectionLabel {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+/* ── Grille des cartes d'accès rapide ── */
 .dashGrid {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 12px;
+  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
 .dashCard {
-  width: 320px;
+  width: 280px;
   display: flex;
   align-items: center;
   gap: 12px;
   background: #fff;
   border: 1px solid #e7eef8;
   border-radius: 14px;
-  padding: 14px;
+  padding: 14px 16px;
   cursor: pointer;
   text-align: left;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
 .dashCard:hover {
   background: #f7fbff;
-}
-
-.dashCardDisabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
 }
 
 .dashIcon {
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -39,106 +82,268 @@
   font-size: 18px;
 }
 
-.dashTitle {
-  font-weight: 800;
-  color: #0f172a;
+.dashText {
+  flex: 1;
+  min-width: 0;
 }
-.dashDesc {
-  margin-top: 4px;
-  color: #475569;
+
+.dashTitle {
   font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 3px;
+}
+
+.dashDesc {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashBadge {
-  margin-left: auto;
+  flex-shrink: 0;
   font-size: 12px;
-  padding: 6px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: #eaf1ff;
   color: #1f4db8;
-}
-
-.dashCardDisabled .dashBadge {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-/* ===== STATS ===== */
-.statsGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 12px;
-}
-
-.statCard {
-  width: 200px;
-  background: #fff;
-  border: 1px solid #e7eef8;
-  border-radius: 14px;
-  padding: 14px;
-  text-align: center;
-}
-
-.statCard h3 {
-  margin: 8px 0;
-  font-size: 22px;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.statCard p {
-  font-size: 13px;
-  color: #475569;
-}
-@media (max-width: 700px) {
-  .dashCard {
-    width: 100%;
-  }
-}
-.exportBtn {
-  background: #1f4db8;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
 }
 
-.exportBtn:hover {
-  background: #163a8a;
+/* ── Contrôles (filtres + exports) ── */
+.dashControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
 }
-/* ===== HISTORIQUE / AUDIT ===== */
 
-select {
+.dashFiltersGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.dashFilterLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.dashFilterSep {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.dashControls input[type="date"] {
+  padding: 8px 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 0;
+}
+
+.dashControls input[type="date"]:focus {
+  border-color: #1f4db8;
+  box-shadow: 0 0 0 3px rgba(31, 77, 184, 0.12);
+}
+
+.dashExports {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+
+.exportBtnExcel {
+  background: #16a34a;
+  color: #fff;
+}
+
+.exportBtnExcel:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.exportBtnPDF {
+  background: #dc2626;
+  color: #fff;
+}
+
+.exportBtnPDF:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* ── Grille stats ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e7eef8;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.statCardIcon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.statCardBody {
+  min-width: 0;
+}
+
+.statCardValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.statCardLabel {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* ── Vide / chargement ── */
+.dashEmpty {
+  color: #94a3b8;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+/* ── Graphiques ── */
+.chartsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.chartBox {
+  background: #fff;
+  border: 1px solid #e7eef8;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.chartBox.pie  { flex: 0 0 280px; }
+.chartBox.bar  { flex: 1 1 320px; min-width: 260px; }
+
+.chartBoxHeader {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.chartBoxTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chartBoxSub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* ── Tableaux et selects — uniquement dans .page ── */
+.page select {
   border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 6px;
+  border: 1px solid #dbe4f0;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
 }
 
-table {
+.page table {
   border-collapse: collapse;
   width: 100%;
 }
 
-th {
+.page th {
   background: #1f4db8;
-  color: white;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
 }
 
-td,
-th {
-  padding: 10px;
-  border: 1px solid #ddd;
+.page td,
+.page th {
+  padding: 10px 12px;
+  border: 1px solid #e7eef8;
+  font-size: 14px;
 }
 
-tr:hover {
+.page tr:hover td {
   background: #f7fbff;
 }
 
+/* ── compat anciennes classes ── */
 .sousTitre {
-  margin-top: 20px;
-  font-size: 1.3rem;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .dashWelcome { padding: 18px; }
+  .dashWelcome h2 { font-size: 18px; }
+
+  .chartsRow { flex-direction: column; }
+  .chartBox.pie,
+  .chartBox.bar { flex: 1 1 100%; }
+
+  .dashControls input[type="date"] { flex: 1 1 100%; }
+  .dashExports { width: 100%; margin-left: 0; }
+  .exportBtn { flex: 1; justify-content: center; }
 }

@@ -53,6 +53,7 @@ import {
   getAllFromEvenements,
   getEvenementInfoForNotification,
   getEvenementServiceInfoForNotification,
+  hasReservationConflict,
 } from "./modele/evenement.js";
 import inviteRoutes from "./routes/invite.js";
 import factureRoutes from "./routes/facture.js";
@@ -245,16 +246,11 @@ app.post(
   motDePasseEstValide,
   async (request, response, next) => {
     try {
-      const { nom, prenom, email, motDePasse, role } = request.body;
+      const { nom, prenom, email, motDePasse, id_role } = request.body;
 
-      // par défaut Organisateur
-      let id_role = 2;
+      const role = id_role || 2;
 
-      //  si un role est fourni, on le convertit
-      if (role && roleToId[role]) {
-        id_role = roleToId[role];
-      }
-      await addUtilisateur(nom, prenom, email, motDePasse, id_role);
+      await addUtilisateur(nom, prenom, email, motDePasse, role);
 
       response.sendStatus(201);
     } catch (error) {
@@ -633,7 +629,9 @@ app.get("/api/evenements", async (req, res) => {
         e.date_fin,
         e.statut,
         e.id_salle,
-        e.id_organisateur
+        e.id_organisateur,
+        e.budget,
+        e.nb_participants
       FROM evenements e
       ORDER BY e.date_debut DESC
     `);
@@ -641,6 +639,20 @@ app.get("/api/evenements", async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error("GET EVENEMENTS ERROR:", err.code, err.message);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get("/api/evenements/:id", async (req, res) => {
+  try {
+    const event = await getEvenementById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Événement introuvable" });
+    }
+
+    res.json(event);
+  } catch (err) {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -659,6 +671,8 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       statut,
       id_salle,
       services,
+      budget,
+      nb_participants,
     } = req.body;
 
     if (!nom_evenement || nom_evenement.trim().length < 2) {
@@ -692,6 +706,8 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       id_salle: idSalle,
       id_organisateur: idOrg,
       services: Array.isArray(services) ? services.map(Number) : [],
+      budget: Number(budget) || 0,
+      nb_participants: Number(nb_participants) || 0,
     });
 
     const admins = await getAdminsActifs();
@@ -784,9 +800,13 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
 });
 
 //Modification d'un événement
-app.put("/api/evenements/:id", async (req, res) => {
+app.put("/api/evenements/:id", userAuth, allowRoles(2), async (req, res) => {
   const id = req.params.id;
-  const userId = req.user?.id_user || 1; // utilisateur connecté
+  if (!req.user) {
+    return res.status(401).json({ message: "Non authentifié" });
+  }
+
+  const userId = req.user.id_user;
 
   const {
     nom_evenement,
@@ -798,6 +818,21 @@ app.put("/api/evenements/:id", async (req, res) => {
     nb_participants,
     budget,
   } = req.body;
+
+  const b = Number(budget);
+  const n = Number(nb_participants);
+
+  if (Number.isNaN(b) || b < 0) {
+    return res.status(400).json({ message: "budget invalide" });
+  }
+
+  if (!Number.isInteger(n) || n < 0) {
+    return res.status(400).json({ message: "nombre de participants invalide" });
+  }
+
+  if (!date_debut || !date_fin) {
+    return res.status(400).json({ message: "Dates requises" });
+  }
 
   try {
     // 1. récupérer ancienne version
@@ -811,6 +846,19 @@ app.put("/api/evenements/:id", async (req, res) => {
     }
 
     const oldEvent = oldRows[0];
+
+    const conflict = await hasReservationConflict(
+      id_salle,
+      date_debut,
+      date_fin,
+      id,
+    );
+
+    if (conflict) {
+      return res.status(409).json({
+        message: "Conflit : salle déjà réservée pour ce créneau",
+      });
+    }
 
     // 2. mise à jour
     await pool.query(
@@ -828,6 +876,15 @@ app.put("/api/evenements/:id", async (req, res) => {
         budget,
         id,
       ],
+    );
+
+    await pool.query(
+      `
+      UPDATE reservations
+      SET id_salle = ?, date_debut = ?, date_fin = ?
+      WHERE id_evenement = ?
+      `,
+      [id_salle, date_debut, date_fin, id],
     );
 
     // 3. comparer et enregistrer les changements
@@ -1073,7 +1130,7 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
 
   try {
     const [[event]] = await pool.query(
-      "SELECT statut FROM evenements WHERE id_evenement = ?",
+      "SELECT statut, date_fin FROM evenements WHERE id_evenement = ?",
       [id],
     );
 
@@ -1081,9 +1138,20 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
       return res.status(404).json({ message: "Événement introuvable" });
     }
 
-    if (event.statut !== "Annulé") {
+    const statut = event.statut;
+
+    if (statut !== "Annulé" && statut !== "Terminé") {
       return res.status(400).json({
-        message: "Seuls les événements annulés peuvent être restaurés",
+        message:
+          "Seuls les événements annulés ou terminés peuvent être restaurés",
+      });
+    }
+
+    const isExpired = new Date(event.date_fin) < new Date();
+
+    if (isExpired) {
+      return res.status(400).json({
+        message: "Impossible de restaurer : la date de fin est déjà passée.",
       });
     }
 
@@ -1094,6 +1162,7 @@ app.put("/api/evenements/:id/restaurer", async (req, res) => {
 
     res.json({ message: "Événement restauré" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -1168,6 +1237,22 @@ app.delete("/api/documents/:id", async (req, res) => {
     res.json({ message: "Document supprimé" });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Passer les événements expirés à "Terminé"
+app.post("/api/evenements/terminer-expires", async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE evenements
+       SET statut = 'Terminé', updated_at = NOW()
+       WHERE statut IN ('Confirmé', 'Prévu')
+         AND date_fin < NOW()`,
+    );
+    res.json({ updated: result.affectedRows });
+  } catch (error) {
+    console.error("Erreur terminer-expires :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -1841,9 +1926,7 @@ app.get("/api/dashboard", async (req, res) => {
 
     const whereClause =
       conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
-    console.log("QUERY PARAMS:", req.query);
-    console.log("WHERE:", whereClause);
-    console.log("VALUES:", values);
+
     // =========================
     // 1. TOTAL INVITÉS
     // =========================

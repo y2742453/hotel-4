@@ -205,6 +205,15 @@ const Calendar = () => {
     setModalMessage("");
     setSelectedEvenement(null);
     setShowCreateModal(true);
+
+    navigate("/organisateur/evenements/creer", {
+      state: {
+        date_debut: formatDateForInput(info.start),
+        date_fin: formatDateForInput(info.end),
+        id_salle: selectedSalle,
+      },
+    });
+
     calendarRef.current?.getApi().unselect();
   };
 
@@ -429,6 +438,9 @@ const Calendar = () => {
           left: "prev,next today",
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
+        }}
+        validRange={{
+          start: new Date().toISOString().split("T")[0],
         }}
         selectable={!!selectedSalle}
         select={handleSelectSlot}

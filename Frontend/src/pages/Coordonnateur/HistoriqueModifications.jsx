@@ -22,10 +22,9 @@ export default function HistoriqueModifications() {
     if (!selectedEvent) return;
 
     axios
-      .get(
-        `http://localhost:5001/api/evenements/${selectedEvent}/historique`,
-        { withCredentials: true }
-      )
+      .get(`http://localhost:5001/api/evenements/${selectedEvent}/historique`, {
+        withCredentials: true,
+      })
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
   }, [selectedEvent]);
@@ -33,7 +32,7 @@ export default function HistoriqueModifications() {
   return (
     <div className="page">
       <div className="pageHeader">
-        <h2>🕵️ Historique des modifications</h2>
+        <h2> Historique des modifications</h2>
         <p className="muted">
           Consultez les changements effectués sur les événements
         </p>
@@ -70,15 +69,9 @@ export default function HistoriqueModifications() {
             {logs.map((log) => (
               <tr key={log.id}>
                 <td>{log.champ_modifie}</td>
-                <td style={{ color: "red" }}>
-                  {log.ancienne_valeur}
-                </td>
-                <td style={{ color: "green" }}>
-                  {log.nouvelle_valeur}
-                </td>
-                <td>
-                  {new Date(log.date_modification).toLocaleString()}
-                </td>
+                <td style={{ color: "red" }}>{log.ancienne_valeur}</td>
+                <td style={{ color: "green" }}>{log.nouvelle_valeur}</td>
+                <td>{new Date(log.date_modification).toLocaleString()}</td>
                 <td>
                   {log.nom} {log.prenom}
                 </td>
@@ -93,27 +86,23 @@ export default function HistoriqueModifications() {
   );
 }
 
-{/* 🔥 ACTIONS */}
+{
+  /* 🔥 ACTIONS */
+}
 <div style={{ marginTop: "30px" }}>
   <h3 style={{ marginBottom: "15px" }}>Actions rapides</h3>
 
   <div className="dashGrid">
     <button
       className="dashCard"
-      onClick={() => window.location.href = "/coordonnateur/audit"}
+      onClick={() => (window.location.href = "/coordonnateur/audit")}
     >
-      <div className="dashIcon">
-        📊
-      </div>
-
       <div className="dashText">
         <div className="dashTitle">Audit</div>
-        <div className="dashDesc">
-          Historique des modifications
-        </div>
+        <div className="dashDesc">Historique des modifications</div>
       </div>
 
       <div className="dashBadge">Ouvrir</div>
     </button>
   </div>
-</div>
+</div>;

@@ -3,16 +3,27 @@ import { pool } from "../db/db.js";
 /**
  * Vérifie s'il y a un conflit de réservation
  */
-export async function hasReservationConflict(id_salle, date_debut, date_fin) {
-  const [rows] = await pool.query(
-    `
+export async function hasReservationConflict(
+  id_salle,
+  date_debut,
+  date_fin,
+  excludeEventId = null,
+) {
+  let query = `
     SELECT COUNT(*) AS nb
     FROM evenements
     WHERE id_salle = ?
       AND (date_debut < ? AND date_fin > ?)
-    `,
-    [id_salle, date_fin, date_debut],
-  );
+  `;
+
+  const params = [id_salle, date_fin, date_debut];
+
+  if (excludeEventId) {
+    query += " AND id_evenement != ?";
+    params.push(excludeEventId);
+  }
+
+  const [rows] = await pool.query(query, params);
 
   return rows[0].nb > 0;
 }
@@ -30,6 +41,8 @@ export async function createEvenement(data) {
     statut,
     id_salle,
     id_organisateur,
+    budget,
+    nb_participants,
   } = data;
 
   const services = data.services || [];
@@ -43,11 +56,24 @@ export async function createEvenement(data) {
   const start = new Date(date_debut);
   const end = new Date(date_fin);
 
-  if (start.getHours() < 7 || end.getHours() > 22) {
+  const startMinutes = start.getHours() * 60 + start.getMinutes();
+  const endMinutes = end.getHours() * 60 + end.getMinutes();
+
+  const MIN_TIME = 7 * 60;
+  const MAX_TIME = 22 * 60;
+
+  if (startMinutes < MIN_TIME || endMinutes > MAX_TIME) {
     throw new Error("HOURS_OUT_OF_RANGE");
   }
 
-  // 🔥 1. Vérifier conflit
+  if (nb_participants && nb_participants < 0) {
+    throw new Error("INVALID_PARTICIPANTS");
+  }
+
+  if (budget && budget < 0) {
+    throw new Error("INVALID_BUDGET");
+  }
+
   const conflict = await hasReservationConflict(id_salle, date_debut, date_fin);
 
   if (conflict) {
@@ -56,14 +82,23 @@ export async function createEvenement(data) {
 
   const conn = await pool.getConnection();
 
+  const [salle] = await conn.query(
+    "SELECT capacite FROM salles WHERE id_salle = ?",
+    [id_salle],
+  );
+
+  if (nb_participants && salle[0] && nb_participants > salle[0].capacite) {
+    throw new Error("CAPACITY_EXCEEDED");
+  }
+
   try {
     await conn.beginTransaction();
 
     const [evResult] = await conn.query(
       `
       INSERT INTO evenements
-      (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur, budget, nb_participants)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         nom_evenement,
@@ -74,6 +109,8 @@ export async function createEvenement(data) {
         statutFinal,
         id_salle,
         id_organisateur,
+        budget ?? 0,
+        nb_participants ?? 0,
       ],
     );
 
@@ -176,4 +213,20 @@ export async function getEvenementServiceInfoForNotification(
   );
 
   return rows[0] || null;
+}
+
+export async function getAllEvenements() {
+  // Auto-update: marquer comme Terminé les événements dont la date_fin est passée
+  // et dont le statut n'est pas déjà Annulé ou Terminé
+  await pool.query(
+    `
+    UPDATE evenements
+    SET statut = 'Terminé'
+    WHERE date_fin < NOW()
+      AND statut NOT IN ('Annulé', 'Terminé')
+    `,
+  );
+
+  const [rows] = await pool.query("SELECT * FROM evenements");
+  return rows;
 }

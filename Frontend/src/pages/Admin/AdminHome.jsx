@@ -15,6 +15,7 @@ import {
   FaCalendar,
   FaCalendarAlt,
   FaEnvelopeOpenText,
+  FaHistory,
 } from "react-icons/fa";
 
 export default function AdminHome() {
@@ -50,18 +51,11 @@ export default function AdminHome() {
       enabled: true,
     },
     {
-      title: "Paramètres",
-      desc: "Réglages de la plateforme",
-      icon: <FaCogs />,
-      to: "/admin/params",
-      enabled: false,
-    },
-    {
-      title: "Logs / Sécurité",
-      desc: "Connexions et alertes",
-      icon: <FaListAlt />,
-      to: "/admin/logs",
-      enabled: false,
+      title: "Historique",
+      desc: "Voir les événements passés",
+      icon: <FaHistory />,
+      to: "/admin/historique",
+      enabled: true,
     },
   ];
 
