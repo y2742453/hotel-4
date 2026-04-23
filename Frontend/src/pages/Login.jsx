@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../auth/UseAuth.jsx";
 import { useToast } from "../Components/Toast.jsx";
 import "../styles/forms.css";
+import "../styles/login.css";
 
 import logo from "../assets/Logo.png";
 

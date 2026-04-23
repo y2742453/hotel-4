@@ -1,22 +1,43 @@
 /* src/styles/global.css */
-
 /* Reset simple */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
   background: #f4f7fb; /* gris très léger */
   color: #0f172a;
 }
 
 /* Liens */
-a { color: inherit; text-decoration: none; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
 /* Titres */
-h1, h2, h3 { margin: 0 0 12px; }
-p { margin: 0 0 12px; }
-.muted { color: #64748b; }
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+}
+p {
+  margin: 0 0 12px;
+}
+.muted {
+  color: #64748b;
+}
 
 /* Conteneurs */
 .page {
@@ -32,7 +53,6 @@ p { margin: 0 0 12px; }
 }
 
 /* Boutons */
-
 
 /* Messages */
 .msg {
@@ -469,5 +489,3 @@ p { margin: 0 0 12px; }
   flex-wrap: wrap;
   margin-top: 6px;
 }
-
-

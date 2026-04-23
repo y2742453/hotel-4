@@ -11,13 +11,12 @@ export const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-// 🔥 Test connexion (important)
 (async () => {
   try {
     const conn = await pool.getConnection();
-    console.log("✅ Connecté à MariaDB !");
+    console.log("Connecté à la base de données MySQL");
     conn.release();
   } catch (err) {
-    console.error("❌ Erreur DB :", err.message);
+    console.error("Erreur de connexion MySQL :", err.message);
   }
 })();

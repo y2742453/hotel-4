@@ -43,7 +43,13 @@ export async function createEvenement(data) {
   const start = new Date(date_debut);
   const end = new Date(date_fin);
 
-  if (start.getHours() < 7 || end.getHours() > 22) {
+  const startMinutes = start.getHours() * 60 + start.getMinutes();
+  const endMinutes = end.getHours() * 60 + end.getMinutes();
+
+  const MIN_TIME = 7 * 60;
+  const MAX_TIME = 22 * 60;
+
+  if (startMinutes < MIN_TIME || endMinutes > MAX_TIME) {
     throw new Error("HOURS_OUT_OF_RANGE");
   }
 

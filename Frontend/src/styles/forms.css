@@ -1,340 +1,36 @@
 /* src/styles/forms.css */
 
-/* =========================
-   GLOBAL RESET + BASE
-   (uniquement pour la page login)
-========================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
-}
-
-body {
-  overflow-x: hidden;
-}
-
-/* =========================
-   MAIN LAYOUT
-========================= */
-.landingPage {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  background: #0f172a;
-  color: #e2e8f0;
-}
-
-/* =========================
-   LEFT SIDE (BRANDING)
-========================= */
-.landingLeft {
-  flex: 1.1;
-  padding: 60px 50px;
+.form {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0f172a, #1e293b);
-  background-size: 400% 400%;
-  animation: gradientMove 12s ease infinite;
-  position: relative;
-  overflow: hidden;
+  gap: 10px;
 }
 
-.landingLeft::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.18), transparent 60%);
-  animation: floatGlow 12s linear infinite;
-}
-
-/* =========================
-   LOGO
-========================= */
-.logo {
-  width: 280px;
-  height: auto;
-  margin-bottom: 28px;
-  border-radius: 10px;
-  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
-  animation: fadeInScale 1s ease forwards;
-  position: relative;
-  z-index: 1;
-}
-
-/* =========================
-   TITLE
-========================= */
-.landingLeft h1 {
-  font-size: 38px;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 10px;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
-  animation: fadeInUp 1s ease forwards;
-}
-
-/* =========================
-   SUBTITLE
-========================= */
-.subtitle {
-  font-size: 15px;
-  color: #94a3b8;
-  max-width: 380px;
-  margin-bottom: 36px;
-  line-height: 1.6;
-  position: relative;
-  z-index: 1;
-  animation: fadeInUp 1.2s ease forwards;
-}
-
-/* =========================
-   FEATURE LIST
-========================= */
-.features {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-  max-width: 360px;
-  position: relative;
-  z-index: 1;
-}
-
-.features li {
-  margin-bottom: 12px;
-  padding: 13px 18px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  animation: fadeInUp 1.4s ease forwards;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.features li:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.09);
-}
-
-.features li::before {
-  content: "✓";
-  color: #38bdf8;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-/* =========================
-   RIGHT SIDE (LOGIN)
-========================= */
-.landingRight {
-  flex: 0.9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #0b1220;
-  position: relative;
-  padding: 40px 30px;
-}
-
-.landingRight::before,
-.landingRight::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.12);
-  filter: blur(80px);
-  pointer-events: none;
-}
-
-.landingRight::before {
-  width: 280px;
-  height: 280px;
-  top: 8%;
-  left: 15%;
-}
-
-.landingRight::after {
-  width: 220px;
-  height: 220px;
-  bottom: 8%;
-  right: 12%;
-}
-
-/* =========================
-   LOGIN CARD
-========================= */
-.loginCard {
-  width: 100%;
-  max-width: 400px;
-  padding: 40px 36px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
-  animation: fadeInScale 0.8s ease forwards;
-  position: relative;
-  z-index: 1;
-}
-
-.loginCard h2 {
-  font-size: 28px;
+label {
   font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 6px;
-}
-
-.muted {
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 28px;
-}
-
-/* =========================
-   FORM — scopé sous .loginCard
-========================= */
-.loginCard .form {
-  display: flex;
-  flex-direction: column;
-}
-
-.loginCard label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-bottom: 7px;
-  display: block;
-}
-
-.loginCard input {
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.7);
-  color: #f1f5f9;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.25s ease;
-}
-
-.loginCard input::placeholder {
-  color: #475569;
-}
-
-.loginCard input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
-  background: rgba(15, 23, 42, 0.9);
-}
-
-/* =========================
-   BOUTON LOGIN — scopé sous .loginCard
-========================= */
-.loginCard .btn {
-  width: 100%;
-  padding: 13px 16px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  transition: all 0.25s ease;
-  margin-top: 4px;
-}
-
-.loginCard .btnPrimary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #ffffff;
-}
-
-.loginCard .btnPrimary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.4);
-}
-
-.loginCard .btnPrimary:active {
-  transform: scale(0.98);
-}
-
-.loginCard .btnPrimary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* =========================
-   BOUTONS GLOBAUX (pages internes)
-========================= */
-.btn {
-  padding: 10px 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.btnPrimary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #ffffff;
-}
-
-.btnPrimary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
-}
-
-.btnGhost {
-  background: transparent;
-  border: 1px solid #dbe4f0;
   color: #0f172a;
 }
 
-.btnGhost:hover {
-  background: #f1f5f9;
+input,
+select {
+  width: 100%;
+  border: 1px solid #d7e1ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  background: #ffffff;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
-/* =========================
-   FORM ROW (admin — création user)
-========================= */
-.formRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-end;
+input:focus,
+select:focus {
+  border-color: #1e4db7;
+  box-shadow: 0 0 0 3px rgba(30, 77, 183, 0.15);
 }
 
-.formRow input,
-.formRow select {
-  flex: 1 1 200px;
-  min-width: 180px;
-}
-
-.formRow .btn {
-  flex: 0 0 auto;
-  width: auto;
-  padding: 10px 18px;
-}
-
-/* =========================
-   AUTH PAGES (autres que login)
-========================= */
+/* Page login */
 .authPage {
   min-height: 100vh;
   display: flex;
@@ -358,63 +54,387 @@ body {
   margin-bottom: 6px;
 }
 
+/* Form row (création user admin) */
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.formRow input,
+.formRow select {
+  flex: 1 1 200px;
+  min-width: 190px;
+}
+
+.formRow .btn {
+  flex: 0 0 120px;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .authCard h1 {
+    font-size: 34px;
+  }
+  .formRow .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* =========================
+   GLOBAL RESET + BASE
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+/* =========================
+   MAIN LAYOUT
+========================= */
+.landingPage {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* =========================
+   LEFT SIDE (BRANDING - HERO)
+========================= */
+.landingLeft {
+  flex: 1;
+  padding: 70px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0f172a, #1e293b);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* glow background */
+.landingLeft::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.18),
+    transparent 60%
+  );
+  animation: floatGlow 12s linear infinite;
+}
+
+/* =========================
+   LOGO (BIG + CENTERED)
+========================= */
+.logo {
+  width: 460px;
+  height: auto;
+  margin-bottom: 25px;
+  border-radius: 10px;
+
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+
+  animation: fadeInScale 1s ease forwards;
+}
+
+/* =========================
+   MAIN TITLE
+========================= */
+.landingLeft h1 {
+  font-size: 52px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+
+  animation: fadeInUp 1s ease forwards;
+}
+
+/* =========================
+   SUBTITLE (TAGLINE)
+========================= */
+.subtitle {
+  font-size: 18px;
+  color: #cbd5e1;
+  max-width: 520px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+
+  animation: fadeInUp 1.2s ease forwards;
+}
+
+/* =========================
+   INFO BLOCK (MORE PRO)
+========================= */
+.features {
+  list-style: none;
+  margin-top: 10px;
+  padding: 0;
+  max-width: 420px;
+}
+
+.features li {
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  color: #e2e8f0;
+  font-size: 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  animation: fadeInUp 1.4s ease forwards;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.features li:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* check icon */
+.features li::before {
+  content: "✓";
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+/* =========================
+   RIGHT SIDE (LOGIN)
+========================= */
+.landingRight {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0b1220;
+  position: relative;
+}
+
+/* floating shapes */
+.landingRight::before,
+.landingRight::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  filter: blur(80px);
+}
+
+.landingRight::before {
+  width: 300px;
+  height: 300px;
+  top: 10%;
+  left: 20%;
+}
+
+.landingRight::after {
+  width: 250px;
+  height: 250px;
+  bottom: 10%;
+  right: 15%;
+}
+
+/* =========================
+   LOGIN CARD
+========================= */
+.loginCard {
+  width: 360px;
+  padding: 35px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: fadeInScale 0.8s ease forwards;
+}
+
+.loginCard h2 {
+  font-size: 26px;
+  margin-bottom: 5px;
+}
+
+.muted {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   FORM
+========================= */
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #cbd5e1;
+}
+
+input {
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  color: white;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   BUTTON
+========================= */
+.btn {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btnPrimary:active {
+  transform: scale(0.98);
+}
+
 /* =========================
    ANIMATIONS
 ========================= */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes gradientMove {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes floatGlow {
-  0%   { transform: translate(0, 0); }
-  50%  { transform: translate(40px, 25px); }
-  100% { transform: translate(0, 0); }
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(50px, 30px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 /* =========================
    RESPONSIVE
 ========================= */
 @media (max-width: 900px) {
+  .landingPage {
+    flex-direction: column;
+  }
+
   .landingLeft {
-    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .loginCard {
+    width: 90%;
+  }
+}
+
+@media (max-width: 900px) {
+  .landingLeft {
+    display: none; /* 👈 completely removes left side */
   }
 
   .landingRight {
     flex: 1;
     width: 100%;
     min-height: 100vh;
-    padding: 30px 20px;
   }
 
   .landingPage {
     flex-direction: column;
-  }
-
-  .loginCard {
-    max-width: 380px;
-    padding: 32px 24px;
-  }
-}
-
-@media (max-width: 640px) {
-  .authCard h1 {
-    font-size: 34px;
-  }
-
-  .formRow .btn {
-    flex: 1 1 100%;
-    width: 100%;
   }
 }
