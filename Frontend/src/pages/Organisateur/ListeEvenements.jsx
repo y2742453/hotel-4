@@ -224,7 +224,7 @@ export default function ListeEvenements() {
                           </button>
                         )}
 
-                        {!isAdmin && !confirme && !termine && (
+                        {!isAdmin && !confirme && !termine && !annule && (
                           <button
                             className="btn btnPrimary"
                             disabled={confirme || termine}
@@ -239,7 +239,7 @@ export default function ListeEvenements() {
                           </button>
                         )}
 
-                        {isAdmin && (annule || termine) && (
+                        {(annule || termine) && (
                           <button
                             className="btn btnGhost"
                             onClick={() => handleRestore(e.id_evenement)}
