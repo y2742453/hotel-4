@@ -17,6 +17,7 @@ import {
   FaConciergeBell,
   FaEnvelopeOpenText,
   FaBell,
+  FaHistory,
 } from "react-icons/fa";
 
 function roleLabel(id_role) {
@@ -51,6 +52,7 @@ export default function AppShell() {
         <nav className="menu">
           {isAdmin && (
             <>
+              <div className="menuCategory">Navigation</div>
               <NavLink to="/admin" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
@@ -58,6 +60,7 @@ export default function AppShell() {
                 Dashboard
               </NavLink>
 
+              <div className="menuCategory">Administration</div>
               <NavLink to="/admin/users" className={linkClass}>
                 <span className="ico">
                   <FaUsers />
@@ -85,11 +88,17 @@ export default function AppShell() {
                 </span>
                 Événements
               </NavLink>
+
+              <NavLink to="/admin/historique" className={linkClass}>
+                <span className="ico"><FaHistory /></span>
+                Historique
+              </NavLink>
             </>
           )}
 
           {isOrganisateur && (
             <>
+              <div className="menuCategory">Navigation</div>
               <NavLink to="/organisateur" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
@@ -97,6 +106,7 @@ export default function AppShell() {
                 Dashboard
               </NavLink>
 
+              <div className="menuCategory">Gestion</div>
               <NavLink to="/organisateur/evenements" className={linkClass}>
                 <span className="ico">
                   <FaCalendarAlt />
@@ -117,11 +127,18 @@ export default function AppShell() {
                 </span>
                 Invités
               </NavLink>
+
+              <div className="menuCategory">Historique</div>
+              <NavLink to="/organisateur/historique" className={linkClass}>
+                <span className="ico"><FaHistory /></span>
+                Historique
+              </NavLink>
             </>
           )}
 
           {isCoordonnateur && (
             <>
+              <div className="menuCategory">Navigation</div>
               <NavLink to="/coordonnateur" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
@@ -129,6 +146,7 @@ export default function AppShell() {
                 Dashboard
               </NavLink>
 
+              <div className="menuCategory">Gestion</div>
               <NavLink to="/coordonnateur/demandes" className={linkClass}>
                 <span className="ico">
                   <FaConciergeBell />
@@ -142,11 +160,23 @@ export default function AppShell() {
                 </span>
                 Devis
               </NavLink>
+
+              <div className="menuCategory">Historique</div>
+              <NavLink to="/coordonnateur/historique" className={linkClass}>
+                <span className="ico"><FaHistory /></span>
+                Historique
+              </NavLink>
+
+              <NavLink to="/coordonnateur/audit" className={linkClass}>
+                <span className="ico"><FaHistory /></span>
+                Audit modifications
+              </NavLink>
             </>
           )}
 
           {isCompta && (
             <>
+              <div className="menuCategory">Navigation</div>
               <NavLink to="/comptabilite" end className={linkClass}>
                 <span className="ico">
                   <FaChartBar />
@@ -154,11 +184,18 @@ export default function AppShell() {
                 Dashboard
               </NavLink>
 
+              <div className="menuCategory">Gestion</div>
               <NavLink to="/comptabilite/factures" className={linkClass}>
                 <span className="ico">
                   <FaFileInvoiceDollar />
                 </span>
                 Factures
+              </NavLink>
+
+              <div className="menuCategory">Historique</div>
+              <NavLink to="/comptabilite/historique" className={linkClass}>
+                <span className="ico"><FaHistory /></span>
+                Historique
               </NavLink>
             </>
           )}
@@ -196,6 +233,11 @@ export default function AppShell() {
         <div className="content">
           <Outlet />
         </div>
+
+        <footer className="appFooter">
+          <span>© {new Date().getFullYear()} Hôtel La Promenade — Tous droits réservés</span>
+          <span>Plateforme interne de gestion des événements</span>
+        </footer>
       </main>
 
       {showNotifPrefs && (

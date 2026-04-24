@@ -47,7 +47,7 @@ export default function OrganisateurHome() {
               stats.confirmedGuests,
               stats.totalGuests - stats.confirmedGuests,
             ],
-            backgroundColor: ["#1f4db8", "#ef4444"],
+            backgroundColor: ["#22c55e", "#1f4db8"],
             borderWidth: 0,
           },
         ],
