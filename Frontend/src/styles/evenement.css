@@ -82,7 +82,9 @@
   color: #0f172a;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .field input:focus,
@@ -147,7 +149,10 @@
   font-size: 13px;
   font-weight: 500;
   color: #334155;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .serviceCard:hover {
@@ -202,7 +207,9 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition:
+    background 0.2s,
+    transform 0.15s;
   background: #1f4db8;
   color: #fff;
 }
@@ -230,8 +237,67 @@
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .grid2 { grid-template-columns: 1fr; }
-  .main-card { padding: 20px 16px; }
-  .form-actions { flex-direction: column; }
-  .btn-submit { width: 100%; text-align: center; }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .main-card {
+    padding: 20px 16px;
+  }
+  .form-actions {
+    flex-direction: column;
+  }
+  .btn-submit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.salle-summary {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.salle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.salle-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.salle-capacity {
+  font-size: 13px;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.salle-dates {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.salle-dates div {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 2px;
 }

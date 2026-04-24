@@ -432,6 +432,28 @@ p {
   background: #e2e8f0;
 }
 
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* inputs grow nicely */
+.filters select,
+.filters input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 180px;
+}
+
+/* reset button consistency */
+.filters button {
+  white-space: nowrap;
+}
+
 .prefsBtn {
   width: 100%;
   text-align: left;
@@ -439,6 +461,7 @@ p {
   background: transparent;
   font: inherit;
 }
+
 /* ===== PREFERENCES NOTIFICATIONS ===== */
 .notifPrefs {
   display: grid;
@@ -488,4 +511,118 @@ p {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 6px;
+}
+
+/* =========================
+   MOBILE RESPONSIVE FIXES
+   ========================= */
+@media (max-width: 768px) {
+  /* ===== TOAST ===== */
+  .toastZone {
+    top: 10px;
+    right: 10px;
+    width: calc(100vw - 20px);
+  }
+
+  .toast {
+    padding: 10px;
+  }
+
+  .toastMsg {
+    font-size: 13px;
+  }
+
+  /* ===== NOTIFICATIONS DROPDOWN ===== */
+  .notif-dropdown {
+    width: calc(100vw - 20px);
+    right: 10px;
+    left: 30%;
+    border-radius: 14px;
+    transform: translateX(-50%);
+  }
+
+  .notif-header {
+    padding: 12px;
+  }
+
+  .notif-list {
+    max-height: 300px;
+  }
+
+  .notif-item {
+    padding: 12px;
+  }
+
+  .notif-message {
+    font-size: 12.5px;
+  }
+
+  /* ===== BELL BUTTON ===== */
+  .notif-bell {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  /* ===== MODALS (NOTIF PREFS) ===== */
+  .modalCard {
+    max-width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  /* ===== PREF ITEMS ===== */
+  .notifPrefItem {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .notifPrefItem input[type="checkbox"] {
+    align-self: flex-start;
+  }
+
+  /* ===== TEXT SCALE ===== */
+  .notif-header-title {
+    font-size: 14px;
+  }
+
+  .notif-title {
+    font-size: 13px;
+  }
+
+  .notif-meta {
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters select,
+  .filters input,
+  .filters button {
+    width: 100%;
+    min-width: unset;
+  }
 }

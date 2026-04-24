@@ -5,6 +5,11 @@
   margin: 0 auto;
 }
 
+.invites-page .main-card {
+  width: 100%;
+  max-width: 1200px;
+}
+
 .invites-page input,
 .invites-page select,
 .invites-page .modal input {
@@ -308,5 +313,71 @@
   .invites-page .actions-right {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  /* PAGE padding smaller */
+  .invites-page {
+    padding: 12px;
+  }
+
+  /* CARD full width feel */
+  .invites-page .main-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  /* make ALL inputs full width */
+  .invites-page input[type="text"],
+  .invites-page input[type="number"],
+  .invites-page select {
+    width: 100%;
+  }
+
+  /* SEARCH input fix (important) */
+  .invites-page input[type="text"] {
+    width: 100%;
+  }
+
+  /* ACTIONS stack nicely */
+  .invites-page .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .invites-page .actions-left,
+  .invites-page .actions-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* buttons full width on mobile (clean UX) */
+  .invites-page .btn {
+    width: 100%;
+  }
+
+  /* stats stack vertically */
+  .invites-page .stats {
+    flex-direction: column;
+  }
+
+  .invites-page .stats div {
+    width: 100%;
+  }
+
+  /* TABLE becomes scrollable instead of breaking layout */
+  .invites-page .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* modal adapts screen */
+  .modal {
+    max-width: 95%;
+    padding: 16px;
   }
 }
