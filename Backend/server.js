@@ -748,35 +748,6 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       }
     }
 
-    for (const coord of coordonateurs) {
-      const prefs = await ensureNotificationPreferences(coord.id_user);
-
-      if (prefs.canal_interne) {
-        await createNotification({
-          id_user: coord.id_user,
-          type_notification: "evenement",
-          titre: "Nouvel événement à valider",
-          message: `Un nouvel événement "${nom_evenement}" nécessite votre validation.`,
-          lien: "/coordonateur/evenements",
-        });
-      }
-
-      if (prefs.canal_email && coord.email) {
-        await sendNotificationEmail({
-          to: coord.email,
-          subject: "Nouvel événement à valider",
-          title: "Nouvel événement à valider",
-          message: `Un nouvel événement "${nom_evenement}" attend votre validation.`,
-          actionUrl: "http://localhost:5173/coordonateur/evenements",
-        });
-      }
-
-      if (prefs.canal_sms) {
-        console.log(
-          `SMS coordonateur ${coord.id_user} : nouvel événement à valider`,
-        );
-      }
-    }
     res.status(201).json({ id_evenement });
   } catch (err) {
     console.error("EVENT ERROR:", err.code, err.message, err.sql);

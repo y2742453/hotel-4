@@ -93,27 +93,27 @@ CREATE TABLE services (
     tarif DECIMAL(10, 2) NOT NULL
 );
 
-INSERT INTO
-    services (
-        nom_service,
-        description,
-        tarif
-    )
-VALUES (
-        'Traiteur',
-        'Service de restauration pour les événements',
-        300.00
-    ),
-    (
-        'Audiovisuel',
-        'Équipements audiovisuels et assistance technique',
-        200.00
-    ),
-    (
-        'Sécurité',
-        'Service de sécurité pour événements',
-        100.00
-    );
+-- INSERT INTO
+--     services (
+--         nom_service,
+--         description,
+--         tarif
+--     )
+-- VALUES (
+--         'Traiteur',
+--         'Service de restauration pour les événements',
+--         300.00
+--     ),
+--     (
+--         'Audiovisuel',
+--         'Équipements audiovisuels et assistance technique',
+--         200.00
+--     ),
+--     (
+--         'Sécurité',
+--         'Service de sécurité pour événements',
+--         100.00
+--     );
 
 -- =========================
 -- TABLE EVENEMENTS

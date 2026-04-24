@@ -280,6 +280,7 @@ router.post("/send/:id", async (req, res) => {
 
     res.json({ message: "Invitation envoyée" });
   } catch (err) {
+    console.error("Erreur envoi invitation:", err);
     res.status(500).json({ error: "Erreur lors de l'envoi" });
   }
 });
