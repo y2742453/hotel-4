@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../Api/Client.jsx";
 import "../../styles/dashboard.css";
 import "../../styles/global.css";
+import useAuth from "../../auth/UseAuth.jsx";
+
 
 import {
   FaMoneyBillWave,
@@ -27,6 +29,7 @@ export default function ComptabiliteHome() {
     loadStats();
     loadFactures();
   }, []);
+  const { user } = useAuth();
 
   async function loadStats() {
     const { res, data } = await apiFetch("/api/factures");
@@ -97,9 +100,11 @@ export default function ComptabiliteHome() {
 
   return (
     <div className="page">
-      <div className="pageHeader">
-        <h2>Comptabilité</h2>
-        <p className="muted">Suivi des factures, paiements et revenus.</p>
+      <div className="dashWelcome">
+        <h2>Bonjour{user?.prenom ? `, ${user.prenom}` : ""}</h2>
+        <p className="dashWelcomeSub">
+          Bienvenue sur votre espace comptabilité. Suivez les factures, paiements et revenus depuis cette page.
+        </p>
       </div>
 
       {/* KPI CARDS */}

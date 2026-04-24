@@ -4,7 +4,7 @@ import { apiFetch } from "../../Api/Client.jsx";
 import "../../styles/dashboard.css";
 import "../../styles/global.css";
 import { useNavigate } from "react-router-dom";
-
+import useAuth from "../../auth/UseAuth.jsx";
 import {
   FaClipboardList,
   FaClock,
@@ -26,6 +26,7 @@ export default function CoordonnateurHome() {
     chargerStats();
   }, []);
   const navigate = useNavigate();
+   const { user } = useAuth();
 
   async function chargerStats() {
     const { res, data } = await apiFetch("/api/evenementservices");
@@ -79,11 +80,11 @@ export default function CoordonnateurHome() {
     },
   ];
   return (
-    <div className="page">
-      <div className="pageHeader">
-        <h2>Dashboard Coordonnateur</h2>
-        <p className="muted">
-          Suivi global des demandes de services des organisateurs.
+<div className="page">
+      <div className="dashWelcome">
+        <h2>Bonjour{user?.prenom ? `, ${user.prenom}` : ""}</h2>
+        <p className="dashWelcomeSub">
+          Bienvenue sur votre espace coordonnateur. Suivez et validez les demandes de services depuis cette page.
         </p>
       </div>
 

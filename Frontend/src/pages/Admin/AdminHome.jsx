@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/dashboard.css";
-
+import useAuth from "../../auth/UseAuth.jsx";
 import {
   FaUsers,
   FaUserShield,
@@ -20,6 +20,7 @@ import {
 
 export default function AdminHome() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const actions = [
     {
@@ -61,10 +62,10 @@ export default function AdminHome() {
 
   return (
     <div className="page">
-      <div className="pageHeader">
-        <h2>Dashboard Administrateur</h2>
-        <p className="muted">
-          Vue globale et accès rapide aux fonctionnalités.
+      <div className="dashWelcome">
+        <h2>Bonjour{user?.prenom ? `, ${user.prenom}` : ""}</h2>
+        <p className="dashWelcomeSub">
+          Bienvenue sur votre espace administrateur. Gérez les utilisateurs, salles et services depuis cette page.
         </p>
       </div>
 
