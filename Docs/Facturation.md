@@ -43,14 +43,18 @@ npm install express mysql2 stripe dotenv
 
 1. Créer un compte sur Stripe
 2. Aller dans Developers → API keys
-3. Copier la clé secrète (sk*test*...)
+3. Copier la clé secrète et la clé publique (sk*test*..., pk*test*...)
 4. Ajouter dans .env
 
 Webhook
 
 1. Aller dans Developers → Webhooks
 2. Appuyez sur `Set up local listener` et suivez les instructions.
-   Depuis un nouveau PowerShell / CMD(Windows) ou zsh(Mac):
+
+- Il s'assurer d'installer le CLI de stripe
+  puis
+
+  Depuis un nouveau PowerShell / CMD(Windows) ou zsh(Mac):
 
 ```bash
 - cd /Backend
