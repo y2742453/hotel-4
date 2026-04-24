@@ -296,6 +296,14 @@ export default function App() {
                   </RoleGate>
                 }
               />
+              <Route
+                path="comptabilite/historique"
+                element={
+                  <RoleGate allowedRoles={[4]}>
+                    <HistoriqueEvenements />
+                  </RoleGate>
+                }
+              />
 
               <Route
                 path="comptabilite/success"

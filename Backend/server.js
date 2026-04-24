@@ -112,6 +112,13 @@ import {
   getFactureById,
 } from "./modele/facture.js";
 
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const LOGO_PATH = path.join(__dirname, "../Frontend/src/assets/Logo.png");
+
 // Création du serveur  `
 const app = express();
 
@@ -2001,58 +2008,113 @@ app.get("/api/dashboard", async (req, res) => {
 });
 
 // Export Excel
+// Export Excel
 app.get("/api/dashboard/export/excel", async (req, res) => {
   try {
     const { date_debut, date_fin } = req.query;
-
-    let conditions = [];
-    let values = [];
-
+    const conditions = [];
+    const values = [];
     if (date_debut && date_fin) {
-      conditions.push("date_debut BETWEEN ? AND ?");
+      conditions.push("e.date_debut BETWEEN ? AND ?");
       values.push(date_debut, date_fin);
     }
-
-    const whereClause =
-      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+    const whereClause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
     const [rows] = await pool.query(
-      `
-      SELECT 
-        e.nom_evenement,
-        e.type_evenement,
-        e.date_debut,
-        e.date_fin,
-        e.statut,
-        f.montant_total
-      FROM evenements e
-      LEFT JOIN factures f ON e.id_evenement = f.id_evenement
-      ${whereClause}
-    `,
-      values,
+      `SELECT e.nom_evenement, e.type_evenement, e.date_debut, e.date_fin,
+              e.statut, e.nb_participants, e.budget,
+              s.nom_salle, u.nom AS organisateur_nom, u.prenom AS organisateur_prenom,
+              f.montant_total
+       FROM evenements e
+       LEFT JOIN factures f ON e.id_evenement = f.id_evenement
+       LEFT JOIN salles s ON e.id_salle = s.id_salle
+       LEFT JOIN users u ON e.id_organisateur = u.id_user
+       ${whereClause}
+       ORDER BY e.date_debut DESC`,
+      values
     );
 
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Rapport");
+    const sheet = workbook.addWorksheet("Rapport événements");
 
     sheet.columns = [
-      { header: "Nom", key: "nom_evenement", width: 25 },
-      { header: "Type", key: "type_evenement", width: 20 },
-      { header: "Début", key: "date_debut", width: 20 },
-      { header: "Fin", key: "date_fin", width: 20 },
-      { header: "Statut", key: "statut", width: 15 },
-      { header: "Coût", key: "montant_total", width: 15 },
+      { header: "Nom de l'événement", key: "nom_evenement",    width: 28 },
+      { header: "Type",               key: "type_evenement",   width: 16 },
+      { header: "Salle",              key: "nom_salle",        width: 20 },
+      { header: "Date début",         key: "date_debut",       width: 16 },
+      { header: "Date fin",           key: "date_fin",         width: 16 },
+      { header: "Statut",             key: "statut",           width: 14 },
+      { header: "Participants",       key: "nb_participants",  width: 14 },
+      { header: "Budget ($)",         key: "budget",           width: 14 },
+      { header: "Organisateur",       key: "organisateur",     width: 24 },
     ];
 
-    rows.forEach((row) => sheet.addRow(row));
+    // En-têtes stylisés
+    const headerRow = sheet.getRow(1);
+    sheet.columns.forEach((col, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = col.header;
+      cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F2F6B" } };
+      cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+      cell.border = {
+        top:    { style: "thin", color: { argb: "FF1E3A8A" } },
+        bottom: { style: "thin", color: { argb: "FF1E3A8A" } },
+        left:   { style: "thin", color: { argb: "FF1E3A8A" } },
+        right:  { style: "thin", color: { argb: "FF1E3A8A" } },
+      };
+    });
+    headerRow.height = 30;
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
+    const statutBg = {
+      "Confirmé": "FFDCFCE7", "Prévu": "FFFEF3C7",
+      "Terminé":  "FFF1F5F9", "Annulé": "FFFEE2E2",
+    };
+    const statutFg = {
+      "Confirmé": "FF166534", "Prévu": "FF92400E",
+      "Terminé":  "FF374151", "Annulé": "FFB91C1C",
+    };
 
-    res.setHeader("Content-Disposition", "attachment; filename=rapport.xlsx");
+    const fmt = (d) => d ? new Date(d).toLocaleDateString("fr-CA") : "—";
 
+    rows.forEach((row, idx) => {
+      const r = sheet.addRow({
+        nom_evenement:   row.nom_evenement  || "—",
+        type_evenement:  row.type_evenement || "—",
+        nom_salle:       row.nom_salle      || "—",
+        date_debut:      fmt(row.date_debut),
+        date_fin:        fmt(row.date_fin),
+        statut:          row.statut         || "—",
+        nb_participants: row.nb_participants != null ? row.nb_participants : "—",
+        budget:          row.budget != null ? Number(row.budget).toFixed(2) : "—",
+        organisateur:    `${row.organisateur_prenom || ""} ${row.organisateur_nom || ""}`.trim() || "—",
+      });
+
+      r.height = 22;
+      const bg = idx % 2 === 0 ? "FFFFFFFF" : "FFF8FAFC";
+
+      r.eachCell({ includeEmpty: true }, (cell) => {
+        cell.font = { name: "Calibri", size: 10 };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bg } };
+        cell.alignment = { vertical: "middle" };
+        cell.border = {
+          bottom: { style: "hair", color: { argb: "FFE2E8F0" } },
+          right:  { style: "hair", color: { argb: "FFE2E8F0" } },
+        };
+      });
+
+      // Coloriser statut
+      const statut = row.statut || "";
+      if (statutBg[statut]) {
+        const sc = r.getCell(6);
+        sc.font = { name: "Calibri", size: 10, bold: true, color: { argb: statutFg[statut] } };
+        sc.fill = { type: "pattern", pattern: "solid", fgColor: { argb: statutBg[statut] } };
+        sc.alignment = { vertical: "middle", horizontal: "center" };
+      }
+    });
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=rapport_${new Date().toISOString().slice(0,10)}.xlsx`);
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {
@@ -2060,55 +2122,132 @@ app.get("/api/dashboard/export/excel", async (req, res) => {
     res.status(500).json({ message: "Erreur export Excel" });
   }
 });
-
 // Export PDF
 
+// Export PDF
 app.get("/api/dashboard/export/pdf", async (req, res) => {
   try {
     const { date_debut, date_fin } = req.query;
-
-    let conditions = [];
-    let values = [];
-
+    const conditions = [];
+    const values = [];
     if (date_debut && date_fin) {
-      conditions.push("date_debut BETWEEN ? AND ?");
+      conditions.push("e.date_debut BETWEEN ? AND ?");
       values.push(date_debut, date_fin);
     }
-
-    const whereClause =
-      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+    const whereClause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
     const [rows] = await pool.query(
-      `
-      SELECT 
-        e.nom_evenement,
-        e.type_evenement,
-        e.date_debut,
-        e.statut,
-        f.montant_total
-      FROM evenements e
-      LEFT JOIN factures f ON e.id_evenement = f.id_evenement
-      ${whereClause}
-    `,
-      values,
+      `SELECT e.nom_evenement, e.type_evenement, e.date_debut, e.date_fin,
+              e.statut, e.nb_participants, e.budget,
+              s.nom_salle, u.nom AS organisateur_nom, u.prenom AS organisateur_prenom,
+              f.montant_total
+       FROM evenements e
+       LEFT JOIN factures f ON e.id_evenement = f.id_evenement
+       LEFT JOIN salles s ON e.id_salle = s.id_salle
+       LEFT JOIN users u ON e.id_organisateur = u.id_user
+       ${whereClause}
+       ORDER BY e.date_debut DESC`,
+      values
     );
 
-    const doc = new PDFDocument();
-
+    const doc = new PDFDocument({ size: "A4", margin: 40, bufferPages: true });
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "attachment; filename=rapport.pdf");
-
+    res.setHeader("Content-Disposition", `attachment; filename=rapport_evenements_${new Date().toISOString().slice(0,10)}.pdf`);
     doc.pipe(res);
 
-    doc.fontSize(18).text("Rapport des événements", { align: "center" });
-    doc.moveDown();
+    const NAVY  = "#0F2F6B";
+    const BLUE  = "#1F4DB8";
+    const LIGHT = "#F4F7FB";
+    const GRAY  = "#64748B";
+    const WHITE = "#FFFFFF";
+    const pageW = doc.page.width - 80;
 
-    rows.forEach((row, index) => {
-      doc
-        .fontSize(12)
-        .text(
-          `${index + 1}. ${row.nom_evenement} - ${row.type_evenement} - ${row.statut} - ${row.montant_total || 0} $`,
-        );
+    // Bandeau en-tête
+    doc.rect(0, 0, doc.page.width, 90).fill(NAVY);
+
+    try {
+      doc.image(LOGO_PATH, 40, 10, { height: 70, fit: [130, 70] });
+    } catch (_) {}
+
+    doc.fillColor(WHITE).font("Helvetica-Bold").fontSize(18)
+      .text("RAPPORT DES ÉVÉNEMENTS", 185, 28, { width: 360, align: "center" });
+    doc.fillColor("#93C5FD").font("Helvetica").fontSize(9)
+      .text(`Hôtel La Promenade  —  Généré le ${new Date().toLocaleDateString("fr-CA")}`, 185, 54, { width: 360, align: "center" });
+
+    let y = 110;
+
+    // Résumé
+    const totalMontant = rows.reduce((s, r) => s + Number(r.montant_total || 0), 0);
+    doc.roundedRect(40, y, pageW, 32, 6).fill(LIGHT);
+    doc.fillColor(BLUE).font("Helvetica-Bold").fontSize(9)
+      .text(`${rows.length} événement(s) au total`, 52, y + 11);
+    doc.fillColor(GRAY).font("Helvetica").fontSize(9)
+      .text(`Montant total facturé : ${totalMontant.toFixed(2)} $`, 0, y + 11, { align: "right", width: doc.page.width - 52 });
+    y += 44;
+
+    // En-têtes tableau
+    const cols = [
+      { label: "Événement",    w: 130 },
+      { label: "Type",         w:  70 },
+      { label: "Salle",        w:  70 },
+      { label: "Date début",   w:  70 },
+      { label: "Statut",       w:  58 },
+      { label: "Participants", w:  54 },
+      { label: "Montant ($)",  w:  64 },
+    ];
+
+    const drawHeaders = (startY) => {
+      doc.rect(40, startY, pageW, 22).fill(BLUE);
+      let cx = 40;
+      cols.forEach((col) => {
+        doc.fillColor(WHITE).font("Helvetica-Bold").fontSize(8)
+          .text(col.label, cx + 4, startY + 7, { width: col.w - 8, align: "center" });
+        cx += col.w;
+      });
+      return startY + 22;
+    };
+
+    y = drawHeaders(y);
+
+    // Couleurs statut
+    const statutColor = {
+      "Confirmé": BLUE, "Prévu": "#92400E",
+      "Terminé": "#374151", "Annulé": "#B91C1C",
+    };
+
+    const fmt = (d) => d ? new Date(d).toLocaleDateString("fr-CA") : "—";
+
+    rows.forEach((row, idx) => {
+      if (y > doc.page.height - 80) {
+        doc.addPage();
+        y = drawHeaders(40);
+      }
+
+      const rowH = 20;
+      doc.rect(40, y, pageW, rowH).fill(idx % 2 === 0 ? WHITE : LIGHT);
+
+      const cells = [
+        row.nom_evenement  || "—",
+        row.type_evenement || "—",
+        row.nom_salle      || "—",
+        fmt(row.date_debut),
+        row.statut         || "—",
+        row.nb_participants != null ? String(row.nb_participants) : "—",
+        row.montant_total  != null ? Number(row.montant_total).toFixed(2) : "—",
+      ];
+
+      let cx = 40;
+      cells.forEach((val, ci) => {
+        const isStatut = ci === 4;
+        doc.fillColor(isStatut ? (statutColor[val] || GRAY) : "#0F172A")
+          .font(isStatut ? "Helvetica-Bold" : "Helvetica").fontSize(8)
+          .text(val, cx + 4, y + 6, { width: cols[ci].w - 8, align: ci === 0 ? "left" : "center" });
+        cx += cols[ci].w;
+      });
+
+      doc.moveTo(40, y + rowH).lineTo(40 + pageW, y + rowH)
+        .strokeColor("#E2E8F0").lineWidth(0.5).stroke();
+      y += rowH;
     });
 
     doc.end();

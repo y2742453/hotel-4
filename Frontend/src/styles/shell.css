@@ -1,52 +1,230 @@
-.shell { display: flex; min-height: 100vh; background: #f4f7fb; }
+/* ============================================
+   SHELL — layout principal
+============================================ */
 
-.sidebar {
-  width: 280px;
-  background: #0f2f6b;
-  color: #fff;
-  padding: 18px;
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f7fb;
 }
 
-.brandTitle { font-size: 28px; font-weight: 800; line-height: 1.1; }
-.brandSub { margin-top: 6px; opacity: 0.9; }
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #0f2f6b;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
 
-.menu { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.brand {
+  padding: 22px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
 
+.brandTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.brandSub {
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ── Menu ── */
+.menu {
+  flex: 1;
+  padding: 8px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.menuCategory {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.32);
+  padding: 14px 8px 5px;
+}
+
+/* Base partagée — NavLink ET button */
 .link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 12px;
-  border-radius: 12px;
-  color: #eaf1ff;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.72);
   text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
   background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+  font-family: inherit;  /* ← évite que <button> utilise la font système */
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
 }
 
-.link:hover { background: rgba(255,255,255,0.10); }
+.link:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
 
 .link.active {
-  background: rgba(255,255,255,0.18); /* actif UNIQUEMENT */
-  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  font-weight: 700;
+  border-left: 3px solid #60a5fa;
+  padding-left: 7px;
+}
+/* Reset explicite pour les boutons qui utilisent .link */
+button.link {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.72);
+  background: transparent;
+  border: none;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.4;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  margin: 0;
 }
 
-.ico { width: 22px; display: flex; justify-content: center; }
+button.link:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
 
-.main { flex: 1; display: flex; flex-direction: column; }
+.ico {
+  width: 18px;
+  display: flex;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
 
+/* ── Main ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Topbar ── */
 .topbar {
   background: #fff;
   border-bottom: 1px solid #e7eef8;
-  padding: 14px 18px;
+  padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.content { padding: 18px; }
+.userInfo { display: flex; flex-direction: column; }
 
-/* Responsive */
+.userName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.userRole {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ── Contenu ── */
+.content {
+  padding: 24px;
+  flex: 1;
+}
+
+/* ── Pied de page ── */
+.appFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 24px;
+  background: #fff;
+  border-top: 1px solid #e7eef8;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: auto;
+}
+
+.appFooter span:first-child {
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* ── Modals ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalCard {
+  background: #fff;
+  padding: 28px;
+  border-radius: 16px;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+  position: relative;
+}
+
+.modalClose {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+/* ── Responsive ── */
 @media (max-width: 900px) {
   .shell { flex-direction: column; }
-  .sidebar { width: 100%; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .menuCategory { display: none; }
 }
