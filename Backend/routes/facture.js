@@ -140,41 +140,45 @@ router.post("/payer/:id", async (req, res) => {
 });
 
 /* WEBHOOK STRIPE */
-router.post("/webhook", async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  let event;
+router.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    let event;
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET,
-    );
-  } catch (err) {
-    console.error("Webhook signature error:", err.message);
-    return res.sendStatus(400);
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-
-    const facture = await getFactureByStripeSession(session.id);
-    if (!facture) return res.sendStatus(200);
-
-    if (facture.statut === "paye") {
-      return res.sendStatus(200);
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } catch (err) {
+      console.error("Webhook signature error:", err.message);
+      return res.sendStatus(400);
     }
 
-    await markFacturePaid(facture.id_facture, session.payment_intent);
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
 
-    await createPaiement({
-      id_facture: facture.id_facture,
-      montant: facture.montant_total,
-      paymentIntent: session.payment_intent,
-    });
-  }
+      const facture = await getFactureByStripeSession(session.id);
+      if (!facture) return res.sendStatus(200);
 
-  res.sendStatus(200);
-});
+      if (facture.statut === "paye") {
+        return res.sendStatus(200);
+      }
+
+      await markFacturePaid(facture.id_facture, session.payment_intent);
+
+      await createPaiement({
+        id_facture: facture.id_facture,
+        montant: facture.montant_total,
+        paymentIntent: session.payment_intent,
+      });
+    }
+
+    res.sendStatus(200);
+  },
+);
 
 export default router;

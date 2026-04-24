@@ -12,6 +12,7 @@ let testUser;
 
 beforeAll(async () => {
   await pool.query("USE HotelDB_Test");
+
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   await pool.execute("TRUNCATE TABLE reservations");
   await pool.execute("TRUNCATE TABLE evenements");
@@ -29,6 +30,7 @@ beforeAll(async () => {
     ["Test", "User", "test@jest.com", "pass", role[0].id_role],
   );
   testUser = user.insertId;
+
   const [salle] = await pool.execute(
     `INSERT INTO salles (nom_salle, cout, capacite, equipements, statut)
      VALUES (?, ?, ?, ?, ?)`,
@@ -37,7 +39,7 @@ beforeAll(async () => {
   testSalle = salle.insertId;
 
   const [event] = await pool.execute(
-    `INSERT INTO evenements 
+    `INSERT INTO evenements
     (nom_evenement, type_evenement, description, date_debut, date_fin, statut, id_salle, id_organisateur)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
@@ -159,6 +161,7 @@ test("Créer deux réservations sans conflit", async () => {
     "SELECT * FROM reservations WHERE id_salle = ?",
     [testSalle],
   );
+
   expect(rows.length).toBe(2);
 });
 

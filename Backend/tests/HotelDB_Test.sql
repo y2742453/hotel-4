@@ -8,7 +8,13 @@ USE HotelDB_Test;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS historique_modifications;
+
 DROP TABLE IF EXISTS evenement_documents;
+
+DROP TABLE IF EXISTS notification_preferences;
+
+DROP TABLE IF EXISTS notifications;
 
 DROP TABLE IF EXISTS devis;
 
@@ -34,9 +40,6 @@ DROP TABLE IF EXISTS roles;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- =========================
--- TABLE ROLES
--- =========================
 CREATE TABLE roles (
     id_role INT AUTO_INCREMENT PRIMARY KEY,
     nom_role VARCHAR(50) NOT NULL UNIQUE
@@ -49,9 +52,6 @@ VALUES ('Administrateur'),
     ('Coordonnateur'),
     ('Comptabilite');
 
--- =========================
--- TABLE USERS
--- =========================
 CREATE TABLE users (
     id_user INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -64,57 +64,27 @@ CREATE TABLE users (
     CONSTRAINT fk_users_roles FOREIGN KEY (id_role) REFERENCES roles (id_role)
 );
 
--- =========================
--- TABLE SALLES
--- =========================
 CREATE TABLE salles (
     id_salle INT AUTO_INCREMENT PRIMARY KEY,
     nom_salle VARCHAR(100) NOT NULL,
+    cout DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     capacite INT NOT NULL,
     equipements TEXT,
     statut VARCHAR(20) DEFAULT 'Disponible',
     type VARCHAR(100) DEFAULT NULL
 );
 
--- =========================
--- TABLE SERVICES
--- =========================
 CREATE TABLE services (
     id_service INT AUTO_INCREMENT PRIMARY KEY,
     nom_service VARCHAR(100) NOT NULL,
     description TEXT,
-    tarif DECIMAL(10, 2) NOT NULL
+    tarif DECIMAL(10, 2) NOT NULL DEFAULT 0.00
 );
 
-INSERT INTO
-    services (
-        nom_service,
-        description,
-        tarif
-    )
-VALUES (
-        'Traiteur',
-        'Service de restauration pour les événements',
-        0.00
-    ),
-    (
-        'Audiovisuel',
-        'Équipements audiovisuels et assistance technique',
-        0.00
-    ),
-    (
-        'Sécurité',
-        'Service de sécurité pour événements',
-        0.00
-    );
-
--- =========================
--- TABLE EVENEMENTS
--- =========================
 CREATE TABLE evenements (
     id_evenement INT AUTO_INCREMENT PRIMARY KEY,
     nom_evenement VARCHAR(150) NOT NULL,
-    type_evenement VARCHAR(50) NOT NULL,
+    type_evenement VARCHAR(50) NOT NULL DEFAULT 'Test',
     description TEXT DEFAULT NULL,
     date_debut DATETIME NOT NULL,
     date_fin DATETIME NOT NULL,
@@ -123,14 +93,12 @@ CREATE TABLE evenements (
     statut VARCHAR(20) DEFAULT 'Brouillon',
     id_salle INT NOT NULL,
     id_organisateur INT NOT NULL,
-    updated_at DATETIME DEFAULT NULL,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_evenements_salles FOREIGN KEY (id_salle) REFERENCES salles (id_salle),
     CONSTRAINT fk_evenements_users FOREIGN KEY (id_organisateur) REFERENCES users (id_user)
 );
 
--- =========================
--- TABLE RESERVATIONS
--- =========================
 CREATE TABLE reservations (
     id_reservation INT AUTO_INCREMENT PRIMARY KEY,
     id_salle INT NOT NULL,
@@ -141,9 +109,6 @@ CREATE TABLE reservations (
     CONSTRAINT fk_reservations_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
 
--- =========================
--- TABLE EVENEMENT_SERVICES
--- =========================
 CREATE TABLE evenement_services (
     id_evenement INT NOT NULL,
     id_service INT NOT NULL,
@@ -153,13 +118,10 @@ CREATE TABLE evenement_services (
     montant_estime DECIMAL(10, 2) DEFAULT 0.00,
     date_demande DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_evenement, id_service),
-    CONSTRAINT fk_es_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
-    CONSTRAINT fk_es_services FOREIGN KEY (id_service) REFERENCES services (id_service)
+    CONSTRAINT fk_es_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
+    CONSTRAINT fk_es_services FOREIGN KEY (id_service) REFERENCES services (id_service) ON DELETE CASCADE
 );
 
--- =========================
--- TABLE EVENEMENT_DOCUMENTS
--- =========================
 CREATE TABLE evenement_documents (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL,
@@ -171,53 +133,50 @@ CREATE TABLE evenement_documents (
     CONSTRAINT fk_evenement_documents_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE
 );
 
--- =========================
--- TABLE FACTURES
--- =========================
 CREATE TABLE factures (
     id_facture INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL UNIQUE,
-    montant_total DECIMAL(10, 2) DEFAULT NULL,
-    taxes DECIMAL(10, 2) DEFAULT NULL,
-    statut VARCHAR(20) DEFAULT 'En attente',
+    montant_total DECIMAL(10, 2) NOT NULL,
+    taxes DECIMAL(10, 2) DEFAULT 0,
+    statut ENUM(
+        'paye',
+        'en_retard',
+        'en_attente'
+    ) DEFAULT 'en_attente',
+    stripe_session_id VARCHAR(255),
+    stripe_payment_intent VARCHAR(255),
     date_facture DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_factures_evenements FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement)
 );
 
--- =========================
--- TABLE PAIEMENTS
--- =========================
 CREATE TABLE paiements (
     id_paiement INT AUTO_INCREMENT PRIMARY KEY,
     id_facture INT NOT NULL,
     montant DECIMAL(10, 2) NOT NULL,
-    mode_paiement VARCHAR(50) DEFAULT NULL,
+    mode_paiement VARCHAR(50) DEFAULT 'stripe',
+    statut ENUM('success', 'failed') DEFAULT 'success',
+    stripe_payment_intent VARCHAR(255),
     date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_paiements_factures FOREIGN KEY (id_facture) REFERENCES factures (id_facture)
 );
 
--- =========================
--- TABLE DEVIS
--- =========================
 CREATE TABLE devis (
     id_devis INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL,
     id_service INT NOT NULL,
-    reference VARCHAR(100) NOT NULL,
+    reference VARCHAR(100) NOT NULL UNIQUE,
     montant_ht DECIMAL(10, 2) DEFAULT 0.00,
     taxes DECIMAL(10, 2) DEFAULT 0.00,
     montant_ttc DECIMAL(10, 2) DEFAULT 0.00,
-    statut VARCHAR(20) DEFAULT 'Brouillon',
+    statut VARCHAR(30) DEFAULT 'Brouillon',
     pdf_path VARCHAR(255),
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
     date_envoi DATETIME DEFAULT NULL,
-    CONSTRAINT fk_devis_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement),
-    CONSTRAINT fk_devis_service FOREIGN KEY (id_service) REFERENCES services (id_service)
+    CONSTRAINT fk_devis_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
+    CONSTRAINT fk_devis_service FOREIGN KEY (id_service) REFERENCES services (id_service) ON DELETE CASCADE
 );
 
--- =========================
--- TABLE INVITES
--- =========================
 CREATE TABLE invites (
     id_invite INT AUTO_INCREMENT PRIMARY KEY,
     id_evenement INT NOT NULL,
@@ -235,9 +194,6 @@ CREATE TABLE invites (
     UNIQUE KEY unique_email_event (email, id_evenement)
 );
 
--- =========================
--- TABLE NOTIFICATIONS
--- =========================
 CREATE TABLE notifications (
     id_notification INT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
@@ -247,6 +203,28 @@ CREATE TABLE notifications (
     lien VARCHAR(255) DEFAULT NULL,
     lu BOOLEAN DEFAULT FALSE,
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_notifications_user
-        FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+    CONSTRAINT fk_notifications_user FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
+);
+
+CREATE TABLE notification_preferences (
+    id_preference INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL UNIQUE,
+    canal_interne BOOLEAN DEFAULT TRUE,
+    canal_email BOOLEAN DEFAULT FALSE,
+    canal_sms BOOLEAN DEFAULT FALSE,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_preferences_user FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
+);
+
+CREATE TABLE historique_modifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evenement INT NOT NULL,
+    id_user INT NOT NULL,
+    champ_modifie VARCHAR(100),
+    ancienne_valeur TEXT,
+    nouvelle_valeur TEXT,
+    date_modification DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_historique_evenement FOREIGN KEY (id_evenement) REFERENCES evenements (id_evenement) ON DELETE CASCADE,
+    CONSTRAINT fk_historique_user FOREIGN KEY (id_user) REFERENCES users (id_user)
 );

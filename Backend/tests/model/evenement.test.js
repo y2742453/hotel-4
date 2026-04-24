@@ -16,11 +16,7 @@ beforeAll(async () => {
   await pool.execute("TRUNCATE TABLE reservations");
   await pool.execute("TRUNCATE TABLE salles");
   await pool.execute("TRUNCATE TABLE users");
-  await pool.execute("TRUNCATE TABLE roles");
   await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
-
-  // rôle
-  await pool.execute("INSERT INTO roles (nom_role) VALUES ('Organisateur')");
 
   // user
   const [user] = await pool.execute(

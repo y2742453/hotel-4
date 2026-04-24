@@ -17,7 +17,7 @@ beforeAll(async () => {
 
   const [roleRows] = await pool.execute(
     "SELECT id_role FROM roles WHERE nom_role = ? LIMIT 1",
-    ["Organisateur"]
+    ["Organisateur"],
   );
 
   if (roleRows.length === 0) {
@@ -33,19 +33,19 @@ beforeAll(async () => {
 
   const [u1] = await pool.execute(
     "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
-    ["User1", "Test", "u1@test.com", "pass", roleId]
+    ["User1", "Test", "u1@test.com", "pass", roleId],
   );
   testUser1 = u1.insertId;
 
   const [u2] = await pool.execute(
     "INSERT INTO users (nom, prenom, email, mot_de_passe, id_role) VALUES (?, ?, ?, ?, ?)",
-    ["User2", "Test", "u2@test.com", "pass", roleId]
+    ["User2", "Test", "u2@test.com", "pass", roleId],
   );
   testUser2 = u2.insertId;
 });
 
 afterEach(async () => {
-  await pool.execute("TRUNCATE TABLE notifications");
+  await pool.execute("DELETE FROM notifications");
 });
 
 afterAll(async () => {

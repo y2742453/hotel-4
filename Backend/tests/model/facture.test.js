@@ -15,6 +15,7 @@ import { pool } from "../../db/db.js";
 let testSalle;
 let testEvenement;
 let testUser;
+let testService;
 
 beforeAll(async () => {
   await pool.query("USE HotelDB_Test");
@@ -35,7 +36,6 @@ beforeAll(async () => {
   );
   const roleId = roleResult[0].id_role;
 
-  // 🔹 USER
   const [user] = await pool.execute(
     `INSERT INTO users (nom, prenom, email, mot_de_passe, id_role)
      VALUES (?, ?, ?, ?, ?)`,
@@ -43,15 +43,25 @@ beforeAll(async () => {
   );
   testUser = user.insertId;
 
-  // 🔹 SALLE
   const [salle] = await pool.execute(
-    `INSERT INTO salles (nom_salle, cout, capacite)
-     VALUES (?, ?, ?)`,
-    ["Salle Test", 100, 50],
+    `
+  INSERT INTO salles
+  (nom_salle, cout, type, capacite, equipements, statut)
+  VALUES (?, ?, ?, ?, ?, ?)
+`,
+    ["Salle Facture", 1000, "Conférence", 100, "Projecteur", "Disponible"],
   );
-  testSalle = salle.insertId; // ✅ FIX
 
-  // 🔹 EVENEMENT
+  testSalle = salle.insertId;
+
+  const [service] = await pool.execute(
+    `INSERT INTO services (nom_service, description, tarif)
+   VALUES (?, ?, ?)`,
+    ["Service Test", "Description", 50],
+  );
+
+  testService = service.insertId;
+
   const [event] = await pool.execute(
     `INSERT INTO evenements 
      (nom_evenement, date_debut, date_fin, id_salle, id_organisateur)
@@ -60,11 +70,11 @@ beforeAll(async () => {
       "Event Test",
       "2026-03-01 10:00:00",
       "2026-03-01 12:00:00",
-      testSalle, // ✅ now valid
+      testSalle,
       testUser,
     ],
   );
-  testEvenement = event.insertId; // ✅ FIX
+  testEvenement = event.insertId;
 });
 
 afterEach(async () => {
@@ -188,10 +198,10 @@ test("Calcul du total événement", async () => {
     `INSERT INTO evenement_services 
    (id_evenement, id_service, quantite, montant_estime, statut)
    VALUES (?, ?, ?, ?, ?)`,
-    [testEvenement, 1, 2, 50, "Valide"],
+    [testEvenement, testService, 2, 50, "Valide"],
   );
 
   const total = await calculateEventTotal(testEvenement);
 
-  expect(total).toBe(200);
+  expect(total).toBe(1100);
 });

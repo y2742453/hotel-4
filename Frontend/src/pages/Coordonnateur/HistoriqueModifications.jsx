@@ -55,30 +55,32 @@ export default function HistoriqueModifications() {
 
       {/* 🔥 TABLE */}
       {selectedEvent && logs.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>Champ</th>
-              <th>Ancienne valeur</th>
-              <th>Nouvelle valeur</th>
-              <th>Date</th>
-              <th>Utilisateur</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log) => (
-              <tr key={log.id}>
-                <td>{log.champ_modifie}</td>
-                <td style={{ color: "red" }}>{log.ancienne_valeur}</td>
-                <td style={{ color: "green" }}>{log.nouvelle_valeur}</td>
-                <td>{new Date(log.date_modification).toLocaleString()}</td>
-                <td>
-                  {log.nom} {log.prenom}
-                </td>
+        <div className="tableWrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Champ</th>
+                <th>Ancienne valeur</th>
+                <th>Nouvelle valeur</th>
+                <th>Date</th>
+                <th>Utilisateur</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log.id}>
+                  <td>{log.champ_modifie}</td>
+                  <td style={{ color: "red" }}>{log.ancienne_valeur}</td>
+                  <td style={{ color: "green" }}>{log.nouvelle_valeur}</td>
+                  <td>{new Date(log.date_modification).toLocaleString()}</td>
+                  <td>
+                    {log.nom} {log.prenom}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : selectedEvent ? (
         <p>Aucune modification pour cet événement</p>
       ) : null}
