@@ -8,15 +8,13 @@ import {
   deleteSalle,
 } from "../../modele/salle.js";
 
-// =====================
-// SETUP
-// =====================
 beforeAll(async () => {
-  // Création complète des tables nécessaires pour les tests
+  await pool.query("USE HotelDB_Test");
 });
 
 afterEach(async () => {
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
+  await pool.execute("TRUNCATE TABLE evenements");
   await pool.execute("TRUNCATE TABLE salles");
   await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 });
@@ -25,13 +23,10 @@ afterAll(async () => {
   await pool.end();
 });
 
-// =====================
-// TESTS
-// =====================
-
 test("Créer une salle et la retrouver", async () => {
   const id = await createSalle(
     "Grande Salle",
+    2000.0,
     "Conférence",
     200,
     "Projecteur, Micro",
@@ -41,7 +36,6 @@ test("Créer une salle et la retrouver", async () => {
   expect(id).toBeGreaterThan(0);
 
   const salle = await getSalleById(id);
-
   expect(salle).toBeDefined();
   expect(salle.nom_salle).toBe("Grande Salle");
   expect(salle.capacite).toBe(200);
@@ -53,18 +47,32 @@ test("getSalleById retourne null si ID inexistant", async () => {
   expect(salle).toBeNull();
 });
 
-test("getAllSalles retourne toutes les salles", async () => {
-  await createSalle("Salle A", "Réunion", 20, "Tableau blanc", "Disponible");
-  await createSalle("Salle B", "Séminaire", 50, "Projecteur", "Disponible");
+test("getAllFromSalles retourne toutes les salles", async () => {
+  await createSalle(
+    "Salle A",
+    500,
+    "Réunion",
+    20,
+    "Tableau blanc",
+    "Disponible",
+  );
+  await createSalle(
+    "Salle B",
+    1000,
+    "Séminaire",
+    50,
+    "Projecteur",
+    "Disponible",
+  );
 
   const salles = await getAllFromSalles();
-
   expect(salles.length).toBe(2);
 });
 
 test("Modifier une salle", async () => {
   const id = await createSalle(
     "Ancienne Salle",
+    300,
     "Réunion",
     30,
     "Aucun",
@@ -74,6 +82,7 @@ test("Modifier une salle", async () => {
   const updated = await updateSalle(
     id,
     "Salle Rénovée",
+    800,
     "Conférence",
     50,
     "Projecteur, Wifi",
@@ -90,6 +99,7 @@ test("Modifier une salle", async () => {
 test("Mettre une salle en maintenance", async () => {
   const id = await createSalle(
     "Salle Maintenance",
+    400,
     "Réunion",
     20,
     "Aucun",
@@ -99,6 +109,7 @@ test("Mettre une salle en maintenance", async () => {
   await updateSalle(
     id,
     "Salle Maintenance",
+    400,
     "Réunion",
     20,
     "Aucun",
@@ -112,17 +123,14 @@ test("Mettre une salle en maintenance", async () => {
 test("Supprimer une salle", async () => {
   const id = await createSalle(
     "Salle a Supprimer",
+    200,
     "Autre",
     10,
     "Aucun",
     "Disponible",
   );
 
-  // Désactiver les FK pour permettre la suppression dans les tests
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   const deleted = await deleteSalle(id);
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
-
   expect(deleted).toBe(true);
 
   const salle = await getSalleById(id);
@@ -130,9 +138,7 @@ test("Supprimer une salle", async () => {
 });
 
 test("deleteSalle retourne false si salle inexistante", async () => {
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   const deleted = await deleteSalle(99999);
-  await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
   expect(deleted).toBe(false);
 });
 
@@ -140,6 +146,7 @@ test("updateSalle retourne false si salle inexistante", async () => {
   const updated = await updateSalle(
     99999,
     "Fantôme",
+    100,
     "Réunion",
     10,
     "Aucun",
