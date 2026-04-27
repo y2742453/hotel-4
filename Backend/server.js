@@ -2430,9 +2430,6 @@ app.get("/api/historique", async (req, res) => {
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (req, res) => {
-  console.log("COOKIE HEADER:", req.headers.cookie);
-  console.log("SESSION:", req.session);
-  console.log("USER:", req.user);
   res.json(req.user);
 });
 
