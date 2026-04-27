@@ -129,6 +129,8 @@ const MemoryStore = memorystore(session);
 // Stripe webhook
 app.use("/api/factures/webhook", express.raw({ type: "application/json" }));
 
+app.set("trust proxy", 1);
+
 // Middlewares globaux
 app.use(helmet());
 app.use(compression());
@@ -146,17 +148,17 @@ app.use(
 // Configuration des sessions
 app.use(
   session({
-    cookie: {
-      maxAge: 3600000,
-      secure: true,
-      sameSite: "none",
-    },
-    name: process.env.npm_package_name,
+    name: "hotel-session",
     store: new MemoryStore({ checkPeriod: 3600000 }),
     rolling: true,
     resave: false,
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "fallback_secret",
+    cookie: {
+      maxAge: 3600000,
+      secure: true,
+      sameSite: "none",
+    },
   }),
 );
 
@@ -2424,10 +2426,13 @@ app.get("/api/historique", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 // ROUTE DE TEST PROTÉGÉE
 
-app.get("/api/me", userAuth, (request, response) => {
-  response.json({ user: request.user, session: request.session });
+app.get("/api/me", (req, res) => {
+  console.log("USER:", req.user);
+  console.log("SESSION:", req.session);
+  res.json({ user: req.user });
 });
 
 // Route de paiement succes et annulé
