@@ -2423,7 +2423,7 @@ app.get("/api/historique", async (req, res) => {
 // ROUTE DE TEST PROTÉGÉE
 
 app.get("/api/me", userAuth, (request, response) => {
-  response.json(request.user);
+  response.json({ user: request.user, session: request.session });
 });
 
 // Route de paiement succes et annulé
@@ -2434,12 +2434,6 @@ app.get("/success", (req, res) => {
 app.get("/cancel", (req, res) => {
   res.send("Paiement annulé");
 });
-
-console.log("=== MYSQL ENV DEBUG ===");
-console.log("MYSQLHOST:", process.env.MYSQLHOST);
-console.log("MYSQLPORT:", process.env.MYSQLPORT);
-console.log("MYSQLUSER:", process.env.MYSQLUSER);
-console.log("MYSQLDATABASE:", process.env.MYSQLDATABASE);
 
 // DÉMARRAGE DU SERVEUR
 const PORT = process.env.PORT || 5001;
