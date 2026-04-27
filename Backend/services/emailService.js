@@ -10,6 +10,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP configuration error:", error);
+  } else {
+    console.log("SMTP server is ready");
+  }
+});
+
 // HTML TEMPLATE
 const getEmailTemplate = (invite, evenement) => {
   const baseUrl = "https://hotel-4.up.railway.app";
@@ -72,4 +80,19 @@ export async function sendInvitation(invite, evenement) {
     subject: `Invitation : ${evenement.nom_evenement}`,
     html: getEmailTemplate(invite, evenement),
   });
+
+  try {
+    const info = await transporter.sendMail({
+      from: '"Hôtel La Promenade" <no-reply@hotel.com>',
+      to: invite.email,
+      subject: `Invitation : ${evenement.nom_evenement}`,
+      html: getEmailTemplate(invite, evenement),
+    });
+
+    console.log("Email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Email send failed:", error);
+    throw error;
+  }
 }
