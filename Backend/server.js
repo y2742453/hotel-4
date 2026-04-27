@@ -138,7 +138,7 @@ app.use("/uploads", express.static("uploads"));
 // CORS : en dev, le frontend est sur un port différent → on autorise les requêtes depuis localhost:5173
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://hotel-la-promenade.vercel.app"],
     credentials: true,
   }),
 );
@@ -2431,7 +2431,7 @@ app.get("/cancel", (req, res) => {
 });
 
 // DÉMARRAGE DU SERVEUR
-app.listen(process.env.PORT, () => {
-  console.log("Serveur démarré :");
-  console.log(`http://localhost:${process.env.PORT}`);
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
