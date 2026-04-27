@@ -29,7 +29,7 @@ export default function OrganisateurHome() {
 
   useEffect(() => {
     axios
-      .get("https://hotel-la-promenade.vercel.app/api/dashboard", {
+      .get("https://hotel-4.up.railway.app/api/dashboard", {
         params: filters,
         withCredentials: true,
       })
@@ -136,13 +136,13 @@ export default function OrganisateurHome() {
 
   const exportExcel = () =>
     window.open(
-      "https://hotel-la-promenade.vercel.app/api/dashboard/export/excel",
+      "https://hotel-4.up.railway.app/api/dashboard/export/excel",
       "_blank",
     );
 
   const exportPDF = () =>
     window.open(
-      "https://hotel-la-promenade.vercel.app/api/dashboard/export/pdf",
+      "https://hotel-4.up.railway.app/api/dashboard/export/pdf",
       "_blank",
     );
 
