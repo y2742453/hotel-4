@@ -146,15 +146,17 @@ app.use(
 // Configuration des sessions
 app.use(
   session({
-    cookie: { maxAge: 3600000 },
+    cookie: {
+      maxAge: 3600000,
+      secure: true,
+      sameSite: "none",
+    },
     name: process.env.npm_package_name,
     store: new MemoryStore({ checkPeriod: 3600000 }),
     rolling: true,
     resave: false,
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "fallback_secret",
-    secure: true,
-    sameSite: "none",
   }),
 );
 
