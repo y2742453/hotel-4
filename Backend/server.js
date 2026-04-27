@@ -2433,7 +2433,7 @@ app.get("/api/me", userAuth, (req, res) => {
   console.log("COOKIE HEADER:", req.headers.cookie);
   console.log("SESSION:", req.session);
   console.log("USER:", req.user);
-  response.json(request.user);
+  res.json(req.user);
 });
 
 // Route de paiement succes et annulé
