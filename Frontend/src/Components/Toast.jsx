@@ -1,6 +1,6 @@
 // src/Components/Toast.jsx
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import '../styles/toast.css';
+import React, { createContext, useContext, useMemo, useState } from "react";
+import "../styles/Toast.css";
 
 const ToastContext = createContext(null);
 
@@ -31,9 +31,9 @@ export function ToastProvider({ children }) {
 
   const api = useMemo(() => {
     return {
-      success: (text) => push('success', text),
-      error: (text) => push('error', text),
-      info: (text) => push('info', text),
+      success: (text) => push("success", text),
+      error: (text) => push("error", text),
+      info: (text) => push("info", text),
     };
   }, []);
 
@@ -46,13 +46,17 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`toast ${t.type === 'error' ? 'toastError' : t.type === 'success' ? 'toastSuccess' : 'toastInfo'}`}
+            className={`toast ${t.type === "error" ? "toastError" : t.type === "success" ? "toastSuccess" : "toastInfo"}`}
             onClick={() => remove(t.id)}
             role="button"
             tabIndex={0}
           >
             <div className="toastTitle">
-              {t.type === 'error' ? 'Erreur' : t.type === 'success' ? 'Succès' : 'Info'}
+              {t.type === "error"
+                ? "Erreur"
+                : t.type === "success"
+                  ? "Succès"
+                  : "Info"}
             </div>
             <div className="toastText">{t.text}</div>
           </div>
@@ -64,6 +68,7 @@ export function ToastProvider({ children }) {
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast() doit être utilisé dans <ToastProvider>');
+  if (!ctx)
+    throw new Error("useToast() doit être utilisé dans <ToastProvider>");
   return ctx;
 }
