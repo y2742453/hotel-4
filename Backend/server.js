@@ -170,7 +170,7 @@ app.use(passport.session());
 app.use(express.static("public"));
 
 // Route pour import de fichier CSV/Excel des invités
-app.use("/api/invites", userAuth, allowRoles(2), inviteRoutes);
+app.use("/api/invites", inviteRoutes);
 
 // Routes pour factures
 app.use("/api/factures", factureRoutes);
