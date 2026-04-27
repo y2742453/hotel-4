@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 
 // HTML TEMPLATE
 const getEmailTemplate = (invite, evenement) => {
-  const baseUrl = "http://localhost:5001";
+  const baseUrl = "https://hotel-la-promenade.vercel.app";
 
   const confirmUrl = `${baseUrl}/api/invites/respond/${invite.id_invite}?response=confirm`;
   const declineUrl = `${baseUrl}/api/invites/respond/${invite.id_invite}?response=decline`;

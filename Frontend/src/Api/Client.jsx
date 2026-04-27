@@ -5,7 +5,8 @@
 // - on envoie TOUJOURS les cookies de session (credentials: 'include')
 // - on garde un format simple pour gérer les statuts
 
-export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001";
+export const API_BASE =
+  import.meta.env.VITE_API_URL || "https://hotel-4.up.railway.app";
 // Si vide, on appelle le même domaine (utile en production)
 
 export async function apiFetch(path, options = {}) {

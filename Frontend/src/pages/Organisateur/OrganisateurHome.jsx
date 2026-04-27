@@ -29,7 +29,7 @@ export default function OrganisateurHome() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5001/api/dashboard", {
+      .get("https://hotel-la-promenade.vercel.app/api/dashboard", {
         params: filters,
         withCredentials: true,
       })
@@ -135,14 +135,19 @@ export default function OrganisateurHome() {
     : [];
 
   const exportExcel = () =>
-    window.open("http://localhost:5001/api/dashboard/export/excel", "_blank");
+    window.open(
+      "https://hotel-la-promenade.vercel.app/api/dashboard/export/excel",
+      "_blank",
+    );
 
   const exportPDF = () =>
-    window.open("http://localhost:5001/api/dashboard/export/pdf", "_blank");
+    window.open(
+      "https://hotel-la-promenade.vercel.app/api/dashboard/export/pdf",
+      "_blank",
+    );
 
   return (
     <div className="page">
-
       {/* ══ BIENVENUE ══ */}
       <div className="dashWelcome">
         <div className="dashWelcomeText">
@@ -164,9 +169,7 @@ export default function OrganisateurHome() {
             className="dashCard"
             onClick={() => navigate(a.to)}
           >
-            <div className="dashIcon">
-              {a.icon}
-            </div>
+            <div className="dashIcon">{a.icon}</div>
             <div className="dashText">
               <div className="dashTitle">{a.title}</div>
               <div className="dashDesc">{a.desc}</div>

@@ -737,7 +737,7 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
           subject: "Nouvel événement créé",
           title: "Nouvel événement créé",
           message: `Un nouvel événement "${nom_evenement}" a été créé et attend traitement.`,
-          actionUrl: "http://localhost:5173/admin/evenements",
+          actionUrl: "https://hotel-la-promenade.vercel.app/admin/evenements",
         });
       }
       if (prefs.canal_sms) {
@@ -1037,7 +1037,7 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
           subject: titre,
           title: titre,
           message,
-          actionUrl: "http://localhost:5173/comptable/factures",
+          actionUrl: "https://hotel-la-promenade.vercel.app/comptable/factures",
         });
       }
 
@@ -1072,7 +1072,8 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
         subject: "Événement confirmé",
         title: "Événement confirmé",
         message: `Votre événement "${evenement.nom_evenement}" a été confirmé.`,
-        actionUrl: "http://localhost:5173/organisateur/evenements",
+        actionUrl:
+          "https://hotel-la-promenade.vercel.app/organisateur/evenements",
       });
     }
 
@@ -1130,7 +1131,8 @@ app.put("/api/evenements/:id/annuler", async (req, res) => {
         subject: "Événement annulé",
         title: "Événement annulé",
         message: `Votre événement "${evenement.nom_evenement}" a été annulé.`,
-        actionUrl: "http://localhost:5173/organisateur/evenements",
+        actionUrl:
+          "https://hotel-la-promenade.vercel.app/organisateur/evenements",
       });
     }
 
@@ -1365,7 +1367,8 @@ app.post(
             message: info
               ? `Une demande pour le service "${info.nom_service}" a été créée pour l'événement "${info.nom_evenement}".`
               : `Une nouvelle demande de service a été créée pour l'événement ${id_evenement}.`,
-            actionUrl: "http://localhost:5173/coordonnateur/demandes",
+            actionUrl:
+              "https://hotel-la-promenade.vercel.app/coordonnateur/demandes",
           });
         }
 
@@ -1596,7 +1599,8 @@ app.put(
               statut === "Valide"
                 ? `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été validé.`
                 : `Le service "${info.nom_service}" pour l'événement "${info.nom_evenement}" a été refusé.`,
-            actionUrl: "http://localhost:5173/organisateur/demandes-services",
+            actionUrl:
+              "https://hotel-la-promenade.vercel.app/organisateur/demandes-services",
           });
         }
 
@@ -1701,7 +1705,8 @@ app.post("/api/devis", userAuth, allowRoles(1, 3), async (req, res) => {
           subject: "Devis créé",
           title: "Devis créé",
           message: `Un devis a été créé pour le service "${info.nom_service}" de votre événement "${info.nom_evenement}".`,
-          actionUrl: "http://localhost:5173/organisateur/demandes-services",
+          actionUrl:
+            "https://hotel-la-promenade.vercel.app/organisateur/demandes-services",
         });
       }
 

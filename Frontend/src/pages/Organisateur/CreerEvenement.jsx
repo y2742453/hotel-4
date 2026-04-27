@@ -121,10 +121,13 @@ export default function CreerEvenement() {
     if (!file || !eventId || eventId === "new") return;
     const fd = new FormData();
     fd.append("file", file);
-    await fetch(`http://localhost:5001/api/evenements/${eventId}/documents`, {
-      method: "POST",
-      body: fd,
-    });
+    await fetch(
+      `https://hotel-la-promenade.vercel.app/api/evenements/${eventId}/documents`,
+      {
+        method: "POST",
+        body: fd,
+      },
+    );
     setFile(null);
     const { res, data } = await apiFetch(
       `/api/evenements/${eventId}/documents`,
@@ -135,9 +138,12 @@ export default function CreerEvenement() {
   // ── Supprimer document ──
   async function deleteDocument(docId) {
     if (!window.confirm("Supprimer ce document ?")) return;
-    await fetch(`http://localhost:5001/api/documents/${docId}`, {
-      method: "DELETE",
-    });
+    await fetch(
+      `https://hotel-la-promenade.vercel.app/api/documents/${docId}`,
+      {
+        method: "DELETE",
+      },
+    );
     if (isEdit) {
       const { res, data } = await apiFetch(`/api/evenements/${id}/documents`);
       if (res.ok) setDocuments(data || []);

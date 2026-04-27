@@ -10,7 +10,7 @@ export default function HistoriqueModifications() {
   // 🔥 Charger la liste des événements
   useEffect(() => {
     axios
-      .get("http://localhost:5001/api/historique", {
+      .get("https://hotel-la-promenade.vercel.app/api/historique", {
         withCredentials: true,
       })
       .then((res) => setEvents(res.data))
@@ -22,9 +22,12 @@ export default function HistoriqueModifications() {
     if (!selectedEvent) return;
 
     axios
-      .get(`http://localhost:5001/api/evenements/${selectedEvent}/historique`, {
-        withCredentials: true,
-      })
+      .get(
+        `https://hotel-la-promenade.vercel.app/api/evenements/${selectedEvent}/historique`,
+        {
+          withCredentials: true,
+        },
+      )
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
   }, [selectedEvent]);

@@ -29,8 +29,8 @@ export async function createCheckoutSession(facture) {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:5173/comptabilite/success`,
-    cancel_url: `http://localhost:5173/comptabilite/cancel`,
+    success_url: `https://hotel-la-promenade.vercel.app/comptabilite/success`,
+    cancel_url: `https://hotel-la-promenade.vercel.app/comptabilite/cancel`,
   });
 }
 
