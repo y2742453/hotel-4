@@ -25,6 +25,7 @@ Dans `Backend/.env`, ajouter :
 
 - PORT
 - DB_HOST
+- DB_PORT
 - DB_USER
 - DB_PASSWORD
 - DB_NAME
@@ -42,6 +43,7 @@ Par exemple :
 ```env
 PORT=5001
 DB_HOST=localhost
+DB_PORT=3306
 DB_USER=admin
 DB_PASSWORD=admin
 DB_NAME=HotelDB
