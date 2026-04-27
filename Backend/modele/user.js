@@ -128,3 +128,7 @@ export async function getAdminsActifs() {
 export async function getCoordonnateursActifs() {
   return getUsersByRole(3);
 }
+
+export async function getComptablesActifs() {
+  return getUsersByRole(4);
+}

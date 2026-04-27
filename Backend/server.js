@@ -26,6 +26,7 @@ import {
   deleteUser,
   getAdminsActifs,
   getCoordonnateursActifs,
+  getComptablesActifs,
 } from "./modele/user.js";
 import {
   addReservation,
@@ -687,9 +688,7 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
     }
 
     if (!date_debut || !date_fin) {
-      return res
-        .status(400)
-        .json({ message: "date_debut et date_fin sont requis" });
+      return res.status(400).json({ message: "Dates requises" });
     }
 
     const idSalle = Number(id_salle);
@@ -718,8 +717,6 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
     });
 
     const admins = await getAdminsActifs();
-
-    const coordonateurs = await getCoordonnateursActifs();
 
     for (const admin of admins) {
       const prefs = await ensureNotificationPreferences(admin.id_user);
@@ -761,6 +758,12 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
     if (err.message === "HOURS_OUT_OF_RANGE") {
       return res.status(400).json({
         message: "Les événements doivent être entre 07:00 et 22:00",
+      });
+    }
+
+    if (err.message === "CAPACITY_EXCEEDED") {
+      return res.status(400).json({
+        message: "La capacité de la salle est dépassée",
       });
     }
 
@@ -984,15 +987,19 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
     // 5. Calculate total
     const total = await calculateEventTotal(id);
 
+    let id_facture;
+
     if (existingFacture) {
+      id_facture = existingFacture.id_facture;
+
       await conn.query(
         `UPDATE factures 
-     SET montant_total = ?, taxes = ?, updated_at = NOW()
-     WHERE id_facture = ?`,
+        SET montant_total = ?, taxes = ?, updated_at = NOW()
+        WHERE id_facture = ?`,
         [total, total * 0.13, existingFacture.id_facture],
       );
     } else {
-      await createFacture({
+      id_facture = await createFacture({
         id_evenement: id,
         montant_total: total,
         taxes: total * 0.13,
@@ -1004,6 +1011,42 @@ app.put("/api/evenements/:id/confirmer", async (req, res) => {
       "UPDATE evenements SET statut='Confirmé', updated_at=NOW() WHERE id_evenement=?",
       [id],
     );
+
+    const comptables = await getComptablesActifs();
+
+    for (const comp of comptables) {
+      const prefs = await ensureNotificationPreferences(comp.id_user);
+
+      const titre = "Nouvelle facture à traiter";
+      const message = `Une nouvelle facture #${id_facture} est prête à être traitée et payée.`;
+      const lien = "/comptable/factures";
+
+      if (prefs.canal_interne) {
+        await createNotification({
+          id_user: comp.id_user,
+          type_notification: "facture",
+          titre,
+          message,
+          lien,
+        });
+      }
+
+      if (prefs.canal_email && comp.email) {
+        await sendNotificationEmail({
+          to: comp.email,
+          subject: titre,
+          title: titre,
+          message,
+          actionUrl: "http://localhost:5173/comptable/factures",
+        });
+      }
+
+      if (prefs.canal_sms) {
+        console.log(
+          `SMS comptable ${comp.id_user} : Une nouvelle facture #${id_facture} est prête à être traitée.`,
+        );
+      }
+    }
 
     // 8. Commit transaction
     await conn.commit();
@@ -1582,6 +1625,7 @@ app.put(
     }
   },
 );
+
 // Voir les demandes validées prêtes pour devis
 app.get(
   "/api/devis/demandes-validees",
@@ -2132,7 +2176,6 @@ app.get("/api/dashboard/export/excel", async (req, res) => {
     res.status(500).json({ message: "Erreur export Excel" });
   }
 });
-// Export PDF
 
 // Export PDF
 app.get("/api/dashboard/export/pdf", async (req, res) => {

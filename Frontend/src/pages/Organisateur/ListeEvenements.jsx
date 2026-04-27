@@ -12,6 +12,8 @@ export default function ListeEvenements() {
   const isAdmin = location.pathname.includes("admin");
 
   const [evenements, setEvenements] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   const [filter, setFilter] = useState("tous");
   const [modalConfirmId, setModalConfirmId] = useState(null);
 
@@ -79,6 +81,16 @@ export default function ListeEvenements() {
     } else {
       toast.error(data?.message || "Impossible de restaurer");
     }
+  }
+
+  function openDetails(event) {
+    setSelectedEvent(event);
+    setShowDetails(true);
+  }
+
+  function closeDetails() {
+    setSelectedEvent(null);
+    setShowDetails(false);
   }
 
   function getStatutStyle(statut) {
@@ -191,7 +203,11 @@ export default function ListeEvenements() {
                 const termine = isTermine(e.statut);
 
                 return (
-                  <tr key={e.id_evenement}>
+                  <tr
+                    key={e.id_evenement}
+                    onClick={() => openDetails(e)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>
                       <strong>{e.nom_evenement}</strong>
                     </td>
@@ -214,7 +230,10 @@ export default function ListeEvenements() {
                     </td>
 
                     <td>
-                      <div className="actions">
+                      <div
+                        className="actions"
+                        onClick={(ev) => ev.stopPropagation()}
+                      >
                         {!isAdmin && (
                           <button
                             className="btn btnGhost"
@@ -239,7 +258,7 @@ export default function ListeEvenements() {
                           </button>
                         )}
 
-                        {(annule || termine) && (
+                        {annule && (
                           <button
                             className="btn btnGhost"
                             onClick={() => handleRestore(e.id_evenement)}
@@ -251,7 +270,7 @@ export default function ListeEvenements() {
                         {!annule && (
                           <button
                             className="btn btnDanger"
-                            disabled={annule || confirme}
+                            disabled={annule}
                             style={{
                               opacity: annule ? 0.6 : 1,
                               cursor: annule ? "not-allowed" : "pointer",
@@ -314,6 +333,102 @@ export default function ListeEvenements() {
               >
                 Annuler
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal détails ── */}
+      {showDetails && selectedEvent && (
+        <div className="event-details-overlay" onClick={closeDetails}>
+          <div
+            className="event-details-modal"
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            <div className="event-details-content">
+              <div className="event-details-header">
+                <div className="event-details-title-section">
+                  <h2 className="event-details-title">
+                    {selectedEvent.nom_evenement}
+                  </h2>
+                  <p className="event-details-subtitle">
+                    {selectedEvent.type_evenement}
+                  </p>
+                </div>
+
+                <div className="event-details-status">
+                  <span
+                    className="statut-badge"
+                    style={getStatutStyle(selectedEvent.statut)}
+                  >
+                    {selectedEvent.statut}
+                  </span>
+                </div>
+              </div>
+
+              <div className="event-details-grid">
+                <div className="event-details-card">
+                  <span className="event-details-label">Salle</span>
+                  <p className="event-details-value">
+                    {selectedEvent.id_salle}
+                  </p>
+                </div>
+
+                <div className="event-details-card">
+                  <span className="event-details-label">Participants</span>
+                  <p className="event-details-value">
+                    {selectedEvent.nb_participants || "—"}
+                  </p>
+                </div>
+
+                <div className="event-details-card">
+                  <span className="event-details-label">Budget</span>
+                  <p className="event-details-value">
+                    {selectedEvent.budget
+                      ? `${Number(selectedEvent.budget).toLocaleString("fr-CA")} $`
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="event-details-card event-details-schedule-card">
+                  <span className="event-details-label">Horaire</span>
+
+                  <div className="event-details-schedule">
+                    <div className="event-details-schedule-item">
+                      <span className="event-details-schedule-tag">Début</span>
+                      <p className="event-details-value">
+                        {formatDate(selectedEvent.date_debut)}
+                      </p>
+                    </div>
+
+                    <div className="event-details-schedule-divider"></div>
+
+                    <div className="event-details-schedule-item">
+                      <span className="event-details-schedule-tag">Fin</span>
+                      <p className="event-details-value">
+                        {formatDate(selectedEvent.date_fin)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="event-details-description-section">
+                <h3 className="event-details-description-title">Description</h3>
+                <p className="event-details-description-text">
+                  {selectedEvent.description ||
+                    "Aucune description disponible."}
+                </p>
+              </div>
+
+              <div className="event-details-actions">
+                <button
+                  className="btn btnGhost event-details-close-btn"
+                  onClick={closeDetails}
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>
