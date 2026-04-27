@@ -31,7 +31,6 @@ document
 
     const response = await fetch("/api/inscription", {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nom, prenom, role, email, motDePasse }),
     });
@@ -57,7 +56,6 @@ document
 
     const response = await fetch("/api/connexion", {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, motDePasse }),
     });
