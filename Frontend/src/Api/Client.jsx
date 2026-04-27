@@ -12,11 +12,11 @@ export const API_BASE =
 export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    credentials: "include", // IMPORTANT pour envoyer le cookie de session
   });
 
   // On tente de lire le JSON seulement si la réponse est du JSON
