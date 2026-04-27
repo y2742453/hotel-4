@@ -140,25 +140,23 @@ router.post("/payer/:id", async (req, res) => {
 });
 
 /* WEBHOOK STRIPE */
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-    let event;
+router.post("/webhook", async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  let event;
 
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET,
-      );
-    } catch (err) {
-      console.error("Webhook signature error:", err.message);
-      return res.sendStatus(400);
-    }
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (err) {
+    console.error("Webhook signature error:", err.message);
+    return res.sendStatus(400);
+  }
 
-    if (event.type === "checkout.session.completed") {
+  switch (event.type) {
+    case "checkout.session.completed": {
       const session = event.data.object;
 
       const facture = await getFactureByStripeSession(session.id);
@@ -175,10 +173,15 @@ router.post(
         montant: facture.montant_total,
         paymentIntent: session.payment_intent,
       });
+
+      break;
     }
 
-    res.sendStatus(200);
-  },
-);
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  res.sendStatus(200);
+});
 
 export default router;
