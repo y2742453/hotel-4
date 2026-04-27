@@ -2429,10 +2429,11 @@ app.get("/api/historique", async (req, res) => {
 
 // ROUTE DE TEST PROTÉGÉE
 
-app.get("/api/me", (req, res) => {
+app.get("/api/me", userAuth, (req, res) => {
   console.log("COOKIE HEADER:", req.headers.cookie);
   console.log("SESSION:", req.session);
   console.log("USER:", req.user);
+  response.json(request.user);
 });
 
 // Route de paiement succes et annulé
