@@ -11,10 +11,6 @@ export const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-console.log("MYSQLHOST =", process.env.MYSQLHOST);
-console.log("MYSQLUSER =", process.env.MYSQLUSER);
-console.log("MYSQLDATABASE =", process.env.MYSQLDATABASE);
-
 (async () => {
   try {
     const conn = await pool.getConnection();

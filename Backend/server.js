@@ -138,7 +138,7 @@ app.use("/uploads", express.static("uploads"));
 // CORS : en dev, le frontend est sur un port différent → on autorise les requêtes depuis localhost:5173
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://hotel-la-promenade.vercel.app"],
+    origin: "https://hotel-la-promenade.vercel.app",
     credentials: true,
   }),
 );
@@ -2434,6 +2434,12 @@ app.get("/success", (req, res) => {
 app.get("/cancel", (req, res) => {
   res.send("Paiement annulé");
 });
+
+console.log("=== MYSQL ENV DEBUG ===");
+console.log("MYSQLHOST:", process.env.MYSQLHOST);
+console.log("MYSQLPORT:", process.env.MYSQLPORT);
+console.log("MYSQLUSER:", process.env.MYSQLUSER);
+console.log("MYSQLDATABASE:", process.env.MYSQLDATABASE);
 
 // DÉMARRAGE DU SERVEUR
 const PORT = process.env.PORT || 5001;
