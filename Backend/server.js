@@ -697,6 +697,17 @@ app.post("/api/evenements", userAuth, allowRoles(2), async (req, res) => {
       return res.status(400).json({ message: "Dates requises" });
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(date_debut);
+
+    if (startDate < today) {
+      return res.status(400).json({
+        message: "La date de début ne peut pas être antérieure à aujourd'hui",
+      });
+    }
+
     const idSalle = Number(id_salle);
     const idOrg = Number(req.user.id_user);
 
