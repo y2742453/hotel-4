@@ -1,14 +1,14 @@
 import nodemailer from "nodemailer";
+import { MailtrapTransport } from "mailtrap";
 
 // Transporter Mailtrap
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: process.env.MAIL_PORT,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-});
+const transporter = nodemailer.createTransport(
+  MailtrapTransport({
+    token: process.env.MAILTRAP_API_TOKEN,
+    sandbox: true,
+    testInboxId: Number(process.env.MAILTRAP_INBOX_ID),
+  }),
+);
 
 function getNotificationTemplate({ title, message, actionUrl = null }) {
   return `
@@ -57,14 +57,26 @@ export async function sendNotificationEmail({
   message,
   actionUrl = null,
 }) {
-  return transporter.sendMail({
-    from: '"Hôtel La Promenade" <no-reply@hotel.com>',
-    to,
-    subject,
-    html: getNotificationTemplate({
-      title,
-      message,
-      actionUrl,
-    }),
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: {
+        address: "no-reply@hotelapromenade.com",
+        name: "Hôtel La Promenade",
+      },
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html: getNotificationTemplate({
+        title,
+        message,
+        actionUrl,
+      }),
+      category: "Notification",
+    });
+
+    console.log("Notification envoyée:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Erreur envoi notification:", error);
+    throw error;
+  }
 }

@@ -202,9 +202,11 @@ export default function CreerEvenement() {
 
   function toLocalDatetimeInput(dateString) {
     if (!dateString) return "";
-    const d = new Date(dateString);
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    const [datePart, timePart] = dateString.split(" ");
+    if (!datePart || !timePart) return "";
+
+    return `${datePart}T${timePart.slice(0, 5)}`;
   }
 
   function set(field) {
