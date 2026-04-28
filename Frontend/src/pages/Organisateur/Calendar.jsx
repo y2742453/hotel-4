@@ -57,6 +57,20 @@ const Calendar = () => {
     return dateString.replace("T", " ") + ":00";
   };
 
+  function normalizeDate(dateString) {
+    if (!dateString) return null;
+    return dateString.replace(" ", "T").replace(".000Z", "").replace("Z", "");
+  }
+
+  function formatDisplayDate(dateString) {
+    if (!dateString) return "";
+
+    const [datePart, timePart] = dateString.split("T");
+    const [year, month, day] = datePart.split("-");
+
+    return `${day}/${month}/${year} à ${timePart}`;
+  }
+
   // Filtrer les salles
   const sallesFiltrees = salles.filter((salle) => {
     if ((salle.statut || "").toLowerCase() !== "disponible") {
@@ -171,8 +185,8 @@ const Calendar = () => {
         reservations.map((r) => ({
           id: r.id_reservation,
           title: r.nom_evenement,
-          start: r.date_debut,
-          end: r.date_fin,
+          start: normalizeDate(r.date_debut),
+          end: normalizeDate(r.date_fin),
           extendedProps: {
             description: r.description,
           },
@@ -573,24 +587,11 @@ const Calendar = () => {
                     <strong>{evenement?.nom_evenement}</strong> ?
                   </p>
                   <p className="confirmation-dates">
-                    Du{" "}
-                    {new Date(newReservation.dateDebut).toLocaleString(
-                      "fr-FR",
-                      {
-                        day: "2-digit",
-                        month: "long",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )}
+                    Du
+                    {formatDisplayDate(newReservation.dateDebut)}
                     <br />
-                    au{" "}
-                    {new Date(newReservation.dateFin).toLocaleString("fr-FR", {
-                      day: "2-digit",
-                      month: "long",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    au
+                    {formatDisplayDate(newReservation.dateFin)}
                   </p>
                 </div>
               );
