@@ -271,7 +271,7 @@ export default function ListeEvenements() {
                           </button>
                         )}
 
-                        {!annule && (
+                        {!annule && !termine && (
                           <button
                             className="btn btnDanger"
                             disabled={annule}
