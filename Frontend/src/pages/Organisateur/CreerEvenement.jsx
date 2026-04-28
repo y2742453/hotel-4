@@ -203,26 +203,11 @@ export default function CreerEvenement() {
   function toLocalDatetimeInput(dateString) {
     if (!dateString) return "";
 
-    // Already in datetime-local format
-    if (dateString.includes("T") && !dateString.endsWith("Z")) {
-      return dateString.slice(0, 16);
-    }
+    // Remove milliseconds and trailing Z if present
+    const cleaned = dateString.replace(".000Z", "").replace("Z", "");
 
-    // ISO format from API (UTC)
-    const date = new Date(dateString);
-    if (!isNaN(date)) {
-      const offset = date.getTimezoneOffset();
-      const localDate = new Date(date.getTime() - offset * 60000);
-      return localDate.toISOString().slice(0, 16);
-    }
-
-    // MySQL DATETIME format
-    const [datePart, timePart] = dateString.split(" ");
-    if (datePart && timePart) {
-      return `${datePart}T${timePart.slice(0, 5)}`;
-    }
-
-    return "";
+    // Convert ISO or MySQL format to datetime-local format
+    return cleaned.replace(" ", "T").slice(0, 16);
   }
 
   function set(field) {
