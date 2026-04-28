@@ -17,7 +17,7 @@ export default function HistoriqueEvenements() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filtStatut, setFiltStatut] = useState("terminé");
+  const [filtStatut, setFiltStatut] = useState("Terminé");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
 
