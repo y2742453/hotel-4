@@ -120,14 +120,18 @@ export default function ListeEvenements() {
   }
 
   /* Format date : 03/05/2026 13h27 */
-  function formatDate(d) {
-    if (!d) return "—";
-    const dt = new Date(d);
-    return (
-      dt.toLocaleDateString("fr-CA") +
-      " " +
-      dt.toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" })
-    );
+  function formatDate(dateString) {
+    if (!dateString) return "—";
+
+    const cleaned = dateString
+      .replace(".000Z", "")
+      .replace("Z", "")
+      .replace("T", " ");
+
+    const [datePart, timePart = "00:00:00"] = cleaned.split(" ");
+    const [year, month, day] = datePart.split("-");
+
+    return `${day}/${month}/${year} ${timePart.slice(0, 5)}`;
   }
 
   const filtered = evenements.filter(
