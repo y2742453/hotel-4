@@ -1,22 +1,13 @@
 import nodemailer from "nodemailer";
-
+import { MailtrapTransport } from "mailtrap";
 // Transporter mailtrap
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT),
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP configuration error:", error);
-  } else {
-    console.log("SMTP server is ready");
-  }
-});
+const transport = nodemailer.createTransport(
+  MailtrapTransport({
+    token: process.env.MAILTRAP_API_TOKEN,
+    sandbox: true,
+    testInboxId: Number(process.env.MAILTRAP_INBOX_ID),
+  }),
+);
 
 // HTML TEMPLATE
 const getEmailTemplate = (invite, evenement) => {
@@ -74,25 +65,14 @@ const getEmailTemplate = (invite, evenement) => {
 
 // Envoyer 1 email
 export async function sendInvitation(invite, evenement) {
-  return transporter.sendMail({
-    from: '"Hôtel La Promenade" <no-reply@hotel.com>',
-    to: invite.email,
+  return await transport.sendMail({
+    from: {
+      address: "no-reply@hotelapromenade.com",
+      name: "Hôtel La Promenade",
+    },
+    to: [invite.email],
     subject: `Invitation : ${evenement.nom_evenement}`,
     html: getEmailTemplate(invite, evenement),
+    category: "Invitation",
   });
-
-  try {
-    const info = await transporter.sendMail({
-      from: '"Hôtel La Promenade" <no-reply@hotel.com>',
-      to: invite.email,
-      subject: `Invitation : ${evenement.nom_evenement}`,
-      html: getEmailTemplate(invite, evenement),
-    });
-
-    console.log("Email sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("Email send failed:", error);
-    throw error;
-  }
 }

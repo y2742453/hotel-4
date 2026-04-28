@@ -122,7 +122,7 @@ export default function CreerEvenement() {
     const fd = new FormData();
     fd.append("file", file);
     await fetch(
-      `https://hotel-la-promenade.vercel.app/api/evenements/${eventId}/documents`,
+      `https://hotel-4.up.railway.app/api/evenements/${eventId}/documents`,
       {
         method: "POST",
         body: fd,
@@ -138,12 +138,9 @@ export default function CreerEvenement() {
   // ── Supprimer document ──
   async function deleteDocument(docId) {
     if (!window.confirm("Supprimer ce document ?")) return;
-    await fetch(
-      `https://hotel-la-promenade.vercel.app/api/documents/${docId}`,
-      {
-        method: "DELETE",
-      },
-    );
+    await fetch(`https://hotel-4.up.railway.app/api/documents/${docId}`, {
+      method: "DELETE",
+    });
     if (isEdit) {
       const { res, data } = await apiFetch(`/api/evenements/${id}/documents`);
       if (res.ok) setDocuments(data || []);
