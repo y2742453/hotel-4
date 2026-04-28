@@ -31,7 +31,7 @@ export default function HistoriqueEvenements() {
 
   function reset() {
     setSearch("");
-    setFiltStatut("");
+    setFiltStatut("Terminé");
     setDateDebut("");
     setDateFin("");
   }
